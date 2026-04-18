@@ -1,0 +1,79 @@
+{
+  "total": 100,
+  "pagina": 1,
+  "limite": 20,
+  "productos": [
+    {
+      "idProducto": "1",
+      "codigoProducto": "PROD-001",
+      "nombreProducto": "Leche Pinito",
+      "descripcion": "Leche Dos Pinos Pinito - 1000 ml",
+      "precio": 16.25,
+      "stockActual": 10,
+      "idMarca": "DosPinos",
+      "categoriaId": "Dairies",
+      "imagenPrincipal": "https://naranjomarket.com/wp-content/uploads/2020/08/Dos-Pinos-Pinito-Leche-Entera1Lt-600x600.png",
+      "fechaVencimiento": "2026-12-31T00:00:00Z"
+    },
+    {
+      "idProducto": "2",
+      "codigoProducto": "PROD-002",
+      "nombreProducto": "Leche Lala",
+      "descripcion": "Leche Lala Entera - 1000 ml",
+      "precio": 18.99,
+      "stockActual": 10,
+      "idMarca": "Lala",
+      "categoriaId": "Dairies",
+      "imagenPrincipal": "https://www.lala.com.mx/storage/app/media/7501020565935_00.png",
+      "fechaVencimiento": "2026-12-31T00:00:00Z"
+    },
+    {
+      "idProducto": "3",
+      "codigoProducto": "PROD-003",
+      "nombreProducto": "Nutri Leti",
+      "descripcion": "Leche Nutri leti descremada - 1000 ml",
+      "precio": 12.99,
+      "stockActual": 10,
+      "idMarca": "Nutri Leti",
+      "categoriaId": "Dairies",
+      "imagenPrincipal": "https://comerciallaeconomica.com/wp-content/uploads/2021/07/leche-liquido-nutri-lety.png",
+      "fechaVencimiento": "2026-12-31T00:00:00Z"
+    },
+     {
+      "idProducto": "4",
+      "codigoProducto": "PROD-004",
+      "nombreProducto": "Banano",
+      "descripcion": "Chiquita - 5 unidades",
+      "precio": 20.99,
+      "stockActual": 10,
+      "idMarca": "Chiquita",
+      "categoriaId": "Fruits",
+      "imagenPrincipal": "https://www.pngkey.com/png/full/441-4411802_chiquita-bananas-chiquita-banana-png.png",
+      "fechaVencimiento": "2026-12-31T00:00:00Z"
+    },
+     {
+      "idProducto": "5",
+      "codigoProducto": "PROD-005",
+      "nombreProducto": "Manzana",
+      "descripcion": "Manzana Roja - 1 unidad",
+      "precio": 10.99,
+      "stockActual": 10,
+      "idMarca": "Chiquita",
+      "categoriaId": "Fruits",
+      "imagenPrincipal": "https://www.vhv.rs/dpng/d/36-361614_manzana-png-transparent-png.png",
+      "fechaVencimiento": "2026-12-31T00:00:00Z"
+    },
+     {
+      "idProducto": "6",
+      "codigoProducto": "PROD-006",
+      "nombreProducto": "Naranja",
+      "descripcion": "Naranja amarilla - 1 unidad",
+      "precio": 10.99,
+      "stockActual": 10,
+      "idMarca": "Chiquita",
+      "categoriaId": "Fruits",
+      "imagenPrincipal": "https://www.vhv.rs/dpng/d/36-361614_manzana-png-transparent-png.png",
+      "fechaVencimiento": "2026-12-31T00:00:00Z"
+    }
+  ]
+}
