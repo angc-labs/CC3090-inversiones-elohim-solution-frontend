@@ -4,9 +4,7 @@ interface ProductCardProps {
   description: string;
   price: string;
   rating: number;
-  reviews: number;
   badge: string | null;
-  color: string;
   image: string;
 }
 
@@ -14,9 +12,7 @@ export function ProductCard({
   name,
   description,
   price,
-  reviews,
   badge,
-  color,
   image,
 }: ProductCardProps) {
   return (
@@ -48,10 +44,6 @@ export function ProductCard({
           <button className="relative z-10 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow">
             <span className="text-xl">♡</span>
           </button>
-          {/* Cart icon */}
-          <button className="absolute bottom-4 right-4 z-10 p-2 bg-white/80 rounded-lg shadow-md hover:shadow-lg transition-shadow text-lg">
-            🛒
-          </button>
         </div>
 
         {/* Bottom white card with product info - overlapping */}
@@ -65,9 +57,6 @@ export function ProductCard({
                 </span>
               ))}
             </div>
-            <span className="text-xs text-gray-500 font-medium">
-              {reviews}
-            </span>
           </div>
 
           {/* Product name */}

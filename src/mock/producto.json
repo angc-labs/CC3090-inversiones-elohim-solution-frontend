@@ -70,8 +70,44 @@
       "descripcion": "Naranja amarilla - 1 unidad",
       "precio": 10.99,
       "stockActual": 10,
-      "idMarca": "Chiquita",
+      "idMarca": "Del Monte",
       "categoriaId": "Fruits",
+      "imagenPrincipal": "https://www.vhv.rs/dpng/d/36-361614_manzana-png-transparent-png.png",
+      "fechaVencimiento": "2026-12-31T00:00:00Z"
+    },
+    {
+      "idProducto": "7",
+      "codigoProducto": "PROD-007",
+      "nombreProducto": "Zanahoria",
+      "descripcion": "Zanahora naranja - 1 unidad",
+      "precio": 10.99,
+      "stockActual": 10,
+      "idMarca": "Chiquita",
+      "categoriaId": "Vegetables",
+      "imagenPrincipal": "https://www.vhv.rs/dpng/d/36-361614_manzana-png-transparent-png.png",
+      "fechaVencimiento": "2026-12-31T00:00:00Z"
+    },
+    {
+      "idProducto": "8",
+      "codigoProducto": "PROD-008",
+      "nombreProducto": "Brocoli",
+      "descripcion": "Brocoli verde - 1 unidad",
+      "precio": 10.99,
+      "stockActual": 10,
+      "idMarca": "Del Monte",
+      "categoriaId": "Vegetables",
+      "imagenPrincipal": "https://www.vhv.rs/dpng/d/36-361614_manzana-png-transparent-png.png",
+      "fechaVencimiento": "2026-12-31T00:00:00Z"
+    },
+    {
+      "idProducto": "9",
+      "codigoProducto": "PROD-009",
+      "nombreProducto": "Pepino",
+      "descripcion": "Pepino verde - 1 unidad",
+      "precio": 10.99,
+      "stockActual": 10,
+      "idMarca": "Del Monte",
+      "categoriaId": "Vegetables",
       "imagenPrincipal": "https://www.vhv.rs/dpng/d/36-361614_manzana-png-transparent-png.png",
       "fechaVencimiento": "2026-12-31T00:00:00Z"
     }
