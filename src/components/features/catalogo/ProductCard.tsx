@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 interface ProductCardProps {
   id: number;
   name: string;
@@ -6,6 +8,7 @@ interface ProductCardProps {
   rating: number;
   badge: string | null;
   image: string;
+  href?: string;
 }
 
 export function ProductCard({
@@ -14,6 +17,7 @@ export function ProductCard({
   price,
   badge,
   image,
+  href,
 }: ProductCardProps) {
   return (
     <div className="h-full">
@@ -70,10 +74,19 @@ export function ProductCard({
           {/* Price */}
           <p className="text-xl font-bold text-slate-900 mb-4">{price}</p>
 
-          {/* Add to cart button */}
-          <button className="w-full py-3 bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full font-semibold text-sm hover:shadow-md transition-shadow flex items-center justify-center gap-2">
-            <span>🛒</span> Añadir al carrito
-          </button>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button className="w-full py-3 bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full font-semibold text-sm hover:shadow-md transition-shadow flex items-center justify-center gap-2">
+              <span>🛒</span> Añadir al carrito
+            </button>
+            {href && (
+              <Link
+                href={href}
+                className="inline-flex w-full items-center justify-center rounded-full border border-blue-600 px-4 py-3 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+              >
+                Ver detalle
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </div>

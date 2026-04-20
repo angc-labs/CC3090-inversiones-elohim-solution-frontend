@@ -20,19 +20,58 @@ export type TLoginResponse = {
 
 export type TRegisterResponse = TLoginResponse;
 
-export async function login(correo: string, contrasena: string): Promise<TLoginResponse> {
-  const res = await fetch(`${API_URL}/api/client/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ correo, contrasena }),
-  });
-  
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: "Error al iniciar sesión" }));
-    throw new Error(error.message || "Credenciales inválidas");
+class AuthError extends Error {
+  constructor(
+    message: string,
+    public code: string
+  ) {
+    super(message);
+    this.name = "AuthError";
   }
-  
-  return res.json();
+}
+
+function mapErrorMessage(status: number, message: string): string {
+  const messages: Record<number, Record<string, string>> = {
+    400: {
+      invalid_credentials: "Correo o contraseña incorrectos",
+      email_already_exists: "Este correo ya está registrado",
+      invalid_email: "El formato del correo no es válido",
+      weak_password: "La contraseña debe tener al menos 8 caracteres",
+      missing_fields: "Por favor completa todos los campos requeridos",
+    },
+    401: {
+      unauthorized: "No autorizado. Intenta de nuevo.",
+    },
+    409: {
+      email_exists: "Este correo ya está registrado",
+    },
+    500: {
+      server_error: "Error del servidor. Intenta más tarde.",
+    },
+  };
+
+  return messages[status]?.[message] || message || "Error desconocido";
+}
+
+export async function login(correo: string, contrasena: string): Promise<TLoginResponse> {
+  try {
+    const res = await fetch(`${API_URL}/api/client/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ correo, contrasena }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: "Error al iniciar sesión", code: "unknown" }));
+      const mappedMessage = mapErrorMessage(res.status, error.code || error.message);
+      throw new AuthError(mappedMessage, error.code || "unknown");
+    }
+
+    return res.json();
+  } catch (error) {
+    if (error instanceof AuthError) throw error;
+    throw new AuthError("Error al conectar con el servidor", "network_error");
+  }
 }
 
 export async function register(data: {
@@ -43,18 +82,24 @@ export async function register(data: {
   telefono?: string;
   direccion?: string;
 }): Promise<TRegisterResponse> {
-  const res = await fetch(`${API_URL}/api/client/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: "Error al registrar" }));
-    throw new Error(error.message || "Error al registrar usuario");
+  try {
+    const res = await fetch(`${API_URL}/api/client/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: "Error al registrar", code: "unknown" }));
+      const mappedMessage = mapErrorMessage(res.status, error.code || error.message);
+      throw new AuthError(mappedMessage, error.code || "unknown");
+    }
+
+    return res.json();
+  } catch (error) {
+    if (error instanceof AuthError) throw error;
+    throw new AuthError("Error al conectar con el servidor", "network_error");
   }
-  
-  return res.json();
 }
 
 export async function logout(token: string): Promise<void> {

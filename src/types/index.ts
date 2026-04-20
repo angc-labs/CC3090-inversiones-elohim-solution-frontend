@@ -9,6 +9,6 @@ export type TProducto = {
   categoriaId?: string;
   fechaVencimiento?: string;
   imagenPrincipal?: string;
-  fechaCreacion: string;
-  fechaActualizacion: string;
+  fechaCreacion?: string;
+  fechaActualizacion?: string;
 };

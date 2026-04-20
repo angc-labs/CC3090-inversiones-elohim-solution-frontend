@@ -9,14 +9,18 @@ interface UseProductFiltersReturn {
   setFilterType: (type: FilterType) => void;
   selectedValues: string[];
   setSelectedValues: (values: string[]) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
   getCategories: () => string[];
   getBrands: () => string[];
   getPriceRanges: () => Array<{ label: string; min: number; max: number }>;
+  clearFilters: () => void;
 }
 
 export function useProductFilters(): UseProductFiltersReturn {
   const [activeFilterType, setFilterType] = useState<FilterType>("category");
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const priceRanges = [
     { label: "Q0 - Q5", min: 0, max: 5 },
@@ -40,12 +44,31 @@ export function useProductFilters(): UseProductFiltersReturn {
 
   const getPriceRanges = () => priceRanges;
 
+  const clearFilters = () => {
+    setSelectedValues([]);
+    setSearchQuery("");
+  };
+
   const filteredProducts = useMemo(() => {
-    if (selectedValues.length === 0) {
-      return productosData.productos;
+    let products = productosData.productos;
+
+    // Aplicar búsqueda primero
+    if (searchQuery.trim()) {
+      const lowerQuery = searchQuery.toLowerCase();
+      products = products.filter((product) =>
+        product.nombreProducto.toLowerCase().includes(lowerQuery) ||
+        product.descripcion?.toLowerCase().includes(lowerQuery) ||
+        product.categoriaId.toLowerCase().includes(lowerQuery) ||
+        product.idMarca.toLowerCase().includes(lowerQuery)
+      );
     }
 
-    return productosData.productos.filter((product) => {
+    // Aplicar filtros
+    if (selectedValues.length === 0) {
+      return products;
+    }
+
+    return products.filter((product) => {
       if (activeFilterType === "category") {
         return selectedValues.includes(product.categoriaId);
       } else if (activeFilterType === "brand") {
@@ -61,7 +84,7 @@ export function useProductFilters(): UseProductFiltersReturn {
       }
       return true;
     });
-  }, [activeFilterType, selectedValues]);
+  }, [activeFilterType, selectedValues, searchQuery]);
 
   return {
     filteredProducts,
@@ -69,8 +92,11 @@ export function useProductFilters(): UseProductFiltersReturn {
     setFilterType,
     selectedValues,
     setSelectedValues,
+    searchQuery,
+    setSearchQuery,
     getCategories,
     getBrands,
     getPriceRanges,
+    clearFilters,
   };
 }

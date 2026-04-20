@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert } from "@/components/ui/alert";
 import { register } from "@/lib/api/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Eye, EyeOff } from "lucide-react";
@@ -21,18 +22,42 @@ export default function RegisterPage() {
   });
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const validateForm = (): boolean => {
+    if (!formData.nombre || !formData.correo || !formData.contrasena) {
+      setError("Por favor completa todos los campos requeridos");
+      return false;
+    }
+    if (formData.contrasena.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres");
+      return false;
+    }
+    if (!formData.correo.includes("@")) {
+      setError("Por favor ingresa un correo válido");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setIsLoading(true);
 
+    if (!validateForm()) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      setSuccess("Creando tu cuenta...");
       const response = await register({
         nombre: formData.nombre,
         correo: formData.correo,
@@ -40,6 +65,7 @@ export default function RegisterPage() {
         telefono: formData.telefono || undefined,
         direccion: formData.direccion || undefined,
       });
+      
       loginStore(
         {
           clienteId: response.clienteId,
@@ -47,11 +73,18 @@ export default function RegisterPage() {
           nombre: response.nombre,
           rol: "cliente",
         },
-        response.token
+        response.token,
+        response.expiraEn
       );
-      router.push("/home");
+      
+      setSuccess("¡Cuenta creada exitosamente! Redirigiendo...");
+      setTimeout(() => {
+        router.push("/home");
+      }, 500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al registrar usuario");
+      const errorMessage = err instanceof Error ? err.message : "Error al registrar usuario";
+      setError(errorMessage);
+      setSuccess("");
     } finally {
       setIsLoading(false);
     }
@@ -98,9 +131,11 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-7 flex gap-8 flex-col">
             {error && (
-              <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-500">
-                {error}
-              </div>
+              <Alert type="error" message={error} onClose={() => setError("")} />
+            )}
+
+            {success && (
+              <Alert type="success" message={success} />
             )}
 
             <div className="space-y-1.5">
@@ -111,6 +146,7 @@ export default function RegisterPage() {
                 value={formData.nombre}
                 onChange={handleChange}
                 required
+                disabled={isLoading}
                 className="h-11 rounded-lg border-gray-200 bg-gray-50 text-gray-900 placeholder:text-gray-300 focus:bg-white focus:border-blue-400 focus:ring-blue-400/30 transition-colors"
               />
             </div>
@@ -124,6 +160,7 @@ export default function RegisterPage() {
                 value={formData.correo}
                 onChange={handleChange}
                 required
+                disabled={isLoading}
                 className="h-11 rounded-lg border-gray-200 bg-gray-50 text-gray-900 placeholder:text-gray-300 focus:bg-white focus:border-blue-400 focus:ring-blue-400/30 transition-colors"
               />
             </div>
@@ -138,6 +175,7 @@ export default function RegisterPage() {
                   value={formData.contrasena}
                   onChange={handleChange}
                   required
+                  disabled={isLoading}
                   className="h-11 rounded-lg border-gray-200 bg-gray-50 pr-10 text-gray-900 placeholder:text-gray-300 focus:bg-white focus:border-blue-400 focus:ring-blue-400/30 transition-colors"
                 />
                 <button
@@ -159,6 +197,7 @@ export default function RegisterPage() {
                   placeholder="Teléfono"
                   value={formData.telefono}
                   onChange={handleChange}
+                  disabled={isLoading}
                   className="h-11 rounded-lg border-gray-200 bg-gray-50 text-gray-900 placeholder:text-gray-300 focus:bg-white focus:border-blue-400 focus:ring-blue-400/30 transition-colors"
                 />
               </div>
@@ -169,6 +208,7 @@ export default function RegisterPage() {
                   placeholder="Dirección"
                   value={formData.direccion}
                   onChange={handleChange}
+                  disabled={isLoading}
                   className="h-11 rounded-lg border-gray-200 bg-gray-50 text-gray-900 placeholder:text-gray-300 focus:bg-white focus:border-blue-400 focus:ring-blue-400/30 transition-colors"
                 />
               </div>

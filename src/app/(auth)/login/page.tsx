@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert } from "@/components/ui/alert";
 import { login } from "@/lib/api/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,16 +16,26 @@ export default function LoginPage() {
   const [correo, setCorreo] = useState("");
   const [contrasena, setContrasena] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setIsLoading(true);
 
+    if (!correo || !contrasena) {
+      setError("Por favor completa todos los campos");
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      setSuccess("Iniciando sesión...");
       const response = await login(correo, contrasena);
+      
       loginStore(
         {
           clienteId: response.clienteId,
@@ -33,11 +43,18 @@ export default function LoginPage() {
           nombre: response.nombre,
           rol: "cliente",
         },
-        response.token
+        response.token,
+        response.expiraEn
       );
-      router.push("/home");
+      
+      setSuccess("¡Bienvenido! Redirigiendo...");
+      setTimeout(() => {
+        router.push("/home");
+      }, 500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al iniciar sesión");
+      const errorMessage = err instanceof Error ? err.message : "Error al iniciar sesión";
+      setError(errorMessage);
+      setSuccess("");
     } finally {
       setIsLoading(false);
     }
@@ -84,9 +101,11 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-7 flex gap-8 flex-col">
             {error && (
-              <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-500">
-                {error}
-              </div>
+              <Alert type="error" message={error} onClose={() => setError("")} />
+            )}
+
+            {success && (
+              <Alert type="success" message={success} />
             )}
 
             <div className="space-y-1.5">
@@ -97,6 +116,7 @@ export default function LoginPage() {
                 value={correo}
                 onChange={(e) => setCorreo(e.target.value)}
                 required
+                disabled={isLoading}
                 className="h-11 rounded-lg border-gray-200 bg-gray-50 text-gray-900 placeholder:text-gray-300 focus:bg-white focus:border-blue-400 focus:ring-blue-400/30 transition-colors"
               />
             </div>

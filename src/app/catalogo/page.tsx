@@ -3,7 +3,9 @@
 import { CatalogoShell } from "@/components/features/catalogo/CatalogoShell";
 import { ProductCard } from "@/components/features/catalogo/ProductCard";
 import { FilterMenu } from "@/components/features/catalogo/FilterMenu";
+import { SearchBar } from "@/components/features/catalogo/SearchBar";
 import { useProductFilters } from "@/hooks/useProductFilters";
+import { type SearchSuggestion } from "@/hooks/useSearchSuggestions";
 
 export default function CatalogoPage() {
   // Función para determinar el número de columnas según la cantidad de productos
@@ -20,10 +22,29 @@ export default function CatalogoPage() {
     setFilterType,
     selectedValues,
     setSelectedValues,
+    searchQuery,
+    setSearchQuery,
     getCategories,
     getBrands,
     getPriceRanges,
+    clearFilters,
   } = useProductFilters();
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
+    if (suggestion.type === "category") {
+      setFilterType("category");
+      setSelectedValues([suggestion.value]);
+    } else if (suggestion.type === "brand") {
+      setFilterType("brand");
+      setSelectedValues([suggestion.value]);
+    } else if (suggestion.type === "product") {
+      setSearchQuery(suggestion.value);
+    }
+  };
 
   // Agrupar productos filtrados según el tipo de filtro activo
   const getGroupedProducts = () => {
@@ -75,41 +96,71 @@ export default function CatalogoPage() {
       {/* ── Contenedor con margen lateral consistente y centrado ── */}
       <div className="flex justify-center px-4 sm:px-8 lg:px-12">
         <div className="w-full max-w-6xl">
-        {/* Filter Menu */}
-        <div className="mb-12">
-          <FilterMenu
-            activeFilterType={activeFilterType}
-            onFilterTypeChange={setFilterType}
-            selectedValues={selectedValues}
-            onSelectionChange={setSelectedValues}
-            categories={getCategories()}
-            brands={getBrands()}
-            priceRanges={getPriceRanges()}
-          />
-        </div>
+          {/* Search Bar */}
+          <div className="mb-8">
+            <SearchBar
+              onSearch={handleSearch}
+              onSuggestionSelect={handleSuggestionSelect}
+              placeholder="Buscar productos, categorías o marcas..."
+              className="max-w-md"
+            />
+          </div>
 
-        {/* Products by Group */}
-        {Object.entries(productsByGroup).map(([groupId, products]) => (
-          products.length > 0 && (
-            <div key={groupId} className="mb-24">
-              {/* Group Title - Dinámico según filtro */}
-              <div className="flex items-center gap-3 mb-8">
-                <span className="text-2xl text-blue-600">→</span>
-                <h2 className="text-2xl font-bold text-slate-900">{groupId}</h2>
-              </div>
+          {/* Filter Menu */}
+          <div className="mb-12">
+            <FilterMenu
+              activeFilterType={activeFilterType}
+              onFilterTypeChange={setFilterType}
+              selectedValues={selectedValues}
+              onSelectionChange={setSelectedValues}
+              categories={getCategories()}
+              brands={getBrands()}
+              priceRanges={getPriceRanges()}
+              onClearAll={clearFilters}
+            />
+          </div>
+
+          {/* Results Summary */}
+          {(searchQuery || selectedValues.length > 0) && (
+            <div className="mb-6 flex items-center justify-between">
+              <p className="text-sm text-gray-600">
+                {filteredProducts.length} producto{filteredProducts.length !== 1 ? "s" : ""} encontrado{filteredProducts.length !== 1 ? "s" : ""}
+                {searchQuery && ` para "${searchQuery}"`}
+              </p>
+              {(searchQuery || selectedValues.length > 0) && (
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Limpiar todo
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Products by Group */}
+          {Object.entries(productsByGroup).map(([groupId, products]) => (
+            products.length > 0 && (
+              <div key={groupId} className="mb-24">
+                {/* Group Title - Dinámico según filtro */}
+                <div className="flex items-center gap-3 mb-8">
+                  <span className="text-2xl text-blue-600">→</span>
+                  <h2 className="text-2xl font-bold text-slate-900">{groupId}</h2>
+                </div>
 
               {/* Products Grid */}
               <div className={`grid gap-8 ${getGridColsClass(products.length)}`}>
-                {products.map((product, index) => (
+                {products.map((product) => (
                   <ProductCard
                     key={product.idProducto}
-                    id={parseInt(product.idProducto)}
+                    id={parseInt(product.idProducto, 10)}
                     name={product.nombreProducto}
                     description={product.descripcion}
                     price={`Q${product.precio.toFixed(2)}`}
                     rating={5}
                     badge={null}
                     image={product.imagenPrincipal}
+                    href={`/catalogo/${product.idProducto}`}
                   />
                 ))}
               </div>
