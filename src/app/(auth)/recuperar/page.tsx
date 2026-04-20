@@ -38,7 +38,7 @@ export default function RecuperarPage() {
   };
 
   return (
-    <main className="page-recuperar">
+    <main className="auth-page">
       <div className="card">
         <div className="card-icon" aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">

@@ -58,7 +58,7 @@ html {
   color-scheme: light;
 }
 
-.page-recuperar {
+.auth-page {
   flex: 1;
   display: flex;
   align-items: center;
@@ -66,7 +66,7 @@ html {
   padding: 2rem 1rem;
 }
  
-.page-recuperar .card {
+.auth-page .card {
   width: 100%;
   max-width: 420px;
   background: #ffffff;
@@ -75,7 +75,7 @@ html {
   padding: 2.5rem 2rem 2rem;
 }
  
-.page-recuperar .card-icon {
+.auth-page .card-icon {
   width: 40px;
   height: 40px;
   background: var(--color-primary);
@@ -86,12 +86,12 @@ html {
   margin: 0 auto 1.5rem;
 }
  
-.page-recuperar .card-header {
+.auth-page .card-header {
   text-align: center;
   margin-bottom: 1.75rem;
 }
  
-.page-recuperar .card-title {
+.auth-page .card-title {
   font-size: 1.375rem;
   font-weight: 500;
   color: var(--foreground);
@@ -100,26 +100,26 @@ html {
   margin-bottom: 0.5rem;
 }
  
-.page-recuperar .card-description {
+.auth-page .card-description {
   font-size: 0.875rem;
   color: var(--color-muted-foreground);
   line-height: 1.6;
 }
  
-.page-recuperar .field {
+.auth-page .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-bottom: 1rem;
 }
  
-.page-recuperar .field label {
+.auth-page .field label {
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--foreground);
 }
  
-.page-recuperar .field input {
+.auth-page .field input {
   height: 40px;
   border: 0.5px solid var(--color-input);
   border-radius: var(--radius);
@@ -132,18 +132,18 @@ html {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
  
-.page-recuperar .field input:focus {
+.auth-page .field input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.07);
 }
  
-.page-recuperar .field input:disabled {
+.auth-page .field input:disabled {
   background: var(--color-muted);
   color: var(--color-muted-foreground);
   cursor: not-allowed;
 }
  
-.page-recuperar .btn-submit {
+.auth-page .btn-submit {
   width: 100%;
   height: 40px;
   background: var(--color-primary);
@@ -161,20 +161,20 @@ html {
   transition: opacity 0.15s, transform 0.1s;
 }
  
-.page-recuperar .btn-submit:hover:not(:disabled) {
+.auth-page .btn-submit:hover:not(:disabled) {
   opacity: 0.88;
 }
  
-.page-recuperar .btn-submit:active:not(:disabled) {
+.auth-page .btn-submit:active:not(:disabled) {
   transform: scale(0.98);
 }
  
-.page-recuperar .btn-submit:disabled {
+.auth-page .btn-submit:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
  
-.page-recuperar .feedback {
+.auth-page .feedback {
   margin-top: 1rem;
   padding: 0.75rem 1rem;
   background: var(--color-muted);
@@ -184,4 +184,16 @@ html {
   color: var(--color-muted-foreground);
   text-align: center;
   line-height: 1.55;
+}
+ 
+.auth-page .feedback--error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+ 
+.auth-page .feedback--success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
 }
