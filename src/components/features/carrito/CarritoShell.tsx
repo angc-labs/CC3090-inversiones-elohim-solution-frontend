@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import carritoData from "@/mock/carrito.json";
 
 type CarritoShellProps = {
   children: ReactNode;
@@ -9,6 +10,10 @@ export function CarritoShell({
   children,
   eyebrow = "CARRITO DE COMPRAS",
 }: CarritoShellProps) {
+  // Calculate subtotal from carrito items
+  const subtotal = carritoData.items.reduce((sum, item) => sum + item.subtotal, 0);
+  const total = carritoData.total;
+
   return (
     <div className="relative min-h-screen bg-[#f6f8fc] text-slate-900">
 
@@ -56,47 +61,20 @@ export function CarritoShell({
               <div className="space-y-6 pb-10">
                 {children || (
                   <>
-                    {/* Product Card 1 */}
-                    <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-md backdrop-blur-sm hover:shadow-lg transition-shadow">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold text-slate-900">Leche Entera (1L)</h3>
-                          <p className="text-sm text-slate-500 mt-1">Cantidad: 2 unidades</p>
-                          <p className="text-2xl font-bold text-blue-600 mt-3">Q 12.00</p>
+                    {carritoData.items.map((item) => (
+                      <div key={item.articuloId} className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-md backdrop-blur-sm hover:shadow-lg transition-shadow">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h3 className="text-lg font-bold text-slate-900">{item.nombreProducto}</h3>
+                            <p className="text-sm text-slate-500 mt-1">Cantidad: {item.cantidad} {item.cantidad === 1 ? 'unidad' : 'unidades'}</p>
+                            <p className="text-2xl font-bold text-blue-600 mt-3">Q {item.subtotal.toFixed(2)}</p>
+                          </div>
+                          <button className="p-2 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0">
+                            <span className="text-xl">🗑️</span>
+                          </button>
                         </div>
-                        <button className="p-2 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0">
-                          <span className="text-xl">🗑️</span>
-                        </button>
                       </div>
-                    </div>
-
-                    {/* Product Card 2 */}
-                    <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-md backdrop-blur-sm hover:shadow-lg transition-shadow">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold text-slate-900">Huevos Frescos (12 unidades)</h3>
-                          <p className="text-sm text-slate-500 mt-1">Cantidad: 1 unidad</p>
-                          <p className="text-2xl font-bold text-blue-600 mt-3">Q 18.50</p>
-                        </div>
-                        <button className="p-2 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0">
-                          <span className="text-xl">🗑️</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Product Card 3 */}
-                    <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-md backdrop-blur-sm hover:shadow-lg transition-shadow">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold text-slate-900">Harina para Pastel</h3>
-                          <p className="text-sm text-slate-500 mt-1">Cantidad: 1 unidad</p>
-                          <p className="text-2xl font-bold text-blue-600 mt-3">Q 15.00</p>
-                        </div>
-                        <button className="p-2 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0">
-                          <span className="text-xl">🗑️</span>
-                        </button>
-                      </div>
-                    </div>
+                    ))}
                   </>
                 )}
               </div>
@@ -115,13 +93,13 @@ export function CarritoShell({
                 {/* Subtotal */}
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 font-medium">Subtotal</span>
-                  <span className="text-slate-900 font-semibold text-lg">Q45.50</span>
+                  <span className="text-slate-900 font-semibold text-lg">Q {subtotal.toFixed(2)}</span>
                 </div>
 
                 {/* Total a pagar */}
                 <div className="flex justify-between items-center">
                   <span className="text-slate-700 font-bold text-lg">Total a pagar:</span>
-                  <div className="text-4xl font-bold text-blue-600">Q 45.50</div>
+                  <div className="text-4xl font-bold text-blue-600">Q {total.toFixed(2)}</div>
                 </div>
 
                 {/* Card Info */}
