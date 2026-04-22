@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-export function usePaginatedProducts(items: any[], pageSize = 12) {
+export function usePaginatedProducts<T>(items: T[], pageSize = 12) {
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(items.length / pageSize);

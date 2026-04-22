@@ -1,12 +1,18 @@
-import { useState, useMemo, useCallback } from "react";
-import productosData from "@/mock/producto.json";
+import { useCallback, useMemo, useState } from "react";
+import useSWR from "swr";
+import {
+  buscarProductos,
+  obtenerCategorias,
+  obtenerMarcas,
+  TProductoBusqueda,
+} from "@/lib/api/productos";
 
 export type SearchSuggestion = {
   id: string;
   type: "product" | "category" | "brand";
   label: string;
   value: string;
-  product?: typeof productosData.productos[0];
+  product?: TProductoBusqueda;
 };
 
 interface UseSearchSuggestionsReturn {
@@ -15,22 +21,34 @@ interface UseSearchSuggestionsReturn {
   suggestions: SearchSuggestion[];
   isSearching: boolean;
   clearSearch: () => void;
-  searchResults: typeof productosData.productos;
+  searchResults: TProductoBusqueda[];
 }
 
 export function useSearchSuggestions(): UseSearchSuggestionsReturn {
   const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim();
+
+  const { data: categoryOptions = [] } = useSWR("categorias", obtenerCategorias, {
+    revalidateOnFocus: false,
+  });
+  const { data: brandOptions = [] } = useSWR("marcas", obtenerMarcas, {
+    revalidateOnFocus: false,
+  });
+  const { data: productResults = [], isLoading: isSearching } = useSWR(
+    normalizedQuery.length >= 2 ? ["buscar-productos", normalizedQuery] : null,
+    ([, currentQuery]: [string, string]) => buscarProductos(currentQuery),
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 500,
+    }
+  );
 
   const suggestions = useMemo(() => {
-    if (query.length < 2) return [] as SearchSuggestion[];
+    if (normalizedQuery.length < 2) return [] as SearchSuggestion[];
 
-    const lowerQuery = query.toLowerCase();
+    const lowerQuery = normalizedQuery.toLowerCase();
 
-    const productSuggestions: SearchSuggestion[] = productosData.productos
-      .filter((product) =>
-        product.nombreProducto.toLowerCase().includes(lowerQuery) ||
-        product.descripcion?.toLowerCase().includes(lowerQuery)
-      )
+    const productSuggestions: SearchSuggestion[] = productResults
       .slice(0, 5)
       .map((product) => ({
         id: `product-${product.idProducto}`,
@@ -40,44 +58,33 @@ export function useSearchSuggestions(): UseSearchSuggestionsReturn {
         product,
       }));
 
-    const categorySuggestions: SearchSuggestion[] = Array.from(
-      new Set(productosData.productos.map((p) => p.categoriaId))
-    )
-      .filter((category) => category.toLowerCase().includes(lowerQuery))
+    const categorySuggestions: SearchSuggestion[] = categoryOptions
+      .filter((category) => category.nombreCategoria.toLowerCase().includes(lowerQuery))
       .slice(0, 3)
       .map((category) => ({
-        id: `category-${category}`,
+        id: `category-${category.id}`,
         type: "category",
-        label: `Categoría: ${category}`,
-        value: category,
+        label: `Categoría: ${category.nombreCategoria}`,
+        value: category.id,
       }));
 
-    const brandSuggestions: SearchSuggestion[] = Array.from(
-      new Set(productosData.productos.map((p) => p.idMarca))
-    )
-      .filter((brand) => brand.toLowerCase().includes(lowerQuery))
+    const brandSuggestions: SearchSuggestion[] = brandOptions
+      .filter((brand) => brand.nombreMarca.toLowerCase().includes(lowerQuery))
       .slice(0, 3)
       .map((brand) => ({
-        id: `brand-${brand}`,
+        id: `brand-${brand.id}`,
         type: "brand",
-        label: `Marca: ${brand}`,
-        value: brand,
+        label: `Marca: ${brand.nombreMarca}`,
+        value: brand.id,
       }));
 
     return [...productSuggestions, ...categorySuggestions, ...brandSuggestions];
-  }, [query]);
+  }, [brandOptions, categoryOptions, normalizedQuery, productResults]);
 
-  const searchResults = useMemo(() => {
-    if (!query.trim()) return productosData.productos;
-
-    const lowerQuery = query.toLowerCase();
-    return productosData.productos.filter((product) =>
-      product.nombreProducto.toLowerCase().includes(lowerQuery) ||
-      product.descripcion?.toLowerCase().includes(lowerQuery) ||
-      product.categoriaId.toLowerCase().includes(lowerQuery) ||
-      product.idMarca.toLowerCase().includes(lowerQuery)
-    );
-  }, [query]);
+  const searchResults = useMemo(
+    () => (normalizedQuery.length >= 2 ? productResults : []),
+    [normalizedQuery.length, productResults]
+  );
 
   const clearSearch = useCallback(() => {
     setQuery("");
@@ -87,7 +94,7 @@ export function useSearchSuggestions(): UseSearchSuggestionsReturn {
     query,
     setQuery,
     suggestions,
-    isSearching: false,
+    isSearching,
     clearSearch,
     searchResults,
   };

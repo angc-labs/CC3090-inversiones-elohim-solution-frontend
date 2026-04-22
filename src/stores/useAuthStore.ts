@@ -4,7 +4,7 @@ import { persist } from "zustand/middleware";
 export type TRol = "cliente" | "cajero" | "admin";
 
 export type TUsuario = {
-  clienteId: string;
+  usuarioId: string;
   correo: string;
   nombre: string;
   rol: TRol;

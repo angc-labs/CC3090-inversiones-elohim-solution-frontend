@@ -12,3 +12,31 @@ export type TProducto = {
   fechaCreacion?: string;
   fechaActualizacion?: string;
 };
+
+export type TMarca = {
+  id: string;
+  nombreMarca: string;
+  descripcion?: string;
+};
+
+export type TCategoria = {
+  id: string;
+  nombreCategoria: string;
+  descripcion?: string;
+  fechaCreacion?: string;
+};
+
+export type TCarritoItemApi = {
+  articuloId: string;
+  productoId: string;
+  nombreProducto: string;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+};
+
+export type TCarritoApi = {
+  carritoId: string;
+  items: TCarritoItemApi[];
+  total: number;
+};

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/useAuthStore";
 
@@ -9,42 +9,63 @@ type SessionStatus = "active" | "warning" | "expired";
 export function useSessionExpiration() {
   const router = useRouter();
   const { expiraEn, isAuthenticated, logout, isSessionExpired } = useAuthStore();
-  const [status, setStatus] = useState<SessionStatus>("active");
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [now, setNow] = useState(0);
 
   useEffect(() => {
+    const updateNow = () => {
+      setNow(Date.now());
+    };
+
+    const timeout = setTimeout(updateNow, 0);
+
+    const interval = setInterval(() => {
+      updateNow();
+    }, 30000);
+
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const { status, timeRemaining } = useMemo(() => {
     if (!isAuthenticated || !expiraEn) {
-      setStatus("active");
+      return {
+        status: "active" as SessionStatus,
+        timeRemaining: null as number | null,
+      };
+    }
+
+    const remaining = expiraEn - now;
+
+    if (remaining <= 0) {
+      return {
+        status: "expired" as SessionStatus,
+        timeRemaining: 0,
+      };
+    }
+
+    if (remaining <= WARNING_TIME) {
+      return {
+        status: "warning" as SessionStatus,
+        timeRemaining: remaining,
+      };
+    }
+
+    return {
+      status: "active" as SessionStatus,
+      timeRemaining: null,
+    };
+  }, [expiraEn, isAuthenticated, now]);
+
+  useEffect(() => {
+    if (status !== "expired") {
       return;
     }
 
-    const checkExpiration = () => {
-      const now = Date.now();
-      const remaining = expiraEn - now;
-
-      // Si ya expiró
-      if (remaining <= 0) {
-        setStatus("expired");
-        logout();
-        router.push("/login");
-        return;
-      }
-
-      // Si está en la zona de advertencia (últimos 5 minutos)
-      if (remaining <= WARNING_TIME) {
-        setStatus("warning");
-        setTimeRemaining(remaining);
-      } else {
-        setStatus("active");
-        setTimeRemaining(null);
-      }
-    };
-
-    checkExpiration();
-    const interval = setInterval(checkExpiration, 30000); // Verificar cada 30 segundos
-
-    return () => clearInterval(interval);
-  }, [expiraEn, isAuthenticated, logout, router]);
+    logout();
+    router.push("/login");
+  }, [logout, router, status]);
 
   const handleLogout = () => {
     logout();
