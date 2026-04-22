@@ -63,3 +63,34 @@ export async function logout(token: string): Promise<void> {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+// ─── Recuperación de contraseña ────────────────────────────────────────────────
+// TODO: Descomentar cuando el backend implemente POST /api/auth/forgot-password
+// Según el contrato en endpoints.md, el endpoint acepta { correo: string }
+// y siempre responde 200 con un mensaje genérico (no revela si el correo existe).
+//
+// export async function solicitarRecuperacion(correo: string): Promise<void> {
+//   const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({ correo }),
+//   });
+//   // La respuesta siempre es 200 aunque el correo no exista
+//   if (!res.ok) {
+//     throw new Error("error_recuperacion");
+//   }
+// }
+
+// TODO: Descomentar cuando el backend implemente POST /api/auth/reset-password
+// Recibe el token del enlace de correo y la nueva contraseña.
+//
+// export async function cambiarPassword(token: string, contrasena: string): Promise<void> {
+//   const res = await fetch(`${API_URL}/api/auth/reset-password`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({ token, contrasena }),
+//   });
+//   if (!res.ok) {
+//     throw new Error("token_invalido");
+//   }
+// }
