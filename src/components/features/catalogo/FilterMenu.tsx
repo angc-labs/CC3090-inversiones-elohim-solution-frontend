@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FilterType } from "@/hooks/useProductFilters";
+import { FilterType, TFilterOption } from "@/hooks/useProductFilters";
 import { FilterOptions } from "./FilterOptions";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
@@ -10,8 +10,8 @@ interface FilterMenuProps {
   onFilterTypeChange: (type: FilterType) => void;
   selectedValues: string[];
   onSelectionChange: (values: string[]) => void;
-  categories: string[];
-  brands: string[];
+  categories: TFilterOption[];
+  brands: TFilterOption[];
   priceRanges: Array<{ label: string; min: number; max: number }>;
   onClearAll?: () => void;
 }
@@ -34,17 +34,12 @@ export function FilterMenu({
     { id: "brand", label: "Marca" },
   ] as const;
 
-  // Convertir datos a formato compatible con FilterOptions
-  const getCategoryOptions = () =>
-    categories.map((c) => ({ label: c, value: c }));
-  const getBrandOptions = () =>
-    brands.map((b) => ({ label: b, value: b }));
   const getPriceOptions = () =>
     priceRanges.map((r) => ({ label: r.label, value: r.label }));
 
   const getActiveOptions = () => {
-    if (activeFilterType === "category") return getCategoryOptions();
-    if (activeFilterType === "brand") return getBrandOptions();
+    if (activeFilterType === "category") return categories;
+    if (activeFilterType === "brand") return brands;
     return getPriceOptions();
   };
 

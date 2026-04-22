@@ -27,15 +27,11 @@ export function SearchBar({
     clearSearch,
   } = useSearchSuggestions();
 
-  const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setIsOpen(suggestions.length > 0 && query.length >= 2);
-    setSelectedIndex(-1);
-  }, [suggestions, query]);
+  const isOpen = suggestions.length > 0 && query.length >= 2;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -45,7 +41,6 @@ export function SearchBar({
         inputRef.current &&
         !inputRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
       }
     };
 
@@ -76,12 +71,9 @@ export function SearchBar({
         e.preventDefault();
         if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
           handleSuggestionClick(suggestions[selectedIndex]);
-        } else {
-          setIsOpen(false);
         }
         break;
       case "Escape":
-        setIsOpen(false);
         setSelectedIndex(-1);
         inputRef.current?.blur();
         break;
@@ -90,13 +82,14 @@ export function SearchBar({
 
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {
     setQuery(suggestion.label);
-    setIsOpen(false);
+    setSelectedIndex(-1);
     onSuggestionSelect?.(suggestion);
     onSearch(suggestion.value);
   };
 
   const handleClear = () => {
     clearSearch();
+    setSelectedIndex(-1);
     onSearch("");
     inputRef.current?.focus();
   };
@@ -165,7 +158,7 @@ export function SearchBar({
                     </div>
                     {suggestion.product && (
                       <div className="text-xs text-gray-500 truncate">
-                        {suggestion.product.descripcion}
+                        Q{suggestion.product.precio.toFixed(2)}
                       </div>
                     )}
                   </div>
@@ -179,7 +172,7 @@ export function SearchBar({
 
           {suggestions.length === 0 && query.length >= 2 && !isSearching && (
             <div className="px-4 py-3 text-sm text-gray-500 text-center">
-              No se encontraron resultados para "{query}"
+              No se encontraron resultados para &quot;{query}&quot;
             </div>
           )}
         </div>

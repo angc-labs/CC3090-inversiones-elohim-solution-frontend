@@ -24,10 +24,14 @@ export default function CatalogoPage() {
     setSelectedValues,
     searchQuery,
     setSearchQuery,
-    getCategories,
-    getBrands,
+    categories,
+    brands,
     getPriceRanges,
+    getCategoryLabel,
+    getBrandLabel,
     clearFilters,
+    isLoading,
+    isError,
   } = useProductFilters();
 
   const handleSearch = (query: string) => {
@@ -64,7 +68,7 @@ export default function CatalogoPage() {
       // Agrupar por marca
       return filteredProducts.reduce(
         (acc, product) => {
-          const brand = product.idMarca;
+          const brand = product.idMarca ?? "sin-marca";
           if (!acc[brand]) {
             acc[brand] = [];
           }
@@ -77,7 +81,7 @@ export default function CatalogoPage() {
       // Agrupar por categoría (default)
       return filteredProducts.reduce(
         (acc, product) => {
-          const categoryId = product.categoriaId;
+          const categoryId = product.categoriaId ?? "sin-categoria";
           if (!acc[categoryId]) {
             acc[categoryId] = [];
           }
@@ -112,12 +116,24 @@ export default function CatalogoPage() {
               onFilterTypeChange={setFilterType}
               selectedValues={selectedValues}
               onSelectionChange={setSelectedValues}
-              categories={getCategories()}
-              brands={getBrands()}
+              categories={categories}
+              brands={brands}
               priceRanges={getPriceRanges()}
               onClearAll={clearFilters}
             />
           </div>
+
+          {isLoading && (
+            <div className="rounded-xl! border border-slate-200 bg-white! p-6! text-sm! text-slate-500!">
+              Cargando productos y filtros...
+            </div>
+          )}
+
+          {isError && (
+            <div className="rounded-xl! border! border-red-200 bg-red-50! p-6! text-sm! text-red-700!">
+              No se pudo cargar el catálogo en este momento.
+            </div>
+          )}
 
           {/* Results Summary */}
           {(searchQuery || selectedValues.length > 0) && (
@@ -138,13 +154,19 @@ export default function CatalogoPage() {
           )}
 
           {/* Products by Group */}
-          {Object.entries(productsByGroup).map(([groupId, products]) => (
+          {!isLoading && !isError && Object.entries(productsByGroup).map(([groupId, products]) => (
             products.length > 0 && (
               <div key={groupId} className="mb-24">
                 {/* Group Title - Dinámico según filtro */}
                 <div className="flex items-center gap-3 mb-8">
                   <span className="text-2xl text-blue-600">→</span>
-                  <h2 className="text-2xl font-bold text-slate-900">{groupId}</h2>
+                  <h2 className="text-2xl font-bold text-slate-900">
+                    {activeFilterType === "brand"
+                      ? getBrandLabel(groupId)
+                      : activeFilterType === "category"
+                        ? getCategoryLabel(groupId)
+                        : groupId}
+                  </h2>
                 </div>
 
               {/* Products Grid */}
@@ -152,13 +174,12 @@ export default function CatalogoPage() {
                 {products.map((product) => (
                   <ProductCard
                     key={product.idProducto}
-                    id={parseInt(product.idProducto, 10)}
                     name={product.nombreProducto}
-                    description={product.descripcion}
+                    description={product.descripcion ?? "Sin descripción"}
                     price={`Q${product.precio.toFixed(2)}`}
                     rating={5}
                     badge={null}
-                    image={product.imagenPrincipal}
+                    image={product.imagenPrincipal ?? "/placeholder.png"}
                     href={`/catalogo/${product.idProducto}`}
                   />
                 ))}
@@ -168,9 +189,9 @@ export default function CatalogoPage() {
         ))}
 
         {/* No products message */}
-        {Object.keys(productsByGroup).every((key) => productsByGroup[key].length === 0) && (
-          <div className="text-center py-12">
-            <p className="text-lg font-semibold text-slate-500">
+        {!isLoading && !isError && Object.keys(productsByGroup).every((key) => productsByGroup[key].length === 0) && (
+          <div className="text-center! py-12!">
+            <p className="text-lg font-semibold! text-slate-500">
               No hay productos que coincidan con los filtros seleccionados
             </p>
           </div>

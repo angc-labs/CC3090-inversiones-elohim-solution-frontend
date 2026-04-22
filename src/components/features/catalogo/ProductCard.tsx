@@ -3,13 +3,12 @@ import { CiHeart, CiShoppingCart } from 'react-icons/ci';
 import Image from "next/image";
 
 interface ProductCardProps {
-  id: number;
   name: string;
   description: string;
   price: string;
   rating: number;
   badge: string | null;
-  image: string;
+  image?: string;
   href?: string;
 }
 
@@ -21,6 +20,8 @@ export function ProductCard({
   image,
   href,
 }: ProductCardProps) {
+  const imageSrc = image ?? "/placeholder.png";
+
   return (
     <div className="h-full bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow px-4! py-3!">
       {/* Product Card Container */}
@@ -33,7 +34,7 @@ export function ProductCard({
           <Image
             width={100}
             height={100}
-            src={image}
+            src={imageSrc}
             alt={name}
             className="absolute inset-0 w-full h-full object-cover opacity-60"
           />
