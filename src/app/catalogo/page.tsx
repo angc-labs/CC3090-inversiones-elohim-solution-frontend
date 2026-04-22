@@ -12,7 +12,7 @@ export default function CatalogoPage() {
   const getGridColsClass = (productCount: number) => {
     if (productCount >= 3) return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
     if (productCount === 2) return "grid-cols-1 sm:grid-cols-2";
-    return "grid-cols-1";
+    return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
   };
 
   // Hook de filtros
@@ -92,22 +92,21 @@ export default function CatalogoPage() {
   const productsByGroup = getGroupedProducts();
 
   return (
-    <CatalogoShell eyebrow="ESMIRNA Tienda En Línea" showSidebar={false}>
+    <CatalogoShell eyebrow="ESMIRNA" showSidebar={false}>
       {/* ── Contenedor con margen lateral consistente y centrado ── */}
-      <div className="flex justify-center px-4 sm:px-8 lg:px-12">
-        <div className="w-full max-w-6xl">
+      <div className="flex flex-col! justify-center px-4! sm:px-8! lg:px-12! gap-12!">
+        <div className="w-full max-w-6xl flex flex-col! gap-5!">
           {/* Search Bar */}
-          <div className="mb-8">
+          <div className="mb-8 border-blue-500! border-2! rounded-lg!">
             <SearchBar
               onSearch={handleSearch}
               onSuggestionSelect={handleSuggestionSelect}
               placeholder="Buscar productos, categorías o marcas..."
-              className="max-w-md"
             />
           </div>
 
           {/* Filter Menu */}
-          <div className="mb-12">
+          <div className="mb-12 z-100!">
             <FilterMenu
               activeFilterType={activeFilterType}
               onFilterTypeChange={setFilterType}

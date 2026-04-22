@@ -10,7 +10,7 @@
       "subtotal": 81.25
     },
     {
-      "articuloId": "Car-001",
+      "articuloId": "Car-002",
       "productoId": "PROD-005",
       "nombreProducto": "Manzana",
       "cantidad": 3,
@@ -18,7 +18,7 @@
       "subtotal": 32.97
     },
     {
-      "articuloId": "Car-001",
+      "articuloId": "Car-003",
       "productoId": "PROD-008",
       "nombreProducto": "Brocoli",
       "cantidad": 2,

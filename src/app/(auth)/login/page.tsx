@@ -74,7 +74,7 @@ export default function LoginPage() {
               </svg>
             </div>
             <span className="text-sm font-semibold tracking-tight text-gray-900">
-              <Link href="/">ELOHIM</Link>
+              <Link href="/">ESMIRNA</Link>
             </span>
           </div>
 

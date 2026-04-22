@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { CiHeart, CiShoppingCart } from 'react-icons/ci';
+import Image from "next/image";
 
 interface ProductCardProps {
   id: number;
@@ -20,7 +22,7 @@ export function ProductCard({
   href,
 }: ProductCardProps) {
   return (
-    <div className="h-full">
+    <div className="h-full bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow px-4! py-3!">
       {/* Product Card Container */}
       <div className="relative h-full">
         {/* Top colored card with image area and icons */}
@@ -28,7 +30,9 @@ export function ProductCard({
           className="rounded-2xl h-80 relative flex items-start justify-between p-4 overflow-hidden bg-gray-100"
         >
           {/* Background image */}
-          <img
+          <Image
+            width={100}
+            height={100}
             src={image}
             alt={name}
             className="absolute inset-0 w-full h-full object-cover opacity-60"
@@ -45,23 +49,13 @@ export function ProductCard({
             </div>
           )}
           {/* Heart icon */}
-          <button className="relative z-10 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow">
-            <span className="text-xl">♡</span>
+          <button className="relative duration-300! z-10 p-2! hover:bg-accent bg-white rounded-full shadow-md hover:shadow-lg transition-shadow">
+            <CiHeart className="text-xl" />
           </button>
         </div>
 
         {/* Bottom white card with product info - overlapping */}
-        <div className="relative -mt-12 mx-2 rounded-2xl bg-white p-5 shadow-md hover:shadow-lg transition-shadow">
-          {/* Stars and reviews */}
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex gap-1">
-              {[...Array(5)].map((_, i) => (
-                <span key={i} className="text-lg">
-                  ⭐
-                </span>
-              ))}
-            </div>
-          </div>
+        <div className="relative mt-5! mx-2 rounded-2xl p-5 transition-shadow flex flex-col h-full gap-2">
 
           {/* Product name */}
           <h3 className="text-sm font-bold text-slate-900 mb-2">{name}</h3>
@@ -75,8 +69,11 @@ export function ProductCard({
           <p className="text-xl font-bold text-slate-900 mb-4">{price}</p>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <button className="w-full py-3 bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full font-semibold text-sm hover:shadow-md transition-shadow flex items-center justify-center gap-2">
-              <span>🛒</span> Añadir al carrito
+            <button className="w-full py-3! bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full font-semibold text-sm hover:shadow-md 
+            transition-shadow flex items-center justify-center gap-2
+            hover:bg-gradient-to-r hover:from-blue-800 hover:to-blue-700 duration-1000!">
+              <CiShoppingCart className="text-xl" />
+              Añadir
             </button>
             {href && (
               <Link

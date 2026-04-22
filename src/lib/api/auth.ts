@@ -1,10 +1,4 @@
-const API_URL = (globalThis as typeof globalThis & {
-  process?: {
-    env?: {
-      NEXT_PUBLIC_API_URL?: string;
-    };
-  };
-}).process?.env?.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 if (!API_URL) {
   throw new Error("NEXT_PUBLIC_API_URL no está configurada");

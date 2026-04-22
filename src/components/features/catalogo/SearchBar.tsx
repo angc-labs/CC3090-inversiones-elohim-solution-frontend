@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, type KeyboardEvent } from "react";
-import { Search, X } from "lucide-react";
+import { CiSearch } from "react-icons/ci"; 
+import { IoClose } from "react-icons/io5";
 import { useSearchSuggestions, type SearchSuggestion } from "@/hooks/useSearchSuggestions";
 import { Input } from "@/components/ui/input";
 
@@ -115,8 +116,8 @@ export function SearchBar({
 
   return (
     <div className={`relative ${className}`}>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+      <div className="relative w-full!">
+        <CiSearch className="absolute! left-3! top-1/2! h-4! w-4! -translate-y-1/2! text-gray-400!" />
         <Input
           ref={inputRef}
           type="text"
@@ -124,7 +125,7 @@ export function SearchBar({
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="pl-10 pr-10 h-12 text-base border-gray-200 focus:border-blue-400 focus:ring-blue-400/30"
+          className="pl-10! pr-10! h-12! text-base border-gray-200 focus:border-blue-400 focus:ring-blue-400/30 w-full!"
         />
         {query && (
           <button
@@ -132,7 +133,7 @@ export function SearchBar({
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             aria-label="Limpiar búsqueda"
           >
-            <X className="h-4 w-4" />
+            <IoClose className="h-4 w-4" />
           </button>
         )}
       </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FilterType } from "@/hooks/useProductFilters";
 import { FilterOptions } from "./FilterOptions";
+import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
 interface FilterMenuProps {
   activeFilterType: FilterType;
@@ -48,18 +49,18 @@ export function FilterMenu({
   };
 
   return (
-    <div className="relative bg-white rounded-2xl border border-slate-200 p-6 shadow-md">
+    <div className="relative bg-white rounded-2xl border border-slate-200 p-6! shadow-md">
       {/* Filter Type Selector */}
-      <div className="mb-6">
+      <div className="mb-6!">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-between w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors"
+          className="flex items-center justify-between w-full px-4! py-2! bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors"
         >
           <span className="text-sm font-semibold text-slate-900">
             Filtrar por:{" "}
             {filterOptions.find((f) => f.id === activeFilterType)?.label}
           </span>
-          <span className="text-xl">{isOpen ? "▲" : "▼"}</span>
+          <span className="text-xl">{isOpen ? <FaArrowUp /> : <FaArrowDown />}</span>
         </button>
 
         {isOpen && (
@@ -72,7 +73,7 @@ export function FilterMenu({
                   onSelectionChange([]); // Reset selections
                   setIsOpen(false);
                 }}
-                className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors ${
+                className={`w-full px-4! py-3! text-left text-sm font-medium transition-colors ${
                   activeFilterType === option.id
                     ? "bg-blue-50 text-blue-600"
                     : "text-slate-700 hover:bg-slate-50"
@@ -97,7 +98,7 @@ export function FilterMenu({
       {(selectedValues.length > 0 || onClearAll) && (
         <button
           onClick={onClearAll || (() => onSelectionChange([]))}
-          className="w-full mt-6 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+          className="w-full mt-6! px-4! py-2! text-sm font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
         >
           Limpiar filtros
         </button>
