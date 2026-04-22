@@ -46,8 +46,8 @@ export default function CarritoPage() {
         </div>
 
         {/* Main content */}
-        <main className="flex-1! px-6! py-12! sm:px-8! lg:px-12!">
-          <div className="w-full max-w-7xl mx-auto grid! grid-cols-1! lg:grid-cols-3! gap-10!">
+        <main className="flex-1! px-6! py-12! sm:px-8! lg:px-12! w-full!">
+          <div className="w-full! mx-auto grid! grid-cols-1! lg:grid-cols-3! gap-10!">
 
             <CarritoShell>
               <div className="flex items-center gap-4 mb-8!">
