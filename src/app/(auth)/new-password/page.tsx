@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Alert } from "@/components/ui/alert";
@@ -21,7 +21,7 @@ async function cambiarPassword(token: string, contrasena: string): Promise<void>
   }
 }
 
-export default function NuevaPasswordPage() {
+function NuevaPasswordContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -180,5 +180,19 @@ export default function NuevaPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NuevaPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#f8f8f6] text-sm text-gray-500">
+          Cargando formulario...
+        </div>
+      }
+    >
+      <NuevaPasswordContent />
+    </Suspense>
   );
 }

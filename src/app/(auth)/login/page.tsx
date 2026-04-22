@@ -40,10 +40,10 @@ export default function LoginPage() {
 
       loginStore(
         {
-          clienteId: response.clienteId,
+          usuarioId: response.usuarioId,
           correo: response.correo,
           nombre: response.nombre,
-          rol: "cliente",
+          rol: response.rol,
         },
         response.token,
         response.expiraEn

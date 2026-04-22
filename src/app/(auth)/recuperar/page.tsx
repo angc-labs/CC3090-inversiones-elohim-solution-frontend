@@ -6,21 +6,7 @@ import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-async function solicitarRecuperacion(email: string): Promise<void> {
-  const res = await fetch(`${API_URL}/api/auth/recuperar-contrasena`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
-
-  if (!res.ok) {
-    // Silenciado intencionalmente: no revelamos si el correo existe
-    return;
-  }
-}
+import { forgotPassword } from "@/lib/api/auth";
 
 export default function RecuperarPage() {
   const router = useRouter();
@@ -34,7 +20,7 @@ export default function RecuperarPage() {
     setMensaje(null);
 
     try {
-      await solicitarRecuperacion(email);
+      await forgotPassword(email);
     } catch {
       // Silenciado intencionalmente: no revelamos si el correo existe
     } finally {
