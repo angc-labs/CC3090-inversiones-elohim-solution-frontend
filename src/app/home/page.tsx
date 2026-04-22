@@ -135,6 +135,7 @@ export default function HomePage() {
               >
               {/* Imagen */}
               <div className="relative aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
+                {/* place holder <div className="aspect-square bg-gray-200 animate-pulse rounded-md" /> */}
 
                 {/* badge de nuevo azul */}
                 <span className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded-md font-semibold shadow-sm z-10">
