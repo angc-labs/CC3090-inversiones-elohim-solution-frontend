@@ -11,11 +11,13 @@ export class ApiError extends Error {
 
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-if (!rawApiUrl) {
+const serverApiUrl = rawApiUrl?.replace(/\/+$/, "");
+
+if (typeof window === "undefined" && !serverApiUrl) {
   throw new Error("NEXT_PUBLIC_API_URL no está configurada");
 }
 
-export const API_URL = rawApiUrl.replace(/\/+$/, "");
+export const API_URL = typeof window === "undefined" ? serverApiUrl ?? "" : "";
 
 function getErrorMessage(payload: unknown, fallback: string): string {
   if (!payload || typeof payload !== "object") {

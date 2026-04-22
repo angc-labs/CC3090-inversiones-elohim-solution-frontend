@@ -6,8 +6,7 @@ import Link from "next/link";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { API_URL } from "@/lib/api/client";
 
 async function cambiarPassword(token: string, contrasena: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/auth/reset-password`, {
