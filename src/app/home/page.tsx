@@ -133,18 +133,24 @@ export default function HomePage() {
                 key={producto.idProducto}
                 className="group bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200 rounded-xl overflow-hidden shadow-none"
               >
-                {/* Imagen */}
-                <div className="aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
-                  {producto.imagenPrincipal ? (
-                    <img
-                      src={producto.imagenPrincipal}
-                      alt={producto.nombreProducto}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <span className="text-3xl opacity-20">📦</span>
-                  )}
-                </div>
+              {/* Imagen */}
+              <div className="relative aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
+
+                {/* badge de nuevo azul */}
+                <span className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded-md font-semibold shadow-sm z-10">
+                  NUEVO
+                </span>
+
+                {producto.imagenPrincipal ? (
+                  <img
+                    src={producto.imagenPrincipal}
+                    alt={producto.nombreProducto}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <span className="text-3xl opacity-20">📦</span>
+                )}
+              </div>
 
                 <CardHeader className="pb-1 px-3 pt-3">
                   <CardTitle className="text-gray-800 text-xs font-medium line-clamp-2 leading-snug">
