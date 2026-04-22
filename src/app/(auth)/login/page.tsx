@@ -140,6 +140,14 @@ export default function LoginPage() {
                   {mostrarContrasena ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              <div className="mt-2 flex items-center justify-end">
+                <Link
+                  href="/recuperar"
+                  className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
             </div>
 
             <Button
@@ -159,6 +167,13 @@ export default function LoginPage() {
             >
               Regístrate
             </button>
+          </p>
+
+          <p className="mt-3 text-center text-xs text-gray-400">
+            ¿Ya tienes enlace de recuperación?{" "}
+            <Link href="/new-password" className="font-medium text-blue-600 hover:text-blue-700 transition-colors">
+              Cambiar contraseña
+            </Link>
           </p>
         </div>
       </div>
