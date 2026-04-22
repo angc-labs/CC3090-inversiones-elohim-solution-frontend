@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { CiShoppingCart } from "react-icons/ci";
-import { CiUser } from "react-icons/ci";
+import { CiLogout } from "react-icons/ci";
+import { logout as logoutRequest } from "@/lib/api/auth";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 type CatalogoShellProps = {
   children: ReactNode;
@@ -14,6 +19,23 @@ export function CatalogoShell({
   eyebrow = "CATÁLOGO DE PRODUCTOS",
   showSidebar = false,
 }: CatalogoShellProps) {
+  const router = useRouter();
+  const token = useAuthStore((state) => state.token);
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleLogout = async () => {
+    try {
+      if (token) {
+        await logoutRequest(token);
+      }
+    } catch {
+      // Si falla el endpoint remoto, de todas formas se cierra la sesión local.
+    } finally {
+      logout();
+      router.push("/login");
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-[#f6f8fc] text-slate-900">
       {/* Background decorations */}
@@ -43,8 +65,15 @@ export function CatalogoShell({
                     <CiShoppingCart className="text-2xl" />
                   </Link>
                 </button>
-                <button className="p-2! hover:bg-slate-100 rounded-lg transition-colors">
-                  <CiUser className="text-2xl" />
+                <button
+                  onClick={() => {
+                    void handleLogout();
+                  }}
+                  className="flex items-center gap-2 p-2! hover:bg-slate-100 rounded-lg transition-colors text-slate-700 font-medium"
+                  aria-label="Cerrar sesión"
+                >
+                  <CiLogout className="text-2xl" />
+                  <span className="hidden sm:inline">Cerrar sesión</span>
                 </button>
               </div>
             </div>
