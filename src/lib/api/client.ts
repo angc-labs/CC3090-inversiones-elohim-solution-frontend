@@ -9,9 +9,10 @@ export class ApiError extends Error {
   }
 }
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL;
+const rawPublicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+const rawBackendApiUrl = process.env.BACKEND_API_URL;
 
-const serverApiUrl = rawApiUrl?.replace(/\/+$/, "");
+const serverApiUrl = (rawBackendApiUrl ?? rawPublicApiUrl)?.replace(/\/+$/, "");
 
 if (typeof window === "undefined" && !serverApiUrl) {
   throw new Error("NEXT_PUBLIC_API_URL no está configurada");

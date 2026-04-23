@@ -1,4 +1,4 @@
-import { apiRequest, buildAuthHeaders, API_URL } from "@/lib/api/client";
+import { apiRequest, buildAuthHeaders } from "@/lib/api/client";
 import { TCarritoApi, TCarritoItemApi } from "@/types";
 
 export async function obtenerCarrito(token: string): Promise<TCarritoApi> {
@@ -44,12 +44,12 @@ export async function actualizarArticuloCarrito(
 }
 
 export async function eliminarArticuloCarrito(token: string, articuloId: string): Promise<void> {
-  const response = await fetch(`${API_URL}/api/carrito/articulos/${articuloId}`, {
-    method: "DELETE",
-    headers: buildAuthHeaders(token),
-  });
-
-  if (!response.ok) {
-    throw new Error("No se pudo eliminar el artículo del carrito");
-  }
+  await apiRequest<void>(
+    `/api/carrito/articulos/${articuloId}`,
+    {
+      method: "DELETE",
+      headers: buildAuthHeaders(token),
+    },
+    "No se pudo eliminar el artículo del carrito"
+  );
 }

@@ -1,14 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { TProducto } from "@/types";
 import { ImageCarousel } from "@/components/features/catalogo/ImageCarousel";
+import { agregarArticuloCarrito } from "@/lib/api/carrito";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 type ProductDetailProps = {
   product: TProducto;
 };
 
 export function ProductDetail({ product }: ProductDetailProps) {
+  const router = useRouter();
+  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const [isAdding, setIsAdding] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
   const formattedPrice = `Q${product.precio.toFixed(2)}`;
   const expirationDate = product.fechaVencimiento
     ? new Date(product.fechaVencimiento).toLocaleDateString("es-GT", {
@@ -21,6 +31,28 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const productImages = [
     product.imagenPrincipal ?? "/placeholder.png",
   ];
+
+  const handleAddToCart = async () => {
+    if (!isAuthenticated || !token) {
+      router.push("/login");
+      return;
+    }
+
+    setIsAdding(true);
+    setFeedback(null);
+
+    try {
+      await agregarArticuloCarrito(token, {
+        productoId: product.idProducto,
+        cantidad: 1,
+      });
+      setFeedback("Agregado al carrito");
+    } catch {
+      setFeedback("No se pudo agregar al carrito");
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   return (
     <div className="grid gap-10 lg:grid-cols-[1.3fr_0.9fr]">
@@ -78,9 +110,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <button
               type="button"
+              onClick={() => {
+                void handleAddToCart();
+              }}
+              disabled={isAdding}
               className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
             >
-              🛒 Añadir al carrito
+              {isAdding ? "Agregando..." : "🛒 Añadir al carrito"}
             </button>
             <Link
               href="/catalogo"
@@ -89,6 +125,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
               ← Volver al catálogo
             </Link>
           </div>
+
+          {feedback && (
+            <p className="mt-4 text-sm font-medium text-slate-600">{feedback}</p>
+          )}
         </div>
       </aside>
     </div>

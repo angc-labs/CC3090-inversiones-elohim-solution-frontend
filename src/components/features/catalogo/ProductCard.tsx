@@ -47,7 +47,7 @@ export function ProductCard({
 
     try {
       await agregarArticuloCarrito(token, {
-        productoId,
+        productoId: productId,
         cantidad: 1,
       });
       setFeedback("Agregado al carrito");

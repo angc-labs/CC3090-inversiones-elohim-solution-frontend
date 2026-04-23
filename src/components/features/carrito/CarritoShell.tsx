@@ -1,17 +1,39 @@
 "use client";
 
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { CiTrash } from "react-icons/ci";
 import { useCarrito } from "@/hooks/useCarrito";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
+import type { TCarritoItemApi } from "@/types";
 
 type CarritoShellProps = {
   children: ReactNode;
 };
 
 export function CarritoShell({ children }: CarritoShellProps) {
-  const { items, total, isLoading, isError, eliminarItem } = useCarrito();
+  const { items, total, isLoading, isError, eliminarItem, isRemovingItemId, removeError } = useCarrito();
+  const [itemPendiente, setItemPendiente] = useState<TCarritoItemApi | null>(null);
 
   const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+
+  const handleOpenConfirm = (item: TCarritoItemApi) => {
+    setItemPendiente(item);
+  };
+
+  const handleCloseConfirm = () => {
+    setItemPendiente(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!itemPendiente) {
+      return;
+    }
+
+    void eliminarItem(itemPendiente.articuloId).finally(() => {
+      setItemPendiente(null);
+    });
+  };
 
   if (isLoading) {
     return (
@@ -43,6 +65,11 @@ export function CarritoShell({ children }: CarritoShellProps) {
           Tu carrito está vacío.
         </div>
       )}
+      {removeError && (
+        <div className="rounded-2xl! w-full! border! border-red-200 bg-red-50 p-4! text-sm! text-red-700!">
+          {removeError}
+        </div>
+      )}
       <div className="space-y-6! pb-10!">
         {items.map((item) => (
           <div key={item.articuloId} className="rounded-2xl border border-slate-200/80 bg-white/95 p-6! shadow-md backdrop-blur-sm hover:shadow-lg transition-shadow">
@@ -55,8 +82,9 @@ export function CarritoShell({ children }: CarritoShellProps) {
               <button
                 className="p-2! hover:bg-red-50 rounded-lg transition-colors flex-shrink-0!"
                 onClick={() => {
-                  void eliminarItem(item.articuloId);
+                  handleOpenConfirm(item);
                 }}
+                disabled={isRemovingItemId === item.articuloId}
                 aria-label={`Eliminar ${item.nombreProducto} del carrito`}
               >
                   <CiTrash className="text-xl!"/>
@@ -65,6 +93,21 @@ export function CarritoShell({ children }: CarritoShellProps) {
           </div>
         ))}
       </div>
+
+      <ConfirmModal
+        open={itemPendiente !== null}
+        title="Eliminar producto"
+        message={
+          itemPendiente
+            ? `¿Seguro que deseas eliminar ${itemPendiente.nombreProducto} del carrito? Esta acción no se puede deshacer.`
+            : ""
+        }
+        confirmLabel="Sí, eliminar"
+        cancelLabel="Cancelar"
+        isConfirming={itemPendiente ? isRemovingItemId === itemPendiente.articuloId : false}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCloseConfirm}
+      />
 
       {items.length > 0 && (
         <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 text-sm text-slate-700">

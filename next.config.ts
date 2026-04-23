@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   async rewrites() {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
+    const backendUrl = (process.env.BACKEND_API_URL ?? process.env.NEXT_PUBLIC_API_URL)?.replace(/\/+$/, "");
 
     if (!backendUrl) {
       return [];
