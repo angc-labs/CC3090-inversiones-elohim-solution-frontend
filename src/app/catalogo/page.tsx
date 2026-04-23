@@ -174,6 +174,7 @@ export default function CatalogoPage() {
                 {products.map((product) => (
                   <ProductCard
                     key={product.idProducto}
+                    productId={product.idProducto}
                     name={product.nombreProducto}
                     description={product.descripcion ?? "Sin descripción"}
                     price={`Q${product.precio.toFixed(2)}`}

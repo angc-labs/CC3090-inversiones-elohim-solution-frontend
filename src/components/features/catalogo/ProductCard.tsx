@@ -1,8 +1,15 @@
+"use client";
+
 import Link from "next/link";
-import { CiHeart, CiShoppingCart } from 'react-icons/ci';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { CiHeart, CiShoppingCart } from "react-icons/ci";
 import Image from "next/image";
+import { agregarArticuloCarrito } from "@/lib/api/carrito";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 interface ProductCardProps {
+  productId: string;
   name: string;
   description: string;
   price: string;
@@ -13,6 +20,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({
+  productId,
   name,
   description,
   price,
@@ -20,7 +28,35 @@ export function ProductCard({
   image,
   href,
 }: ProductCardProps) {
+  const router = useRouter();
+  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const [isAdding, setIsAdding] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
   const imageSrc = image ?? "/placeholder.png";
+
+  const handleAddToCart = async () => {
+    if (!isAuthenticated || !token) {
+      router.push("/login");
+      return;
+    }
+
+    setIsAdding(true);
+    setFeedback(null);
+
+    try {
+      await agregarArticuloCarrito(token, {
+        productoId,
+        cantidad: 1,
+      });
+      setFeedback("Agregado al carrito");
+    } catch {
+      setFeedback("No se pudo agregar al carrito");
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   return (
     <div className="h-full bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow px-4! py-3!">
@@ -70,11 +106,17 @@ export function ProductCard({
           <p className="text-xl font-bold text-slate-900 mb-4">{price}</p>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <button className="w-full py-3! bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full font-semibold text-sm hover:shadow-md 
+            <button
+              type="button"
+              onClick={() => {
+                void handleAddToCart();
+              }}
+              disabled={isAdding}
+              className="w-full py-3! bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full font-semibold text-sm hover:shadow-md 
             transition-shadow flex items-center justify-center gap-2
-            hover:bg-gradient-to-r hover:from-blue-800 hover:to-blue-700 duration-1000!">
+            hover:bg-gradient-to-r hover:from-blue-800 hover:to-blue-700 duration-1000! disabled:cursor-not-allowed disabled:opacity-70">
               <CiShoppingCart className="text-xl" />
-              Añadir
+              {isAdding ? "Agregando..." : "Añadir"}
             </button>
             {href && (
               <Link
@@ -85,6 +127,12 @@ export function ProductCard({
               </Link>
             )}
           </div>
+
+          {feedback && (
+            <p className="mt-2 text-xs font-medium text-slate-600">
+              {feedback}
+            </p>
+          )}
         </div>
       </div>
     </div>
