@@ -48,12 +48,12 @@ export function ConfirmModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-50! flex items-center justify-center! bg-slate-950/60 px-4! py-6! backdrop-blur-sm"
       onClick={onCancel}
       role="presentation"
     >
       <div
-        className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl"
+        className="w-full! max-w-md! rounded-3xl! border border-slate-200 bg-white p-6! shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
@@ -67,7 +67,7 @@ export function ConfirmModal({
           {message}
         </p>
 
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="mt-6! flex flex-col-reverse gap-3! sm:flex-row! sm:justify-end!">
           <Button type="button" variant="outline" onClick={onCancel} disabled={isConfirming}>
             {cancelLabel}
           </Button>

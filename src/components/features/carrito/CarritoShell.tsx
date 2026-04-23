@@ -72,12 +72,12 @@ export function CarritoShell({ children }: CarritoShellProps) {
       )}
       <div className="space-y-6! pb-10!">
         {items.map((item) => (
-          <div key={item.articuloId} className="rounded-2xl border border-slate-200/80 bg-white/95 p-6! shadow-md backdrop-blur-sm hover:shadow-lg transition-shadow">
+          <div key={item.articuloId} className="rounded-2xl! border border-slate-200/80 bg-white/95 p-6! shadow-md! backdrop-blur-sm! hover:shadow-lg! transition-shadow!">
             <div className="flex! items-start! justify-between! gap-4!">
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-slate-900">{item.nombreProducto}</h3>
-                <p className="text-sm text-slate-500 mt-1">Cantidad: {item.cantidad} {item.cantidad === 1 ? 'unidad' : 'unidades'}</p>
-                <p className="text-2xl font-bold text-blue-600 mt-3">Q {item.subtotal.toFixed(2)}</p>
+                <p className="text-sm! text-slate-500 mt-1!">Cantidad: {item.cantidad} {item.cantidad === 1 ? 'unidad' : 'unidades'}</p>
+                <p className="text-2xl! font-bold text-blue-600 mt-3!">Q {item.subtotal.toFixed(2)}</p>
               </div>
               <button
                 className="p-2! hover:bg-red-50 rounded-lg transition-colors flex-shrink-0!"
@@ -110,7 +110,7 @@ export function CarritoShell({ children }: CarritoShellProps) {
       />
 
       {items.length > 0 && (
-        <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 text-sm text-slate-700">
+        <div className="rounded-2xl! border border-slate-200/80 bg-white/95 p-6! text-sm! text-slate-700">
           Subtotal: <span className="font-semibold">Q {subtotal.toFixed(2)}</span>
           <br />
           Total: <span className="font-semibold">Q {total.toFixed(2)}</span>
