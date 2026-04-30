@@ -7,6 +7,7 @@ export type TCarritoItem = {
   precio: number;
   cantidad: number;
   imagenPrincipal?: string;
+  stockActual?: number;
 };
 
 type TCarritoStore = {
@@ -19,6 +20,8 @@ type TCarritoStore = {
   totalPrecio: () => number;
 };
 
+const normalizeCantidad = (cantidad: number) => Math.max(1, Math.floor(cantidad));
+
 export const useCarritoStore = create<TCarritoStore>()(
   persist(
     (set, get) => ({
@@ -26,28 +29,29 @@ export const useCarritoStore = create<TCarritoStore>()(
 
       agregarItem: (item) =>
         set((state) => {
-          const existe = state.items.find(i => i.productoId === item.productoId);
+          const cantidad = normalizeCantidad(item.cantidad);
+          const existe = state.items.find((i) => i.productoId === item.productoId);
           if (existe) {
             return {
-              items: state.items.map(i =>
+              items: state.items.map((i) =>
                 i.productoId === item.productoId
-                  ? { ...i, cantidad: i.cantidad + item.cantidad }
+                  ? { ...i, cantidad: normalizeCantidad(i.cantidad + cantidad) }
                   : i
               ),
             };
           }
-          return { items: [...state.items, item] };
+          return { items: [...state.items, { ...item, cantidad }] };
         }),
 
       eliminarItem: (productoId) =>
         set((state) => ({
-          items: state.items.filter(i => i.productoId !== productoId),
+          items: state.items.filter((i) => i.productoId !== productoId),
         })),
 
       cambiarCantidad: (productoId, cantidad) =>
         set((state) => ({
-          items: state.items.map(i =>
-            i.productoId === productoId ? { ...i, cantidad } : i
+          items: state.items.map((i) =>
+            i.productoId === productoId ? { ...i, cantidad: normalizeCantidad(cantidad) } : i
           ),
         })),
 

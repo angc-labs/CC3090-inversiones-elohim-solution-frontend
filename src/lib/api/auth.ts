@@ -113,3 +113,19 @@ export async function forgotPassword(correo: string): Promise<void> {
     "No se pudo enviar el correo de recuperación"
   );
 }
+
+export async function changePassword(
+  contrasenaActual: string,
+  nuevaContrasena: string,
+  token?: string
+): Promise<void> {
+  await apiRequest<void>(
+    "/api/auth/change-password",
+    {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify({ contrasenaActual, nuevaContrasena }),
+    },
+    "Error al cambiar la contraseña"
+  );
+}
