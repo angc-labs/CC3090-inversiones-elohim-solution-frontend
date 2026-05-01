@@ -1,5 +1,5 @@
 "use client";
-// archivo perfil
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowLeft, Lock } from "lucide-react";
@@ -7,14 +7,15 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { appHeader as AppHeader } from "@/components/ui/appHeader";
-import { useAuthStore } from "@/stores/useAuthStore";
-import { ProtectedRoute } from "@/components/features/auth/ProtectedRoute";
+import { useSessionExpiration } from "@/hooks/useSessionExpiration";
 import { SessionExpirationWarning } from "@/components/features/auth/SessionExpirationWarning";
+import { ProtectedRoute } from "@/components/features/auth/ProtectedRoute";
+import { HistorialCard } from "@/components/features/perfil/historialCard";
 import { getProfile, updateProfile } from "@/lib/api/perfil";
 import type { UserProfile } from "@/lib/api/perfil";
 import { UserCircle2 } from "lucide-react";
 
-// ── Validaciones ──────────────────────────────────────────
+// Validaciones 
 
 function validarTelefono(telefono: string): boolean {
   return /^\d{8,15}$/.test(telefono.replace(/\s/g, ""));
@@ -24,11 +25,11 @@ function validarTexto(valor: string): boolean {
   return valor.trim().length >= 2;
 }
 
-// ── Componente principal ──────────────────────────────────
+// Componente principal 
 
 function PerfilContent() {
   const router = useRouter();
-  const logout = useAuthStore((state) => state.logout);
+  const { handleLogout } = useSessionExpiration();
 
   const [perfil, setPerfil] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState({
@@ -44,7 +45,7 @@ function PerfilContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
 
-  // ── Cargar datos actuales del usuario ─────────────────
+  // Cargar datos actuales del usuario 
 
   useEffect(() => {
     async function cargarPerfil() {
@@ -67,7 +68,7 @@ function PerfilContent() {
     cargarPerfil();
   }, []);
 
-  // ── Handlers ──────────────────────────────────────────
+  //  Handlers 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -124,12 +125,9 @@ function PerfilContent() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
-  };
 
-  // ── Loader inicial ────────────────────────────────────
+
+  //  Loader inicial 
 
   if (isFetching) {
     return (
@@ -139,7 +137,7 @@ function PerfilContent() {
     );
   }
 
-  // ── Render ────────────────────────────────────────────
+  // Render 
 
   return (
     <div className="relative flex min-h-screen flex-col bg-[#f8f8f6]">
@@ -161,23 +159,34 @@ function PerfilContent() {
       <div className="flex flex-1 flex-col md:flex-row">
 
         {/* Panel izquierdo — avatar */}
-        <div className="relative flex-1 overflow-hidden bg-[#f0f0ec]">
+        <div className="relative flex-1 overflow-y-auto bg-[#f0f0ec]">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_30%_50%,rgba(59,130,246,0.08),transparent)]" />
-          <div className="relative flex h-full min-h-64 flex-col items-center justify-center gap-4 p-10">
-            <UserCircle2
-              className="text-gray-800"
-              style={{ width: "10rem", height: "10rem", strokeWidth: 1 }}
-              aria-hidden
-            />
-            <p className="text-xl font-bold tracking-tight text-blue-600">
-              {perfil ? `${perfil.nombre} ${perfil.apellido}` : "Usuario"}
-            </p>
-            <p className="text-xs text-gray-400">{perfil?.correo ?? ""}</p>
-            {perfil?.tipoCliente && (
-              <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-0.5 text-xs font-medium capitalize text-blue-600">
-                {perfil.tipoCliente}
-              </span>
-            )}
+          <div className="relative flex min-h-full flex-col items-center justify-center p-10">
+            {/* Contenedor de secciones centradas */}
+            <div className="flex flex-col items-center gap-12 w-full max-w-xs">
+              {/* Sección avatar */}
+              <div className="flex flex-col items-center justify-center gap-4">
+                <UserCircle2
+                  className="text-gray-800"
+                  style={{ width: "10rem", height: "10rem", strokeWidth: 1 }}
+                  aria-hidden
+                />
+                <p className="text-xl font-bold tracking-tight text-blue-600">
+                  {perfil ? `${perfil.nombre} ${perfil.apellido}` : "Usuario"}
+                </p>
+                <p className="text-xs text-gray-400">{perfil?.correo ?? ""}</p>
+                {perfil?.tipoCliente && (
+                  <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-0.5 text-xs font-medium capitalize text-blue-600">
+                    {perfil.tipoCliente}
+                  </span>
+                )}
+              </div>
+
+              {/* Sección de productos más comprados */}
+              <div className="w-full">
+                <HistorialCard />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -333,7 +342,7 @@ function PerfilContent() {
 }
 
 export default function PerfilPage() {
-  return (
+    return (
     <ProtectedRoute>
       <PerfilContent />
     </ProtectedRoute>
