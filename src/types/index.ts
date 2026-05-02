@@ -40,3 +40,24 @@ export type TCarritoApi = {
   items: TCarritoItemApi[];
   total: number;
 };
+
+export type TReservacionItem = {
+  productoId: string;
+  nombreProducto: string;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+};
+
+export type TReservacion = {
+  idReservacion: string;
+  codigoReservacion: string;
+  clienteId: string;
+  estado: string;
+  totalReservacion: number;
+  metodoPagoId: string;
+  pagado: boolean;
+  observaciones?: string;
+  fechaLimiteRetiro: string;
+  items: TReservacionItem[];
+};

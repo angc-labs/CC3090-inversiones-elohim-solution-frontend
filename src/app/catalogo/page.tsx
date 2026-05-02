@@ -5,10 +5,10 @@ import { ProductCard } from "@/components/features/catalogo/ProductCard";
 import { FilterMenu } from "@/components/features/catalogo/FilterMenu";
 import { SearchBar } from "@/components/features/catalogo/SearchBar";
 import { useProductFilters } from "@/hooks/useProductFilters";
-import { type SearchSuggestion } from "@/hooks/useSearchSuggestions";
+import { useAgregarAlCarrito } from "@/hooks/useAgregarAlCarrito";
 
 export default function CatalogoPage() {
-  // Función para determinar el número de columnas según la cantidad de productos
+  const { agregar, isLoading: isAdding, error: addError, clearError } = useAgregarAlCarrito();
   const getGridColsClass = (productCount: number) => {
     if (productCount >= 3) return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
     if (productCount === 2) return "grid-cols-1 sm:grid-cols-2";
@@ -93,7 +93,10 @@ export default function CatalogoPage() {
     }
   };
 
-  const productsByGroup = getGroupedProducts();
+  const handleAddToCart = async (productoId: string) => {
+    clearError();
+    await agregar(productoId, 1); // Agregar 1 unidad por defecto
+  };
 
   return (
     <CatalogoShell eyebrow="ESMIRNA" showSidebar={false}>
@@ -122,6 +125,12 @@ export default function CatalogoPage() {
               onClearAll={clearFilters}
             />
           </div>
+
+          {addError && (
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              {addError}
+            </div>
+          )}
 
           {isLoading && (
             <div className="rounded-xl! border border-slate-200 bg-white! p-6! text-sm! text-slate-500!">
@@ -181,6 +190,7 @@ export default function CatalogoPage() {
                     badge={null}
                     image={product.imagenPrincipal ?? "/placeholder.png"}
                     href={`/catalogo/${product.idProducto}`}
+                    onAddToCart={() => handleAddToCart(product.idProducto)}
                   />
                 ))}
               </div>
