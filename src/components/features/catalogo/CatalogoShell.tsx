@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, LogOut } from "lucide-react";
+import { ShoppingCart, LogOut, History } from "lucide-react";
 import { logout as logoutRequest } from "@/lib/api/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
 
@@ -62,6 +62,11 @@ export function CatalogoShell({
                 <button className="p-2! hover:bg-slate-100 rounded-lg transition-colors">
                   <Link href="/carrito" className="flex items-center gap-2! text-slate-700 font-medium">
                     <ShoppingCart className="w-5 h-5" />
+                  </Link>
+                </button>
+                <button className="p-2! hover:bg-slate-100 rounded-lg transition-colors">
+                  <Link href="/reservas" className="flex items-center gap-2! text-slate-700 font-medium">
+                    <History className="w-5 h-5" />
                   </Link>
                 </button>
                 <Link
