@@ -19,7 +19,6 @@ export default function MetodoPagoPage() {
         await logoutRequest(token);
       }
     } catch {
-      // Si falla el endpoint remoto, de todas formas se cierra la sesión local.
     } finally {
       logout();
       router.push("/login");
@@ -27,8 +26,11 @@ export default function MetodoPagoPage() {
   };
 
   const handleContinue = () => {
-    // Aquí puedes navegar al siguiente paso del flujo de compra
-    router.push("/confirmacion");
+    router.push("/resumenCompra");
+  };
+
+  const handleBack = () => {
+    router.push("/carrito");
   };
 
   return (
@@ -91,6 +93,53 @@ export default function MetodoPagoPage() {
         {/* Main content */}
         <main className="flex-1! px-6! py-12! sm:px-8! lg:px-12! w-full!">
           <div className="w-full! mx-auto max-w-2xl">
+            {/* Breadcrumb / Progreso */}
+            <div className="mb-8">
+              <div className="flex items-center justify-center gap-2 text-sm text-slate-600 font-medium">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white">
+                  1
+                </div>
+                <span className="text-blue-600 font-semibold">Carrito</span>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white">
+                  2
+                </div>
+                <span className="text-blue-600 font-semibold">Método</span>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-slate-300 text-slate-400">
+                  3
+                </div>
+                <span className="text-slate-400">Resumen</span>
+              </div>
+            </div>
+
+            {/* Botón Atrás */}
+            <div className="mb-8">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors font-medium"
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                Atrás
+              </button>
+            </div>
+
             <MetodoPagoShell onContinue={handleContinue} />
           </div>
         </main>
