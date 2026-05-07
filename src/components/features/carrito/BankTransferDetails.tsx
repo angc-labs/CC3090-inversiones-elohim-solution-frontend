@@ -5,6 +5,7 @@ import { MdContentCopy } from "react-icons/md";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 interface BankTransferDetailsProps {
   onConfirm: (reference?: string) => void;
@@ -13,6 +14,7 @@ interface BankTransferDetailsProps {
 
 export function BankTransferDetails({ onConfirm, isLoading }: BankTransferDetailsProps) {
   const [referenceNumber, setReferenceNumber] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Datos bancarios (hardcoded por ahora - en producción vendrían de API)
   const bankDetails = {
@@ -32,8 +34,17 @@ export function BankTransferDetails({ onConfirm, isLoading }: BankTransferDetail
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirmClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleModalConfirm = () => {
+    setIsModalOpen(false);
     onConfirm(referenceNumber || undefined);
+  };
+
+  const handleModalCancel = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -127,7 +138,7 @@ export function BankTransferDetails({ onConfirm, isLoading }: BankTransferDetail
 
         {/* Botón confirmar pago */}
         <Button
-          onClick={handleConfirm}
+          onClick={handleConfirmClick}
           disabled={isLoading}
           className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-full font-semibold hover:shadow-md transition-shadow hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -141,6 +152,18 @@ export function BankTransferDetails({ onConfirm, isLoading }: BankTransferDetail
           </p>
         </div>
       </CardContent>
+
+      {/* Modal de confirmación */}
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        title="Confirmación de pago"
+        message="¿Confirmas que realizaste el pago?"
+        confirmText="Sí, confirmar pago"
+        cancelText="Cancelar"
+        isLoading={isLoading}
+        onConfirm={handleModalConfirm}
+        onCancel={handleModalCancel}
+      />
     </Card>
   );
 }

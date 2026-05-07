@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CiShoppingCart, CiUser, CiArrowLeft } from "react-icons/ci";
+import { CiShoppingCart, CiUser } from "react-icons/ci";
+import { MdArrowBack } from "react-icons/md";
 import { useCarrito } from "@/hooks/useCarrito";
 import { useConfirmarReservacion } from "@/hooks/useConfirmarReservacion";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -158,7 +159,7 @@ export default function TransferenciaBancariaPage() {
                   href="/carrito"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
                 >
-                  <CiArrowLeft className="text-lg" />
+                  <MdArrowBack className="text-lg" />
                   Volver al carrito
                 </Link>
               </div>

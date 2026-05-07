@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CiShoppingCart, CiUser, CiCheckCircle } from "react-icons/ci";
+import { CiShoppingCart, CiUser } from "react-icons/ci";
+import { MdDownload, MdCheckCircle } from "react-icons/md";
 import { obtenerReservacionPorId } from "@/lib/api/reservacion";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { TReservacion } from "@/types";
+import { generarComprobanteReservacion } from "@/lib/pdf/generarComprobanteReservacion";
 
 export function ReservacionConfirmada({ idReservacion }: { idReservacion: string }) {
   const [reservacion, setReservacion] = useState<TReservacion | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
   const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
@@ -37,6 +40,20 @@ export function ReservacionConfirmada({ idReservacion }: { idReservacion: string
 
     void cargarReservacion();
   }, [idReservacion, token]);
+
+  const handleDescargarComprobante = async () => {
+    if (!reservacion) return;
+
+    setIsDownloadingPDF(true);
+    try {
+      await generarComprobanteReservacion(reservacion);
+    } catch (err) {
+      alert("Error al descargar el comprobante. Intenta nuevamente.");
+      console.error(err);
+    } finally {
+      setIsDownloadingPDF(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -119,7 +136,7 @@ export function ReservacionConfirmada({ idReservacion }: { idReservacion: string
             {/* Éxito */}
             <div className="rounded-2xl border border-green-200 bg-green-50 p-12! text-center">
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-500 text-white mb-6">
-                <CiCheckCircle className="text-4xl" />
+                <MdCheckCircle className="text-4xl" />
               </div>
 
               <h1 className="text-3xl! font-bold text-slate-900 mb-2">
@@ -175,6 +192,14 @@ export function ReservacionConfirmada({ idReservacion }: { idReservacion: string
 
               {/* Botones */}
               <div className="flex flex-col! sm:flex-row! gap-4! justify-center">
+                <button
+                  onClick={handleDescargarComprobante}
+                  disabled={isDownloadingPDF}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full border-2 border-green-600 text-green-600 font-semibold hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <MdDownload className="text-lg" />
+                  {isDownloadingPDF ? "Descargando..." : "Descargar comprobante (PDF)"}
+                </button>
                 <Link
                   href="/catalogo"
                   className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
