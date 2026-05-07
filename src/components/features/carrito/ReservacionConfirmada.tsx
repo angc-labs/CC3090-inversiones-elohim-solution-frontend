@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CiShoppingCart, CiUser, CiCheckAlt } from "react-icons/ci";
+import { CiShoppingCart, CiUser, CiCheckCircle } from "react-icons/ci";
 import { obtenerReservacionPorId } from "@/lib/api/reservacion";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { TReservacion } from "@/types";
@@ -119,7 +119,7 @@ export function ReservacionConfirmada({ idReservacion }: { idReservacion: string
             {/* Éxito */}
             <div className="rounded-2xl border border-green-200 bg-green-50 p-12! text-center">
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-500 text-white mb-6">
-                <CiCheckAlt className="text-4xl" />
+                <CiCheckCircle className="text-4xl" />
               </div>
 
               <h1 className="text-3xl! font-bold text-slate-900 mb-2">
@@ -138,40 +138,14 @@ export function ReservacionConfirmada({ idReservacion }: { idReservacion: string
               </div>
 
               {/* Detalles */}
-              <div className="grid grid-cols-1! sm:grid-cols-2! gap-6! mb-8 text-left">
-                <div className="rounded-xl border border-slate-200 p-6">
-                  <p className="text-sm text-slate-600 mb-2">Total de la reservación</p>
-                  <p className="text-2xl! font-bold text-blue-600">
-                    Q {reservacion.totalReservacion.toFixed(2)}
-                  </p>
-                </div>
 
-                <div className="rounded-xl border border-slate-200 p-6">
-                  <p className="text-sm text-slate-600 mb-2">Fecha estimada de retiro</p>
-                  <p className="text-lg font-semibold text-slate-900">
-                    {fechaRetiro.toLocaleDateString("es-ES", {
-                      weekday: "short",
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </p>
+              {/* Referencia de transferencia */}
+              {reservacion.metodoPagoId === "transferencia" && reservacion.observaciones && (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 mb-8">
+                  <h3 className="font-semibold text-slate-900 mb-2">Referencia de Transferencia</h3>
+                  <p className="text-slate-700">{reservacion.observaciones}</p>
                 </div>
-
-                <div className="rounded-xl border border-slate-200 p-6">
-                  <p className="text-sm text-slate-600 mb-2">Estado de pago</p>
-                  <p className={`text-lg font-semibold ${reservacion.pagado ? "text-green-600" : "text-orange-600"}`}>
-                    {reservacion.pagado ? "Pagado" : "Pendiente"}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-slate-200 p-6">
-                  <p className="text-sm text-slate-600 mb-2">Cantidad de productos</p>
-                  <p className="text-lg font-semibold text-slate-900">
-                    {reservacion.items.length}
-                  </p>
-                </div>
-              </div>
+              )}
 
               {/* Productos */}
               <div className="mb-8 text-left">

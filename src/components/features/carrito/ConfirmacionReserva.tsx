@@ -7,6 +7,7 @@ import { CiShoppingCart, CiUser, CiArrowLeft } from "react-icons/ci";
 import { useCarrito } from "@/hooks/useCarrito";
 import { useConfirmarReservacion } from "@/hooks/useConfirmarReservacion";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { BankTransferDetails } from "./BankTransferDetails";
 
 export function ConfirmacionReserva() {
   const router = useRouter();
@@ -16,14 +17,14 @@ export function ConfirmacionReserva() {
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
-  const handleConfirmar = async () => {
+  const handleConfirmar = async (observaciones?: string) => {
     if (!metodoPagoSeleccionado) {
       alert("Por favor selecciona un método de pago");
       return;
     }
 
     setLoading(true);
-    const reservacion = await confirmar(metodoPagoSeleccionado);
+    const reservacion = await confirmar(metodoPagoSeleccionado, observaciones);
     setLoading(false);
 
     if (reservacion) {
@@ -140,6 +141,14 @@ export function ConfirmacionReserva() {
                 </div>
               </div>
 
+              {/* Detalles de transferencia bancaria */}
+              {metodoPagoSeleccionado === "transferencia" && (
+                <BankTransferDetails
+                  onConfirm={handleConfirmar}
+                  isLoading={loading || isLoading}
+                />
+              )}
+
               {/* Error message */}
               {error && (
                 <div className="rounded-2xl border border-red-200 bg-red-50 p-6! text-sm text-red-700">
@@ -148,22 +157,24 @@ export function ConfirmacionReserva() {
               )}
 
               {/* Botones de acción */}
-              <div className="flex flex-col! sm:flex-row! gap-4! pt-6!">
-                <Link
-                  href="/carrito"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
-                >
-                  <CiArrowLeft className="text-lg" />
-                  Volver al carrito
-                </Link>
-                <button
-                  onClick={handleConfirmar}
-                  disabled={loading || isLoading || !metodoPagoSeleccionado}
-                  className="flex-1! px-6 py-3 bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full font-semibold hover:shadow-md transition-shadow hover:from-blue-800 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading || isLoading ? "Confirmando..." : "Confirmar reservación"}
-                </button>
-              </div>
+              {metodoPagoSeleccionado !== "transferencia" && (
+                <div className="flex flex-col! sm:flex-row! gap-4! pt-6!">
+                  <Link
+                    href="/carrito"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
+                  >
+                    <CiArrowLeft className="text-lg" />
+                    Volver al carrito
+                  </Link>
+                  <button
+                    onClick={() => handleConfirmar()}
+                    disabled={loading || isLoading || !metodoPagoSeleccionado}
+                    className="flex-1! px-6 py-3 bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full font-semibold hover:shadow-md transition-shadow hover:from-blue-800 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading || isLoading ? "Confirmando..." : "Confirmar reservación"}
+                  </button>
+                </div>
+              )}
 
               {/* Información de usuario */}
               {usuario && (

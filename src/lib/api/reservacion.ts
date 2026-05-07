@@ -3,14 +3,19 @@ import { TReservacion } from "@/types";
 
 export async function crearReservacion(
   token: string,
-  metodoPagoId: string
+  metodoPagoId: string,
+  observaciones?: string
 ): Promise<TReservacion> {
+  const body: any = { metodoPagoId };
+  if (observaciones) {
+    body.observaciones = observaciones;
+  }
   return apiRequest<TReservacion>(
     "/api/reservacion",
     {
       method: "POST",
       headers: buildAuthHeaders(token),
-      body: JSON.stringify({ metodoPagoId }),
+      body: JSON.stringify(body),
     },
     "Error al crear la reservación"
   );
