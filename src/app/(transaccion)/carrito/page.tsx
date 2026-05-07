@@ -117,7 +117,7 @@ export default function CarritoPage() {
                 onClick={handleContinuarAlMetodo}
                 className="rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white transition-colors hover:bg-blue-700"
               >
-                Continuar al Método de Pago
+                Continuar 
               </button>
             </div>
           </div>
