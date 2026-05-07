@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { appHeader as AppHeader } from "@/components/ui/appHeader";
 import { useSessionExpiration } from "@/hooks/useSessionExpiration";
 import { SessionExpirationWarning } from "@/components/features/auth/SessionExpirationWarning";
-import { ProtectedRoute } from "@/components/features/auth/ProtectedRoute";
 import { HistorialCard } from "@/components/features/perfil/historialCard";
 import { getProfile, updateProfile } from "@/lib/api/perfil";
 import type { UserProfile } from "@/lib/api/perfil";
@@ -342,9 +341,5 @@ function PerfilContent() {
 }
 
 export default function PerfilPage() {
-    return (
-    <ProtectedRoute>
-      <PerfilContent />
-    </ProtectedRoute>
-  );
+  return <PerfilContent />;
 }
