@@ -20,8 +20,7 @@ export default function ResumenCompraPage() {
   const { metodoPagoSeleccionado } = useMetodoPagoStore();
 
   // Validar que exista carrito y método de pago
-  // TEMPORALMENTE DESHABILITADO PARA REVISIÓN
-  /*
+
   useEffect(() => {
     if (!items || items.length === 0) {
       router.push("/carrito");
@@ -32,7 +31,6 @@ export default function ResumenCompraPage() {
       return;
     }
   }, [items, metodoPagoSeleccionado, router]);
-  */
 
   const handleLogout = async () => {
     try {
@@ -40,7 +38,6 @@ export default function ResumenCompraPage() {
         await logoutRequest(token);
       }
     } catch {
-      // Si falla el endpoint remoto, de todas formas se cierra la sesión local.
     } finally {
       logout();
       router.push("/login");
