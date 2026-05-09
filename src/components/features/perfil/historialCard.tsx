@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import productosCompradosData from "@/mock/productosComprados.json";
+import { reservaCard } from "@/components/features/perfil/reservaCard";
 
 export function HistorialCard() {
   return (
