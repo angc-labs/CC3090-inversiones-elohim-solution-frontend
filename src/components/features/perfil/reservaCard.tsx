@@ -33,17 +33,17 @@ export function ReservaCard() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex! flex-col! gap-4!">
       {reservas.map((reserva) => (
         <div
           key={reserva.id}
-          className="flex items-center justify-between rounded-lg border p-4"
+          className="flex! items-center! justify-between! rounded-lg! border! p-4!"
         >
           <div>
-            <p className="text-sm font-medium">
+            <p className="text-sm! font-medium!">
               Reserva #{reserva.id}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs! text-gray-500!">
               Estado: {reserva.estado}
             </p>
           </div>

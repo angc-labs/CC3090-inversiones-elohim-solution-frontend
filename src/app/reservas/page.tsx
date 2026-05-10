@@ -1,17 +1,24 @@
+"use client";
+
 import { Suspense } from "react";
+import { ProtectedRoute } from "@/components/features/auth/ProtectedRoute";
+import { CatalogoShell } from "@/components/features/catalogo/CatalogoShell";
 import { ReservasShell } from "@/components/features/reservas";
 
 export default function ReservasPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Historial de Reservas
-        </h1>
-        <Suspense fallback={<div className="text-center py-8">Cargando reservas...</div>}>
+    <ProtectedRoute>
+      <CatalogoShell eyebrow="ESMIRNA" showSidebar={false}>
+        <div className="mb-8!">
+          <h1 className="text-3xl! font-bold! tracking-tight! text-slate-900!">Mis compras</h1>
+          <p className="mt-2! text-slate-600!">
+            Historial de reservaciones y pagos asociados a tu cuenta.
+          </p>
+        </div>
+        <Suspense fallback={<div className="py-12! text-center! text-slate-600!">Cargando…</div>}>
           <ReservasShell />
         </Suspense>
-      </div>
-    </div>
+      </CatalogoShell>
+    </ProtectedRoute>
   );
 }
