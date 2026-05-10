@@ -9,9 +9,11 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 RUN corepack enable
 ARG NEXT_PUBLIC_API_URL
+ARG BACKEND_API_URL
 ENV CI=true
 ENV PNPM_CONFIG_CONFIRM_MODULES_PURGE=false
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV BACKEND_API_URL=${BACKEND_API_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm run build

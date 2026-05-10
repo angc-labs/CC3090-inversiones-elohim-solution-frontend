@@ -7,8 +7,8 @@ interface EstadoVacioProps {
 
 export function EstadoVacio({ mensaje, descripcion }: EstadoVacioProps) {
   return (
-    <div className="text-center py-12">
-      <div className="mx-auto h-24 w-24 text-gray-400 mb-4">
+    <div className="text-center! py-12!">
+      <div className="mx-auto! h-24! w-24! text-gray-400! mb-4!">
         <svg
           fill="none"
           viewBox="0 0 24 24"
@@ -23,9 +23,9 @@ export function EstadoVacio({ mensaje, descripcion }: EstadoVacioProps) {
           />
         </svg>
       </div>
-      <h3 className="text-lg font-medium text-gray-900 mb-2">{mensaje}</h3>
+      <h3 className="text-lg! font-medium! text-gray-900! mb-2!">{mensaje}</h3>
       {descripcion && (
-        <p className="text-gray-500">{descripcion}</p>
+        <p className="text-gray-500!">{descripcion}</p>
       )}
     </div>
   );

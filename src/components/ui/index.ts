@@ -1,3 +1,4 @@
+export { ShopNavbarActions } from "./ShopNavbarActions";
 export { EstadoVacio } from "./EstadoVacio";
 export { ErrorMessage } from "./ErrorMessage";
 export { Badge } from "./badge";
