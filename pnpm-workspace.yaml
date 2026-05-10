@@ -1,3 +1,7 @@
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
+# pnpm v11+: la configuración del proyecto va aquí (ya no en package.json → "pnpm").
+packages:
+  - '.'
+
+allowBuilds:
+  sharp: true
+  unrs-resolver: true

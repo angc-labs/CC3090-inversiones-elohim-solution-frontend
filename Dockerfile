@@ -1,12 +1,16 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
+ENV CI=true
+ENV PNPM_CONFIG_CONFIRM_MODULES_PURGE=false
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile
 
 FROM node:22-alpine AS builder
 WORKDIR /app
 RUN corepack enable
 ARG NEXT_PUBLIC_API_URL
+ENV CI=true
+ENV PNPM_CONFIG_CONFIRM_MODULES_PURGE=false
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
