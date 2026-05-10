@@ -11,12 +11,12 @@ export function SessionExpirationWarning() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm">
-      <div className="rounded-lg border border-yellow-100 bg-yellow-50 p-4 shadow-lg">
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 text-yellow-600">
+    <div className="fixed! bottom-4! right-4! z-50! max-w-sm!">
+      <div className="rounded-lg! border! border-yellow-100! bg-yellow-50! p-4! shadow-lg!">
+        <div className="flex! items-start! gap-3!">
+          <div className="flex-shrink-0! text-yellow-600!">
             <svg
-              className="h-5 w-5"
+              className="h-5! w-5!"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -27,24 +27,24 @@ export function SessionExpirationWarning() {
               />
             </svg>
           </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-yellow-900">Tu sesión expira pronto</h3>
-            <p className="mt-1 text-sm text-yellow-800">
+          <div className="flex-1!">
+            <h3 className="font-semibold! text-yellow-900!">Tu sesión expira pronto</h3>
+            <p className="mt-1! text-sm! text-yellow-800!">
               Te desconectarás automáticamente en {timeRemaining}
             </p>
           </div>
           <button
             onClick={handleLogout}
-            className="flex-shrink-0 text-yellow-600 hover:text-yellow-700 transition-colors"
+            className="flex-shrink-0! text-yellow-600! hover:text-yellow-700! transition-colors!"
             aria-label="Cerrar alerta"
           >
             ✕
           </button>
         </div>
-        <div className="mt-4">
+        <div className="mt-4!">
           <Button
             onClick={handleLogout}
-            className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
+            className="w-full! bg-yellow-600! hover:bg-yellow-700! text-white!"
             size="sm"
           >
             Cerrar sesión ahora

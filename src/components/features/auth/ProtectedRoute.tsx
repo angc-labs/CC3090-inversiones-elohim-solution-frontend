@@ -38,9 +38,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Mostrar loading mientras se hidrata
   if (!isHydrated || !isAuthenticated || isSessionExpired) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-gray-500">Cargando...</p>
+      <div className="flex! h-screen! items-center! justify-center! bg-gray-50!">
+        <div className="text-center!">
+          <p className="text-gray-500!">Cargando...</p>
         </div>
       </div>
     );
