@@ -6,14 +6,7 @@ import {
   obtenerMarcas,
   TProductoBusqueda,
 } from "@/lib/api/productos";
-
-export type SearchSuggestion = {
-  id: string;
-  type: "product" | "category" | "brand";
-  label: string;
-  value: string;
-  product?: TProductoBusqueda;
-};
+import type { SearchSuggestion } from "@/types";
 
 interface UseSearchSuggestionsReturn {
   query: string;
@@ -52,10 +45,15 @@ export function useSearchSuggestions(): UseSearchSuggestionsReturn {
       .slice(0, 5)
       .map((product) => ({
         id: `product-${product.idProducto}`,
-        type: "product",
+        type: "product" as const,
         label: product.nombreProducto,
         value: product.nombreProducto,
-        product,
+        product: {
+          idProducto: product.idProducto,
+          nombreProducto: product.nombreProducto,
+          precio: product.precio,
+          imagenPrincipal: product.imagenPrincipal,
+        },
       }));
 
     const categorySuggestions: SearchSuggestion[] = categoryOptions

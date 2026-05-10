@@ -1,18 +1,20 @@
 "use client";
 
+import { useMemo } from "react";
 import { CatalogoShell } from "@/components/features/catalogo/CatalogoShell";
 import { ProductCard } from "@/components/features/catalogo/ProductCard";
 import { FilterMenu } from "@/components/features/catalogo/FilterMenu";
 import { SearchBar } from "@/components/features/catalogo/SearchBar";
 import { useProductFilters } from "@/hooks/useProductFilters";
 import { useAgregarAlCarrito } from "@/hooks/useAgregarAlCarrito";
+import { SearchSuggestion } from "@/types";
 
 export default function CatalogoPage() {
   const { agregar, isLoading: isAdding, error: addError, clearError } = useAgregarAlCarrito();
   const getGridColsClass = (productCount: number) => {
-    if (productCount >= 3) return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
-    if (productCount === 2) return "grid-cols-1 sm:grid-cols-2";
-    return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+    if (productCount >= 3) return "grid-cols-1! sm:grid-cols-2! lg:grid-cols-3!";
+    if (productCount === 2) return "grid-cols-1! sm:grid-cols-2!";
+    return "grid-cols-1! sm:grid-cols-2! lg:grid-cols-3!";
   };
 
   // Hook de filtros
@@ -93,6 +95,8 @@ export default function CatalogoPage() {
     }
   };
 
+  const productsByGroup = useMemo(() => getGroupedProducts(), [filteredProducts, activeFilterType, getPriceRanges]);
+
   const handleAddToCart = async (productoId: string) => {
     clearError();
     await agregar(productoId, 1); // Agregar 1 unidad por defecto
@@ -101,10 +105,10 @@ export default function CatalogoPage() {
   return (
     <CatalogoShell eyebrow="ESMIRNA" showSidebar={false}>
       {/* ── Contenedor con margen lateral consistente y centrado ── */}
-      <div className="flex flex-col! justify-center px-4! sm:px-8! lg:px-12! gap-12!">
-        <div className="w-full max-w-6xl flex flex-col! gap-5!">
+      <div className="flex! flex-col! justify-center! px-4! sm:px-8! lg:px-12! gap-12!">
+        <div className="w-full! max-w-6xl! flex! flex-col! gap-5!">
           {/* Search Bar */}
-          <div className="mb-8 border-blue-500! border-2! rounded-lg!">
+          <div className="mb-8! rounded-xl! border! border-slate-200/90! bg-white/80! p-2! shadow-sm!">
             <SearchBar
               onSearch={handleSearch}
               onSuggestionSelect={handleSuggestionSelect}
@@ -113,7 +117,7 @@ export default function CatalogoPage() {
           </div>
 
           {/* Filter Menu */}
-          <div className="mb-12 z-100!">
+          <div className="relative! z-10! mb-12!">
             <FilterMenu
               activeFilterType={activeFilterType}
               onFilterTypeChange={setFilterType}
@@ -127,34 +131,34 @@ export default function CatalogoPage() {
           </div>
 
           {addError && (
-            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            <div className="mb-6! rounded-xl! border! border-red-200! bg-red-50! p-4! text-sm! text-red-700!">
               {addError}
             </div>
           )}
 
           {isLoading && (
-            <div className="rounded-xl! border border-slate-200 bg-white! p-6! text-sm! text-slate-500!">
+            <div className="rounded-xl! border! border-slate-200! bg-white! p-6! text-sm! text-slate-500!">
               Cargando productos y filtros...
             </div>
           )}
 
           {isError && (
-            <div className="rounded-xl! border! border-red-200 bg-red-50! p-6! text-sm! text-red-700!">
+            <div className="rounded-xl! border! border-red-200! bg-red-50! p-6! text-sm! text-red-700!">
               No se pudo cargar el catálogo en este momento.
             </div>
           )}
 
           {/* Results Summary */}
           {(searchQuery || selectedValues.length > 0) && (
-            <div className="mb-6 flex items-center justify-between">
-              <p className="text-sm text-gray-600">
+            <div className="mb-6! flex! items-center! justify-between!">
+              <p className="text-sm! text-gray-600!">
                 {filteredProducts.length} producto{filteredProducts.length !== 1 ? "s" : ""} encontrado{filteredProducts.length !== 1 ? "s" : ""}
                 {searchQuery && ` para "${searchQuery}"`}
               </p>
               {(searchQuery || selectedValues.length > 0) && (
                 <button
                   onClick={clearFilters}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-sm! text-blue-600! hover:text-blue-700! font-medium!"
                 >
                   Limpiar todo
                 </button>
@@ -165,11 +169,11 @@ export default function CatalogoPage() {
           {/* Products by Group */}
           {!isLoading && !isError && Object.entries(productsByGroup).map(([groupId, products]) => (
             products.length > 0 && (
-              <div key={groupId} className="mb-24">
+              <div key={groupId} className="mb-24!">
                 {/* Group Title - Dinámico según filtro */}
-                <div className="flex items-center gap-3 mb-8">
-                  <span className="text-2xl text-blue-600">→</span>
-                  <h2 className="text-2xl font-bold text-slate-900">
+                <div className="flex! items-center! gap-3! mb-8!">
+                  <span className="text-2xl! text-blue-600!">→</span>
+                  <h2 className="text-2xl! font-bold! text-slate-900!">
                     {activeFilterType === "brand"
                       ? getBrandLabel(groupId)
                       : activeFilterType === "category"
@@ -179,7 +183,7 @@ export default function CatalogoPage() {
                 </div>
 
               {/* Products Grid */}
-              <div className={`grid gap-8 ${getGridColsClass(products.length)}`}>
+              <div className={`grid! gap-8! ${getGridColsClass(products.length)}`}>
                 {products.map((product) => (
                   <ProductCard
                     key={product.idProducto}
@@ -202,7 +206,7 @@ export default function CatalogoPage() {
         {/* No products message */}
         {!isLoading && !isError && Object.keys(productsByGroup).every((key) => productsByGroup[key].length === 0) && (
           <div className="text-center! py-12!">
-            <p className="text-lg font-semibold! text-slate-500">
+            <p className="text-lg! font-semibold! text-slate-500!">
               No hay productos que coincidan con los filtros seleccionados
             </p>
           </div>
