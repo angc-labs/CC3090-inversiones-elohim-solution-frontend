@@ -26,6 +26,10 @@ export default function CarritoPage() {
     }
   };
 
+  const handleContinuarAlMetodo = () => {
+    router.push("/metodoPago");
+  };
+
   return (
     <div className="relative min-h-screen bg-[#f6f8fc] text-slate-900">
 
@@ -75,6 +79,29 @@ export default function CarritoPage() {
         {/* Main content */}
         <main className="flex-1! px-6! py-12! sm:px-8! lg:px-12! w-full!">
           <div className="w-full! mx-auto grid! grid-cols-1! lg:grid-cols-3! gap-10!">
+            {/* Breadcrumb / Progreso */}
+            <div className="col-span-1 lg:col-span-3 mb-8">
+              <div className="flex items-center justify-center gap-2 text-sm text-slate-600 font-medium">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white">
+                  1
+                </div>
+                <span className="text-blue-600 font-semibold">Carrito</span>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-slate-300 text-slate-400">
+                  2
+                </div>
+                <span className="text-slate-400">Método</span>
+                <svg className="h-4 w-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-slate-300 text-slate-400">
+                  3
+                </div>
+                <span className="text-slate-400">Resumen</span>
+              </div>
+            </div>
 
             <CarritoShell>
               <div className="flex items-center gap-4 mb-8!">
@@ -83,6 +110,16 @@ export default function CarritoPage() {
                 </h2>
               </div>
             </CarritoShell>
+
+            {/* Botón continuar */}
+            <div className="col-span-1 lg:col-span-3 flex justify-end">
+              <button
+                onClick={handleContinuarAlMetodo}
+                className="rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white transition-colors hover:bg-blue-700"
+              >
+                Continuar 
+              </button>
+            </div>
           </div>
         </main>
 
