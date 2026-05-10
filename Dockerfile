@@ -14,7 +14,7 @@ ENV PNPM_CONFIG_CONFIRM_MODULES_PURGE=false
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm build
+RUN pnpm run build
 
 FROM node:22-alpine AS runner
 WORKDIR /app

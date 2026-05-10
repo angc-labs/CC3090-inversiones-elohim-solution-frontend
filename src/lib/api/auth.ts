@@ -1,65 +1,115 @@
-const API_URL = (globalThis as typeof globalThis & {
-  process?: {
-    env?: {
-      NEXT_PUBLIC_API_URL?: string;
-    };
-  };
-}).process?.env?.NEXT_PUBLIC_API_URL;
+import { apiRequest, API_URL, buildAuthHeaders } from "@/lib/api/client";
+import { TRol } from "@/stores/useAuthStore";
 
-if (!API_URL) {
-  throw new Error("NEXT_PUBLIC_API_URL no está configurada");
-}
-
-export type TLoginResponse = {
-  clienteId: string;
+type TAuthApiResponse = {
+  usuarioId: string;
   correo: string;
   nombre: string;
+  tipoUsuario: "cliente" | "administrador";
+  rol?: "cajero" | "administrador" | null;
+  tipoCliente?: "mayorista" | "minorista" | "particular" | null;
+  token: string;
+  expiraEn: string;
+};
+
+export type TAuthResponse = {
+  usuarioId: string;
+  correo: string;
+  nombre: string;
+  rol: TRol;
   token: string;
   expiraEn: number;
 };
 
-export type TRegisterResponse = TLoginResponse;
-
-export async function login(correo: string, contrasena: string): Promise<TLoginResponse> {
-  const res = await fetch(`${API_URL}/api/client/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ correo, contrasena }),
-  });
-  
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: "Error al iniciar sesión" }));
-    throw new Error(error.message || "Credenciales inválidas");
-  }
-  
-  return res.json();
-}
-
-export async function register(data: {
+export type TRegisterInput = {
   correo: string;
   nombre: string;
   contrasena: string;
   apellido?: string;
   telefono?: string;
   direccion?: string;
-}): Promise<TRegisterResponse> {
-  const res = await fetch(`${API_URL}/api/client/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: "Error al registrar" }));
-    throw new Error(error.message || "Error al registrar usuario");
+  tipoCliente?: "mayorista" | "minorista" | "particular";
+};
+
+function mapRol(response: TAuthApiResponse): TRol {
+  if (response.tipoUsuario === "cliente") {
+    return "cliente";
   }
-  
-  return res.json();
+
+  if (response.rol === "cajero") {
+    return "cajero";
+  }
+
+  return "admin";
+}
+
+function mapAuthResponse(response: TAuthApiResponse): TAuthResponse {
+  return {
+    usuarioId: response.usuarioId,
+    correo: response.correo,
+    nombre: response.nombre,
+    rol: mapRol(response),
+    token: response.token,
+    expiraEn: Date.parse(response.expiraEn),
+  };
+}
+
+export async function login(correo: string, contrasena: string): Promise<TAuthResponse> {
+  const response = await apiRequest<TAuthApiResponse>(
+    "/api/auth/login",
+    {
+      method: "POST",
+      headers: buildAuthHeaders(),
+      body: JSON.stringify({ correo, contrasena }),
+    },
+    "Error al iniciar sesión"
+  );
+
+  return mapAuthResponse(response);
+}
+
+export async function register(data: TRegisterInput): Promise<TAuthResponse> {
+  const response = await apiRequest<TAuthApiResponse>(
+    "/api/auth/register",
+    {
+      method: "POST",
+      headers: buildAuthHeaders(),
+      body: JSON.stringify({
+        correo: data.correo,
+        nombre: data.nombre,
+        contrasena: data.contrasena,
+        tipoUsuario: "cliente",
+        tipoCliente: data.tipoCliente ?? "particular",
+        apellido: data.apellido,
+        telefono: data.telefono,
+        direccion: data.direccion,
+      }),
+    },
+    "Error al registrar usuario"
+  );
+
+  return mapAuthResponse(response);
 }
 
 export async function logout(token: string): Promise<void> {
-  await fetch(`${API_URL}/api/client/logout`, {
+  const response = await fetch(`${API_URL}/api/auth/logout`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
+    headers: buildAuthHeaders(token),
   });
+
+  if (!response.ok) {
+    throw new Error("No se pudo cerrar la sesión");
+  }
+}
+
+export async function forgotPassword(correo: string): Promise<void> {
+  await apiRequest<{ mensaje: string }>(
+    "/api/auth/forgot-password",
+    {
+      method: "POST",
+      headers: buildAuthHeaders(),
+      body: JSON.stringify({ correo }),
+    },
+    "No se pudo enviar el correo de recuperación"
+  );
 }

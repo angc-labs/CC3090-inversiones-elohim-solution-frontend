@@ -1,0 +1,8 @@
+{
+  "usuarioId": "string",
+  "correo": "string",
+  "nombre": "string",
+  "tipoUsuario": "cliente | administrador",
+  "token": "string",
+  "expiraEn": "2026-05-15T00:00:00Z"
+}
