@@ -2,44 +2,81 @@
 
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { Trash2 } from "lucide-react";
-import { QuantitySelector } from "@/components/ui/QuantitySelector";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { useCarritoStore } from "@/stores/useCarritoStore";
+import { useState } from "react";
+import Link from "next/link";
+import { CiTrash } from "react-icons/ci";
+import { useCarrito } from "@/hooks/useCarrito";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 type CarritoShellProps = {
   children: ReactNode;
 };
 
 export function CarritoShell({ children }: CarritoShellProps) {
-  const items = useCarritoStore((state) => state.items);
-  const total = useCarritoStore((state) => state.totalPrecio());
-  const eliminarItem = useCarritoStore((state) => state.eliminarItem);
-  const cambiarCantidad = useCarritoStore((state) => state.cambiarCantidad);
-  const [itemPendiente, setItemPendiente] = useState<string | null>(null);
+  const { items, total, isLoading, isError, eliminarItem, stockWarning, clearStockWarning } = useCarrito();
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [itemAEliminar, setItemAEliminar] = useState<{ id: string; nombre: string } | null>(null);
+  const [eliminando, setEliminando] = useState(false);
 
-  const subtotal = items.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
 
-  const handleOpenConfirm = (productoId: string) => {
-    setItemPendiente(productoId);
+  const handleAbrirConfirmacion = (articuloId: string, nombreProducto: string) => {
+    setItemAEliminar({ id: articuloId, nombre: nombreProducto });
+    setModalAbierto(true);
   };
 
-  const handleCloseConfirm = () => {
-    setItemPendiente(null);
+  const handleCerrarModal = () => {
+    setModalAbierto(false);
+    setItemAEliminar(null);
   };
 
-  const handleConfirmDelete = () => {
-    if (!itemPendiente) {
-      return;
+  const handleConfirmarEliminacion = async () => {
+    if (!itemAEliminar) return;
+    setEliminando(true);
+    try {
+      await eliminarItem(itemAEliminar.id);
+    } finally {
+      setEliminando(false);
+      handleCerrarModal();
     }
-
-    eliminarItem(itemPendiente);
-    setItemPendiente(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="lg:col-span-2! space-y-8!">
+        {children}
+        <div className="rounded-2xl border! border-slate-200 bg-white! p-6! text-sm! text-slate-500!">
+          Cargando carrito...
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="lg:col-span-2! space-y-8!">
+        {children}
+        <div className="rounded-2xl border! border-red-200 bg-red-50! p-6! text-sm! text-red-700!">
+          No se pudo cargar tu carrito.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lg:col-span-2! space-y-10! overflow-y-auto w-full!">
       {children}
+      {stockWarning && (
+        <div className="rounded-2xl border border-orange-200 bg-orange-50 p-6 text-sm text-orange-700">
+          {stockWarning}
+          <button
+            onClick={clearStockWarning}
+            className="ml-2 text-orange-600 hover:text-orange-800 font-medium"
+          >
+            ×
+          </button>
+        </div>
+      )}
       {items.length === 0 && (
         <div className="rounded-2xl! w-full! border! border-slate-200/80 bg-white/95 p-6! text-slate-600!">
           Tu carrito está vacío.
@@ -56,25 +93,13 @@ export function CarritoShell({ children }: CarritoShellProps) {
                 </p>
                 <p className="text-2xl font-bold text-blue-600 mt-3">Q {(item.precio * item.cantidad).toFixed(2)}</p>
               </div>
-
-              <div className="flex flex-col gap-4 sm:items-end">
-                <QuantitySelector
-                  value={item.cantidad}
-                  onChange={(cantidad) => cambiarCantidad(item.productoId, cantidad)}
-                  max={item.stockActual}
-                  label="Cantidad"
-                />
-                <button
-                  className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-                  onClick={() => {
-                    handleOpenConfirm(item.productoId);
-                  }}
-                  aria-label={`Eliminar ${item.nombreProducto} del carrito`}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Eliminar
-                </button>
-              </div>
+              <button
+                className="p-2! hover:bg-red-50 rounded-lg transition-colors flex-shrink-0!"
+                onClick={() => handleAbrirConfirmacion(item.articuloId, item.nombreProducto)}
+                aria-label={`Eliminar ${item.nombreProducto} del carrito`}
+              >
+                  <CiTrash className="text-xl!"/>
+              </button>
             </div>
           </div>
         ))}
@@ -102,6 +127,28 @@ export function CarritoShell({ children }: CarritoShellProps) {
           Total: <span className="font-semibold">Q {total.toFixed(2)}</span>
         </div>
       )}
+
+      {items.length > 0 && (
+        <Link
+          href="/carrito/confirmar"
+          className="block w-full px-6 py-3 bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full font-semibold text-center hover:shadow-md transition-shadow hover:from-blue-800 hover:to-blue-700"
+        >
+          Confirmar reservación
+        </Link>
+      )}
+
+      {/* Modal de confirmación */}
+      <ConfirmationModal
+        isOpen={modalAbierto}
+        title="¿Estás seguro?"
+        message={`¿Deseas eliminar "${itemAEliminar?.nombre}" de tu carrito?`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        isDangerous
+        isLoading={eliminando}
+        onConfirm={handleConfirmarEliminacion}
+        onCancel={handleCerrarModal}
+      />
     </div>
   );
 }

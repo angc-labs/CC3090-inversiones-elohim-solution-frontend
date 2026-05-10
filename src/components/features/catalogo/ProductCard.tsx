@@ -17,6 +17,7 @@ interface ProductCardProps {
   badge: string | null;
   image?: string;
   href?: string;
+  onAddToCart?: () => void;
 }
 
 export function ProductCard({
@@ -27,6 +28,7 @@ export function ProductCard({
   badge,
   image,
   href,
+  onAddToCart,
 }: ProductCardProps) {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
@@ -107,14 +109,12 @@ export function ProductCard({
 
           <div className="grid gap-3 sm:grid-cols-2">
             <button
-              type="button"
-              onClick={() => {
-                void handleAddToCart();
-              }}
-              disabled={isAdding}
+              onClick={onAddToCart}
+              disabled={!onAddToCart}
               className="w-full py-3! bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full font-semibold text-sm hover:shadow-md 
             transition-shadow flex items-center justify-center gap-2
-            hover:bg-gradient-to-r hover:from-blue-800 hover:to-blue-700 duration-1000! disabled:cursor-not-allowed disabled:opacity-70">
+            hover:bg-gradient-to-r hover:from-blue-800 hover:to-blue-700 duration-1000! disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <CiShoppingCart className="text-xl" />
               {isAdding ? "Agregando..." : "Añadir"}
             </button>
