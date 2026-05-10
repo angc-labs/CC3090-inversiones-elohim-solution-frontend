@@ -8,6 +8,8 @@ import { TCarritoApi } from "@/types";
 export function useCarrito() {
   const token = useAuthStore((state) => state.token);
   const [stockWarning, setStockWarning] = useState<string | null>(null);
+  const [isRemovingItemId, setIsRemovingItemId] = useState<string | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const { data, error, isLoading, mutate } = useSWR(
     token ? ["carrito", token] : null,
@@ -19,7 +21,7 @@ export function useCarrito() {
   useEffect(() => {
     if (data?.items && token) {
       const ajustarStocks = async () => {
-        const ajustes: Promise<void>[] = [];
+        const ajustes: Array<Promise<unknown>> = [];
         let adjusted = false;
 
         for (const item of data.items) {
@@ -88,6 +90,15 @@ export function useCarrito() {
     }
   };
 
+  const cambiarCantidad = async (articuloId: string, cantidad: number) => {
+    if (!token) {
+      throw new Error("No hay sesión activa");
+    }
+
+    await actualizarArticuloCarrito(token, articuloId, cantidad);
+    await mutate();
+  };
+
   return {
     carrito: data,
     items: data?.items ?? [],
@@ -97,6 +108,10 @@ export function useCarrito() {
     error,
     mutate,
     eliminarItem,
+    cambiarCantidad,
+    isRemovingItemId,
+    removeError,
+    clearRemoveError: () => setRemoveError(null),
     stockWarning,
     clearStockWarning: () => setStockWarning(null),
   };

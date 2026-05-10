@@ -1,28 +1,20 @@
 import { apiRequest, buildAuthHeaders } from "@/lib/api/client";
-import { TReservacion } from "@/types";
+import { TReservacion, TReservacionListado } from "@/types";
 
-export async function crearReservacion(
-  token: string,
-  metodoPagoId: string,
-  observaciones?: string
-): Promise<TReservacion> {
-  const body: any = { metodoPagoId };
-  if (observaciones) {
-    body.observaciones = observaciones;
-  }
+export async function crearReservacion(token: string, metodoPagoId: string): Promise<TReservacion> {
   return apiRequest<TReservacion>(
     "/api/reservacion",
     {
       method: "POST",
       headers: buildAuthHeaders(token),
-      body: JSON.stringify(body),
+      body: JSON.stringify({ metodoPagoId }),
     },
     "Error al crear la reservación"
   );
 }
 
-export async function obtenerReservaciones(token: string): Promise<TReservacion[]> {
-  return apiRequest<TReservacion[]>(
+export async function obtenerReservaciones(token: string): Promise<TReservacionListado[]> {
+  return apiRequest<TReservacionListado[]>(
     "/api/reservacion",
     {
       method: "GET",

@@ -1,6 +1,5 @@
 "use client";
 
-import { ConfirmacionReserva } from "@/components/features/carrito/ConfirmacionReserva";
 import { useCarrito } from "@/hooks/useCarrito";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -11,13 +10,15 @@ export default function ConfirmarPage() {
 
   useEffect(() => {
     if (items.length === 0) {
-      router.push("/carrito");
+      router.replace("/carrito");
+      return;
     }
-  }, [items, router]);
+    router.replace("/metodoPago");
+  }, [items.length, router]);
 
-  if (items.length === 0) {
-    return null;
-  }
-
-  return <ConfirmacionReserva />;
+  return (
+    <div className="flex! min-h-screen! items-center! justify-center! bg-[#f6f8fc]! px-6!">
+      <p className="text-slate-600!">Redirigiendo al checkout…</p>
+    </div>
+  );
 }

@@ -159,45 +159,45 @@ export const RESUMEN_HTML_STYLES = `
 // CLASES CSS PARA EL COMPONENTE REACT
 // ============================================
 export const RESUMEN_REACT_CLASSES = {
-  resumenContainer: "space-y-8",
-  resumenHeader: "mb-8",
-  resumenTitle: "text-3xl font-bold text-slate-900 mb-2",
-  resumenSubtitle: "text-slate-600",
+  resumenContainer: "space-y-8!",
+  resumenHeader: "mb-8!",
+  resumenTitle: "text-3xl! font-bold! text-slate-900! mb-2!",
+  resumenSubtitle: "text-slate-600!",
   
   // Tabla
-  tablaContainer: "rounded-xl border border-slate-200 bg-white overflow-hidden",
-  tablaScroll: "overflow-x-auto",
-  tabla: "w-full",
-  tablaHead: "bg-slate-50 border-b border-slate-200",
-  tablaHeaderCell: "px-6 py-3 text-left text-sm font-semibold text-slate-900",
-  tablaCantidadHeader: "text-center",
-  tablaPrecioHeader: "text-right",
-  tablaSubtotalHeader: "text-right",
+  tablaContainer: "rounded-xl! border! border-slate-200! bg-white! overflow-hidden!",
+  tablaScroll: "overflow-x-auto!",
+  tabla: "w-full!",
+  tablaHead: "bg-slate-50! border-b! border-slate-200!",
+  tablaHeaderCell: "px-6! py-3! text-left! text-sm! font-semibold! text-slate-900!",
+  tablaCantidadHeader: "text-center!",
+  tablaPrecioHeader: "text-right!",
+  tablaSubtotalHeader: "text-right!",
   
-  tablaBody: "border-b border-slate-200 hover:bg-slate-50",
-  tablaCell: "px-6 py-4 text-sm text-slate-900",
-  tablaCantidad: "text-center text-sm text-slate-600",
-  tablaPrecio: "text-right text-sm text-slate-600",
-  tablaSubtotal: "text-right text-sm font-semibold text-slate-900",
+  tablaBody: "border-b! border-slate-200! hover:bg-slate-50!",
+  tablaCell: "px-6! py-4! text-sm! text-slate-900!",
+  tablaCantidad: "text-center! text-sm! text-slate-600!",
+  tablaPrecio: "text-right! text-sm! text-slate-600!",
+  tablaSubtotal: "text-right! text-sm! font-semibold! text-slate-900!",
   
   // Total
-  totalSection: "bg-slate-50 px-6 py-6 border-t border-slate-200 flex justify-end items-center gap-4",
-  totalLabel: "text-lg font-semibold text-slate-900",
-  totalAmount: "text-3xl font-bold text-blue-600",
+  totalSection: "bg-slate-50! px-6! py-6! border-t! border-slate-200! flex! justify-end! items-center! gap-4!",
+  totalLabel: "text-lg! font-semibold! text-slate-900!",
+  totalAmount: "text-3xl! font-bold! text-blue-600!",
   
   // Método de pago
-  metodoPagoContainer: "rounded-xl border border-slate-200 bg-white p-6",
-  metodoPagoTitle: "text-lg font-semibold text-slate-900 mb-4",
-  metodoPagoBox: "flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200",
-  metodoPagoCheckmark: "flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-bold",
-  metodoPagoTexto: "text-slate-900 font-medium",
+  metodoPagoContainer: "rounded-xl! border! border-slate-200! bg-white! p-6!",
+  metodoPagoTitle: "text-lg! font-semibold! text-slate-900! mb-4!",
+  metodoPagoBox: "flex! items-center! gap-3! p-4! bg-blue-50! rounded-lg! border! border-blue-200!",
+  metodoPagoCheckmark: "flex! h-6! w-6! items-center! justify-center! rounded-full! bg-blue-600! text-white! text-sm! font-bold!",
+  metodoPagoTexto: "text-slate-900! font-medium!",
   
   // Botones
-  botonesContainer: "flex flex-col sm:flex-row gap-4",
-  botonDescargar: "flex-1 rounded-lg border-2 border-blue-600 px-6 py-3 font-semibold text-blue-600 transition-colors hover:bg-blue-50 flex items-center justify-center gap-2",
-  botonConfirmar: "flex-1 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed",
+  botonesContainer: "flex! flex-col! sm:flex-row! gap-4!",
+  botonDescargar: "flex-1! rounded-lg! border-2! border-blue-600! px-6! py-3! font-semibold! text-blue-600! transition-colors! hover:bg-blue-50! flex! items-center! justify-center! gap-2!",
+  botonConfirmar: "flex-1! rounded-lg! bg-blue-600! px-6! py-3! font-semibold! text-white! transition-colors! hover:bg-blue-700! disabled:opacity-50! disabled:cursor-not-allowed!",
   
-  iconoDescarga: "h-5 w-5",
+  iconoDescarga: "h-5! w-5!",
 };
 
 // Alias para compatibilidad con código existente

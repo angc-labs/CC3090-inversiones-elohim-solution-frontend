@@ -1,9 +1,9 @@
-import type { TCarritoItem } from "@/stores/useCarritoStore";
+import type { TCarritoItemApi } from "@/types";
 import type { TMetodoPagoSeleccionado } from "@/stores/useMetodoPagoStore";
 import { RESUMEN_HTML_STYLES } from "./resumenStyles";
 
 export type ResumenCompraHTMLProps = {
-  items: TCarritoItem[];
+  items: TCarritoItemApi[];
   totalPrecio: number;
   metodoPagoSeleccionado: TMetodoPagoSeleccionado | null;
 };
@@ -74,8 +74,8 @@ export const generarResumenHTML = ({
                   <tr>
                     <td>${item.nombreProducto}</td>
                     <td class="cantidad">${item.cantidad}</td>
-                    <td class="precio">$${item.precio.toFixed(2)}</td>
-                    <td class="subtotal">$${(item.precio * item.cantidad).toFixed(2)}</td>
+                    <td class="precio">Q ${item.precioUnitario.toFixed(2)}</td>
+                    <td class="subtotal">Q ${item.subtotal.toFixed(2)}</td>
                   </tr>
                 `
                   )
@@ -86,7 +86,7 @@ export const generarResumenHTML = ({
 
           <div class="total-section">
             <span class="total-label">TOTAL A PAGAR:</span>
-            <span class="total-amount">$${totalPrecio.toFixed(2)}</span>
+            <span class="total-amount">Q ${totalPrecio.toFixed(2)}</span>
           </div>
 
           <div class="section">

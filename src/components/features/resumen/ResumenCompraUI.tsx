@@ -1,18 +1,27 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { descargarResumenHTML } from "./ResumenCompraHTML";
 import type { ResumenCompraHTMLProps } from "./ResumenCompraHTML";
 import { RESUMEN_REACT_CLASSES } from "./resumenStyles";
 
-export interface ResumenCompraUIProps extends ResumenCompraHTMLProps {}
+export interface ResumenCompraUIProps extends ResumenCompraHTMLProps {
+  onConfirm: () => void;
+  isConfirming?: boolean;
+  error?: string | null;
+  showConfirmButton?: boolean;
+  confirmLabel?: string;
+}
 
 export function ResumenCompraUI({
   items,
   totalPrecio,
   metodoPagoSeleccionado,
+  onConfirm,
+  isConfirming = false,
+  error,
+  showConfirmButton = true,
+  confirmLabel = "Confirmar orden",
 }: ResumenCompraUIProps) {
-  const router = useRouter();
   const formatearMetodo = (metodo: string): string => {
     const map: Record<string, string> = {
       transferencia: "Transferencia Bancaria",
@@ -27,10 +36,8 @@ export function ResumenCompraUI({
     descargarResumenHTML({ items, totalPrecio, metodoPagoSeleccionado });
   };
 
-  const handleNext = () => {
-    // TODO: Crear orden en base de datos
-    // Por ahora solo redirigir a confirmación
-    router.push("/confirmacion");
+  const handleConfirm = () => {
+    onConfirm();
   };
 
   return (
@@ -69,10 +76,10 @@ export function ResumenCompraUI({
                     {item.cantidad}
                   </td>
                   <td className={RESUMEN_REACT_CLASSES.tablaPrecio}>
-                    ${item.precio.toFixed(2)}
+                    Q {item.precioUnitario.toFixed(2)}
                   </td>
                   <td className={RESUMEN_REACT_CLASSES.tablaSubtotal}>
-                    ${(item.precio * item.cantidad).toFixed(2)}
+                    Q {item.subtotal.toFixed(2)}
                   </td>
                 </tr>
               ))}
@@ -101,6 +108,12 @@ export function ResumenCompraUI({
         </div>
       </div>
 
+      {error && (
+        <div className="rounded-xl! border! border-red-200! bg-red-50! p-4! text-sm! text-red-700!">
+          {error}
+        </div>
+      )}
+
       {/* Botones de acción */}
       <div className={RESUMEN_REACT_CLASSES.botonesContainer}>
         <button
@@ -123,13 +136,16 @@ export function ResumenCompraUI({
           </svg>
           Descargar Resumen
         </button>
-        <button
-          onClick={handleNext}
-          className={RESUMEN_REACT_CLASSES.botonConfirmar}
-          title="Confirmar y crear orden"
-        >
-          Confirmar Orden
-        </button>
+        {showConfirmButton && (
+          <button
+            onClick={handleConfirm}
+            disabled={isConfirming}
+            className={RESUMEN_REACT_CLASSES.botonConfirmar}
+            title="Confirmar y crear orden"
+          >
+            {isConfirming ? "Procesando..." : confirmLabel}
+          </button>
+        )}
       </div>
     </div>
   );

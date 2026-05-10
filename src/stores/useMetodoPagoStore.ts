@@ -1,19 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type TMetodoPago = {
-  id: string;
-  stripePaymentMethodId: string;
-  alias: string;
-  marca: "visa" | "mastercard" | "amex";
-  ultimosDigitos: string;
-  expiraMes: number;
-  expiraAnio: number;
-};
-
 export type TMetodoPagoSeleccionado = {
+  /** `idMetodoPago` del backend */
   id: string;
-  metodo: "transferencia" | "tarjeta" | "efectivo" | "paypal";
+  metodo: "efectivo" | "tarjeta";
   tipoTransaccion: "anticipada" | "contraentrega";
   alias?: string;
 };
@@ -29,11 +20,9 @@ export const useMetodoPagoStore = create<TMetodoPagoStore>()(
     (set) => ({
       metodoPagoSeleccionado: null,
 
-      seleccionarMetodoPago: (metodo) =>
-        set({ metodoPagoSeleccionado: metodo }),
+      seleccionarMetodoPago: (metodo) => set({ metodoPagoSeleccionado: metodo }),
 
-      limpiarMetodoPago: () =>
-        set({ metodoPagoSeleccionado: null }),
+      limpiarMetodoPago: () => set({ metodoPagoSeleccionado: null }),
     }),
     { name: "elohim-metodo-pago" }
   )

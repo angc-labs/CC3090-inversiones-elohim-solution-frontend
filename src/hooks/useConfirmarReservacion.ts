@@ -9,7 +9,7 @@ export function useConfirmarReservacion() {
   const [reservacion, setReservacion] = useState<TReservacion | null>(null);
   const token = useAuthStore((state) => state.token);
 
-  const confirmar = async (metodoPagoId: string, observaciones?: string) => {
+  const confirmar = async (metodoPagoId: string) => {
     if (!token) {
       setError("No hay sesión activa");
       return null;
@@ -19,7 +19,7 @@ export function useConfirmarReservacion() {
     setError(null);
 
     try {
-      const result = await crearReservacion(token, metodoPagoId, observaciones);
+      const result = await crearReservacion(token, metodoPagoId);
       setReservacion(result);
       return result;
     } catch (err) {
