@@ -2,23 +2,26 @@
 
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { CiTrash } from "react-icons/ci";
-import { useCarrito } from "@/hooks/useCarrito";
+import { Trash2 } from "lucide-react";
+import { QuantitySelector } from "@/components/ui/QuantitySelector";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
-import type { TCarritoItemApi } from "@/types";
+import { useCarritoStore } from "@/stores/useCarritoStore";
 
 type CarritoShellProps = {
   children: ReactNode;
 };
 
 export function CarritoShell({ children }: CarritoShellProps) {
-  const { items, total, isLoading, isError, eliminarItem, isRemovingItemId, removeError } = useCarrito();
-  const [itemPendiente, setItemPendiente] = useState<TCarritoItemApi | null>(null);
+  const items = useCarritoStore((state) => state.items);
+  const total = useCarritoStore((state) => state.totalPrecio());
+  const eliminarItem = useCarritoStore((state) => state.eliminarItem);
+  const cambiarCantidad = useCarritoStore((state) => state.cambiarCantidad);
+  const [itemPendiente, setItemPendiente] = useState<string | null>(null);
 
-  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
 
-  const handleOpenConfirm = (item: TCarritoItemApi) => {
-    setItemPendiente(item);
+  const handleOpenConfirm = (productoId: string) => {
+    setItemPendiente(productoId);
   };
 
   const handleCloseConfirm = () => {
@@ -30,32 +33,9 @@ export function CarritoShell({ children }: CarritoShellProps) {
       return;
     }
 
-    void eliminarItem(itemPendiente.articuloId).finally(() => {
-      setItemPendiente(null);
-    });
+    eliminarItem(itemPendiente);
+    setItemPendiente(null);
   };
-
-  if (isLoading) {
-    return (
-      <div className="lg:col-span-2! space-y-8!">
-        {children}
-        <div className="rounded-2xl border! border-slate-200 bg-white! p-6! text-sm! text-slate-500!">
-          Cargando carrito...
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="lg:col-span-2! space-y-8!">
-        {children}
-        <div className="rounded-2xl border! border-red-200 bg-red-50! p-6! text-sm! text-red-700!">
-          No se pudo cargar tu carrito.
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="lg:col-span-2! space-y-10! overflow-y-auto w-full!">
@@ -65,30 +45,36 @@ export function CarritoShell({ children }: CarritoShellProps) {
           Tu carrito está vacío.
         </div>
       )}
-      {removeError && (
-        <div className="rounded-2xl! w-full! border! border-red-200 bg-red-50 p-4! text-sm! text-red-700!">
-          {removeError}
-        </div>
-      )}
       <div className="space-y-6! pb-10!">
         {items.map((item) => (
-          <div key={item.articuloId} className="rounded-2xl! border border-slate-200/80 bg-white/95 p-6! shadow-md! backdrop-blur-sm! hover:shadow-lg! transition-shadow!">
-            <div className="flex! items-start! justify-between! gap-4!">
+          <div key={item.productoId} className="rounded-2xl! border border-slate-200/80 bg-white/95 p-6! shadow-md! backdrop-blur-sm! hover:shadow-lg! transition-shadow!">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-slate-900">{item.nombreProducto}</h3>
-                <p className="text-sm! text-slate-500 mt-1!">Cantidad: {item.cantidad} {item.cantidad === 1 ? 'unidad' : 'unidades'}</p>
-                <p className="text-2xl! font-bold text-blue-600 mt-3!">Q {item.subtotal.toFixed(2)}</p>
+                <p className="text-sm text-slate-500 mt-1">
+                  {item.cantidad} {item.cantidad === 1 ? "unidad" : "unidades"}
+                </p>
+                <p className="text-2xl font-bold text-blue-600 mt-3">Q {(item.precio * item.cantidad).toFixed(2)}</p>
               </div>
-              <button
-                className="p-2! hover:bg-red-50 rounded-lg transition-colors flex-shrink-0!"
-                onClick={() => {
-                  handleOpenConfirm(item);
-                }}
-                disabled={isRemovingItemId === item.articuloId}
-                aria-label={`Eliminar ${item.nombreProducto} del carrito`}
-              >
-                  <CiTrash className="text-xl!"/>
-              </button>
+
+              <div className="flex flex-col gap-4 sm:items-end">
+                <QuantitySelector
+                  value={item.cantidad}
+                  onChange={(cantidad) => cambiarCantidad(item.productoId, cantidad)}
+                  max={item.stockActual}
+                  label="Cantidad"
+                />
+                <button
+                  className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                  onClick={() => {
+                    handleOpenConfirm(item.productoId);
+                  }}
+                  aria-label={`Eliminar ${item.nombreProducto} del carrito`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -99,12 +85,12 @@ export function CarritoShell({ children }: CarritoShellProps) {
         title="Eliminar producto"
         message={
           itemPendiente
-            ? `¿Seguro que deseas eliminar ${itemPendiente.nombreProducto} del carrito? Esta acción no se puede deshacer.`
+            ? "¿Seguro que deseas eliminar este producto del carrito? Esta acción no se puede deshacer."
             : ""
         }
         confirmLabel="Sí, eliminar"
         cancelLabel="Cancelar"
-        isConfirming={itemPendiente ? isRemovingItemId === itemPendiente.articuloId : false}
+        isConfirming={false}
         onConfirm={handleConfirmDelete}
         onCancel={handleCloseConfirm}
       />

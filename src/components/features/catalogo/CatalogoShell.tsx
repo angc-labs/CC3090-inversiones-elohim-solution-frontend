@@ -3,8 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { CiShoppingCart } from "react-icons/ci";
-import { CiLogout } from "react-icons/ci";
+import { ShoppingCart, LogOut, History } from "lucide-react";
 import { logout as logoutRequest } from "@/lib/api/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
 
@@ -62,9 +61,21 @@ export function CatalogoShell({
               <div className="flex items-center gap-4! mr-4!">
                 <button className="p-2! hover:bg-slate-100 rounded-lg transition-colors">
                   <Link href="/carrito" className="flex items-center gap-2! text-slate-700 font-medium">
-                    <CiShoppingCart className="text-2xl" />
+                    <ShoppingCart className="w-5 h-5" />
                   </Link>
                 </button>
+                <button className="p-2! hover:bg-slate-100 rounded-lg transition-colors">
+                  <Link href="/reservas" className="flex items-center gap-2! text-slate-700 font-medium">
+                    <History className="w-5 h-5" />
+                  </Link>
+                </button>
+                <Link
+                  href="/cambiar-contrase"
+                  className="flex items-center gap-2 p-2! hover:bg-slate-100 rounded-lg transition-colors text-slate-700 font-medium"
+                  aria-label="Cambiar contraseña"
+                >
+                  <span className="text-sm font-semibold">Cambiar contraseña</span>
+                </Link>
                 <button
                   onClick={() => {
                     void handleLogout();
@@ -72,7 +83,7 @@ export function CatalogoShell({
                   className="flex items-center gap-2 p-2! hover:bg-slate-100 rounded-lg transition-colors text-slate-700 font-medium"
                   aria-label="Cerrar sesión"
                 >
-                  <CiLogout className="text-2xl" />
+                  <LogOut className="w-5 h-5" />
                   <span className="hidden sm:inline">Cerrar sesión</span>
                 </button>
               </div>

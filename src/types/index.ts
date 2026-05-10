@@ -40,3 +40,25 @@ export type TCarritoApi = {
   items: TCarritoItemApi[];
   total: number;
 };
+
+export type TEstadoReserva = "pendiente" | "confirmada" | "cancelada";
+
+export type TReserva = {
+  reservaId: string;
+  usuarioId: string;
+  fechaReserva: string;
+  estado: TEstadoReserva;
+  total: number;
+  items: TReservaItem[];
+  fechaConfirmacion?: string;
+  fechaCancelacion?: string;
+};
+
+export type TReservaItem = {
+  reservaItemId: string;
+  productoId: string;
+  nombreProducto: string;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+};

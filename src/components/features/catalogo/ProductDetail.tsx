@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { TProducto } from "@/types";
 import { ImageCarousel } from "@/components/features/catalogo/ImageCarousel";
-import { agregarArticuloCarrito } from "@/lib/api/carrito";
+import { QuantitySelector } from "@/components/ui/QuantitySelector";
+import { useCarritoStore } from "@/stores/useCarritoStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 type ProductDetailProps = {
@@ -14,10 +15,13 @@ type ProductDetailProps = {
 
 export function ProductDetail({ product }: ProductDetailProps) {
   const router = useRouter();
+  const addItem = useCarritoStore((state) => state.agregarItem);
   const token = useAuthStore((state) => state.token);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [quantityError, setQuantityError] = useState<string | null>(null);
 
   const formattedPrice = `Q${product.precio.toFixed(2)}`;
   const expirationDate = product.fechaVencimiento
@@ -28,30 +32,39 @@ export function ProductDetail({ product }: ProductDetailProps) {
       })
     : "No aplica";
 
-  const productImages = [
-    product.imagenPrincipal ?? "/placeholder.png",
-  ];
+  const productImages = [product.imagenPrincipal ?? "/placeholder.png"];
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = () => {
     if (!isAuthenticated || !token) {
-      router.push("/login");
+      router.push("/auth/login");
+      return;
+    }
+
+    if (product.stockActual === 0) {
+      setQuantityError("No hay stock disponible para este producto.");
+      return;
+    }
+
+    if (quantity > product.stockActual) {
+      setQuantityError(`No hay suficiente stock. Solo quedan ${product.stockActual} unidades disponibles.`);
       return;
     }
 
     setIsAdding(true);
     setFeedback(null);
+    setQuantityError(null);
 
-    try {
-      await agregarArticuloCarrito(token, {
-        productoId: product.idProducto,
-        cantidad: 1,
-      });
-      setFeedback("Agregado al carrito");
-    } catch {
-      setFeedback("No se pudo agregar al carrito");
-    } finally {
-      setIsAdding(false);
-    }
+    addItem({
+      productoId: product.idProducto,
+      nombreProducto: product.nombreProducto,
+      precio: product.precio,
+      cantidad: quantity,
+      imagenPrincipal: product.imagenPrincipal,
+      stockActual: product.stockActual,
+    });
+
+    setIsAdding(false);
+    router.push("/carrito");
   };
 
   return (
@@ -107,28 +120,39 @@ export function ProductDetail({ product }: ProductDetailProps) {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => {
-                void handleAddToCart();
-              }}
-              disabled={isAdding}
-              className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
-            >
-              {isAdding ? "Agregando..." : "🛒 Añadir al carrito"}
-            </button>
-            <Link
-              href="/catalogo"
-              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
-            >
-              ← Volver al catálogo
-            </Link>
-          </div>
+          <div className="mt-8 space-y-6">
+            <QuantitySelector
+              value={quantity}
+              onChange={setQuantity}
+              max={product.stockActual}
+              label="Cantidad"
+            />
 
-          {feedback && (
-            <p className="mt-4 text-sm font-medium text-slate-600">{feedback}</p>
-          )}
+            {quantityError && (
+              <p className="text-sm text-red-600">{quantityError}</p>
+            )}
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={isAdding}
+                className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isAdding ? "Agregando..." : "🛒 Añadir al carrito"}
+              </button>
+              <Link
+                href="/catalogo"
+                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+              >
+                ← Volver al catálogo
+              </Link>
+            </div>
+
+            {feedback && (
+              <p className="text-sm font-medium text-slate-600">{feedback}</p>
+            )}
+          </div>
         </div>
       </aside>
     </div>
