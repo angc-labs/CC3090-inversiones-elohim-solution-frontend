@@ -8,6 +8,7 @@ import { logout as logoutRequest } from "@/lib/api/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useCarritoStore } from "@/stores/useCarritoStore";
 import { useMetodoPagoStore } from "@/stores/useMetodoPagoStore";
+import { ResumenCompraUI } from "@/components/features/resumen";
 
 export default function ResumenCompraPage() {
   const router = useRouter();
@@ -15,10 +16,11 @@ export default function ResumenCompraPage() {
   const logout = useAuthStore((state) => state.logout);
   
   // Consumir estado del carrito y método de pago
-  const { items } = useCarritoStore();
+  const { items, totalPrecio } = useCarritoStore();
   const { metodoPagoSeleccionado } = useMetodoPagoStore();
 
   // Validar que exista carrito y método de pago
+
   useEffect(() => {
     if (!items || items.length === 0) {
       router.push("/carrito");
@@ -36,7 +38,6 @@ export default function ResumenCompraPage() {
         await logoutRequest(token);
       }
     } catch {
-      // Si falla el endpoint remoto, de todas formas se cierra la sesión local.
     } finally {
       logout();
       router.push("/login");
@@ -46,17 +47,6 @@ export default function ResumenCompraPage() {
   const handleBack = () => {
     router.push("/metodoPago");
   };
-
-  const handleNext = () => {
-    // TODO: Crear orden en base de datos
-    // Por ahora solo redirigir a confirmación
-    router.push("/confirmacion");
-  };
-
-  // Si no hay carrito o método de pago, no renderizar nada (el useEffect redirige)
-  if (!items || items.length === 0 || !metodoPagoSeleccionado) {
-    return null;
-  }
 
   return (
     <div className="relative min-h-screen bg-[#f6f8fc] text-slate-900">
@@ -165,30 +155,12 @@ export default function ResumenCompraPage() {
               </button>
             </div>
 
-            {/* Resumen de Compra - Placeholder para UI/UX */}
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-3xl font-bold text-slate-900 mb-2">
-                  Resumen de tu compra
-                </h2>
-                <p className="text-slate-600">Revisa los detalles antes de confirmar tu orden</p>
-              </div>
-
-              {/* Contenido principal - aquí irá el diseño UI/UX */}
-              <div className="rounded-xl border border-slate-200 bg-white p-8">
-                <p className="text-slate-500 text-center py-12">
-                  Contenido de resumen de compra aquí
-                </p>
-              </div>
-
-              {/* Botón Continuar */}
-              <button
-                onClick={handleNext}
-                className="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Confirmar Orden
-              </button>
-            </div>
+            {/* Resumen de Compra */}
+            <ResumenCompraUI
+              items={items}
+              totalPrecio={totalPrecio()}
+              metodoPagoSeleccionado={metodoPagoSeleccionado}
+            />
           </div>
         </main>
       </div>
