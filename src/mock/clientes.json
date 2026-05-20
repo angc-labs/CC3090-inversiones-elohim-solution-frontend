@@ -1,0 +1,47 @@
+[
+  {
+    "id": "1",
+    "nombre": "Carlos Ruiz",
+    "correo": "carlos.ruiz@esmirna.com",
+    "telefono": "+51 987 654 321",
+    "rol": "administrador",
+    "estado": true,
+    "ultimoAcceso": "Hace 5 min"
+  },
+  {
+    "id": "2",
+    "nombre": "Ana López",
+    "correo": "ana.lopez@esmirna.com",
+    "telefono": "+51 987 654 322",
+    "rol": "empleado",
+    "estado": true,
+    "ultimoAcceso": "Hace 1 hora"
+  },
+  {
+    "id": "3",
+    "nombre": "María Soto",
+    "correo": "maria.soto@esmirna.com",
+    "telefono": "+51 987 654 323",
+    "rol": "empleado",
+    "estado": true,
+    "ultimoAcceso": "Hace 2 horas"
+  },
+  {
+    "id": "4",
+    "nombre": "Juan Pérez",
+    "correo": "juan.perez@email.com",
+    "telefono": "+51 987 654 324",
+    "rol": "cliente",
+    "estado": true,
+    "ultimoAcceso": "Hace 1 día"
+  },
+  {
+    "id": "5",
+    "nombre": "Pedro Martínez",
+    "correo": "pedro.martinez@esmirna.com",
+    "telefono": "+51 987 654 325",
+    "rol": "empleado",
+    "estado": false,
+    "ultimoAcceso": "Hace 15 días"
+  }
+]
