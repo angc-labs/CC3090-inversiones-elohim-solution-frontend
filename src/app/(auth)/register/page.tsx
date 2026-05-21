@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { register } from "@/lib/api/auth";
+import { getPostLoginPath } from "@/lib/auth-routes";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
@@ -79,7 +80,7 @@ export default function RegisterPage() {
       
       setSuccess("¡Cuenta creada exitosamente! Redirigiendo...");
       setTimeout(() => {
-        router.push("/home");
+        router.push(getPostLoginPath(response.rol));
       }, 500);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Error al registrar usuario";

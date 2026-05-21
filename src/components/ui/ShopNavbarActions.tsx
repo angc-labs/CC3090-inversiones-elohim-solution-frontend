@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { CiShoppingCart, CiLogout, CiBoxList } from "react-icons/ci";
 import { Receipt, UserRound } from "lucide-react";
-import { logout as logoutRequest } from "@/lib/api/auth";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { useLogout } from "@/hooks/useLogout";
 import { cn } from "@/lib/utils";
 
 export type ShopNavbarActionsProps = {
@@ -14,22 +13,8 @@ export type ShopNavbarActionsProps = {
 };
 
 export function ShopNavbarActions({ showCart = true, showCatalog = false }: ShopNavbarActionsProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const token = useAuthStore((s) => s.token);
-  const logout = useAuthStore((s) => s.logout);
-
-  const handleLogout = async () => {
-    try {
-      if (token) {
-        await logoutRequest(token);
-      }
-    } catch {
-    } finally {
-      logout();
-      router.push("/login");
-    }
-  };
+  const handleLogout = useLogout();
 
   return (
     <div className="mr-4! flex! flex-wrap! items-center! justify-end! gap-1! sm:gap-2!">

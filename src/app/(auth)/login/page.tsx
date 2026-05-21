@@ -8,6 +8,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { login } from "@/lib/api/auth";
+import { getPostLoginPath } from "@/lib/auth-routes";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 export default function LoginPage() {
@@ -51,7 +52,7 @@ export default function LoginPage() {
 
       setSuccess("¡Bienvenido! Redirigiendo...");
       setTimeout(() => {
-        router.push("/home");
+        router.push(getPostLoginPath(response.rol));
       }, 500);
     } catch (err) {
       if (err instanceof Error) {

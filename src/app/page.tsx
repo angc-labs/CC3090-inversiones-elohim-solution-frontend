@@ -2,19 +2,21 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getPostLoginPath } from "@/lib/auth-routes";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function LandingPage() {
   const router = useRouter();
-  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const usuario = useAuthStore((state) => state.usuario);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/home");
+    if (isAuthenticated && usuario) {
+      router.push(getPostLoginPath(usuario.rol));
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, usuario]);
 
   return (
     <div className="relative! min-h-screen! bg-[#f8f8f6]!">

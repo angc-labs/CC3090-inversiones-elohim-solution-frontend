@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
@@ -11,9 +11,9 @@ import {
   DollarSign,
   BarChart2,
   Users,
-  LogOut,
 } from "lucide-react";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { AdminRoute } from "@/components/features/auth/AdminRoute";
+import { LogoutButton } from "@/components/features/auth/LogoutButton";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -29,15 +29,9 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const logout = useAuthStore((s) => s.logout);
-
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
-  };
 
   return (
+    <AdminRoute>
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="w-56 shrink-0 flex flex-col bg-white border-r border-gray-200 py-6 px-3">
@@ -76,14 +70,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
-        {/* Logout */}
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors mt-4"
-        >
-          <LogOut size={16} />
-          Cerrar sesión
-        </button>
+        <div className="mt-4">
+          <LogoutButton />
+        </div>
       </aside>
 
       {/* Main content */}
@@ -91,5 +80,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {children}
       </main>
     </div>
+    </AdminRoute>
   );
 }
