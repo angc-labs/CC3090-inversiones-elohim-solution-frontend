@@ -86,7 +86,6 @@ export function useProductFilters(): UseProductFiltersReturn {
   const filteredProducts = useMemo(() => {
     let products = productos;
 
-    // Aplicar búsqueda primero
     if (searchQuery.trim()) {
       const lowerQuery = searchQuery.toLowerCase();
       products = products.filter((product) =>
@@ -97,7 +96,6 @@ export function useProductFilters(): UseProductFiltersReturn {
       );
     }
 
-    // Aplicar filtros
     if (selectedValues.length === 0) {
       return products;
     }

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Plus, Search, SquarePen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
-import clientesMock from "@/mock/clientes.json";
+import { getAdminUsuarios, cambiarEstadoUsuario } from "@/lib/api/admin";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 type TRolUsuario = "administrador" | "empleado" | "cliente";
 
@@ -36,12 +37,39 @@ const ROL_LABEL: Record<TRolUsuario, string> = {
 };
 
 export default function ClientesPage() {
-  const [usuarios, setUsuarios] = useState<TUsuarioAdmin[]>(clientesMock as TUsuarioAdmin[]);
+  const token = useAuthStore((s) => s.token);
+  const [usuarios, setUsuarios] = useState<TUsuarioAdmin[]>([]);
+  const [cargando, setCargando]         = useState(true);
   const [busqueda, setBusqueda]         = useState("");
   const [filtroRol, setFiltroRol]       = useState("todos");
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [modalUsuario, setModalUsuario] = useState<TUsuarioAdmin | null>(null);
   const [confirmando, setConfirmando]   = useState(false);
+
+  const cargarUsuarios = useCallback(async () => {
+    if (!token) return;
+    setCargando(true);
+    try {
+      const data = await getAdminUsuarios(token);
+      setUsuarios(
+        data.map((u) => ({
+          id: u.id,
+          nombre: [u.nombre, u.apellido].filter(Boolean).join(" "),
+          correo: u.correo,
+          telefono: u.telefono ?? "-",
+          rol: (u.tipoUsuario as TRolUsuario) ?? "cliente",
+          estado: u.estado,
+          ultimoAcceso: new Date(u.fechaCreacion).toLocaleDateString("es-GT"),
+        }))
+      );
+    } finally {
+      setCargando(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    cargarUsuarios();
+  }, [cargarUsuarios]);
 
   const filtrados = useMemo(() => {
     return usuarios.filter((u) => {
@@ -65,18 +93,20 @@ export default function ClientesPage() {
     activos:         usuarios.filter((u) => u.estado).length,
   }), [usuarios]);
 
-  const handleToggleEstado = () => {
-    if (!modalUsuario) return;
+  const handleToggleEstado = async () => {
+    if (!modalUsuario || !token) return;
     setConfirmando(true);
-    setTimeout(() => {
+    try {
+      await cambiarEstadoUsuario(token, modalUsuario.id, !modalUsuario.estado);
       setUsuarios((prev) =>
         prev.map((u) =>
           u.id === modalUsuario.id ? { ...u, estado: !u.estado } : u
         )
       );
-      setConfirmando(false);
       setModalUsuario(null);
-    }, 400);
+    } finally {
+      setConfirmando(false);
+    }
   };
 
   return (
@@ -143,6 +173,9 @@ export default function ClientesPage() {
 
       {/* Tabla */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        {cargando ? (
+          <div className="px-4 py-10 text-center text-gray-400 text-sm">Cargando usuarios…</div>
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -201,6 +234,7 @@ export default function ClientesPage() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Modal cambiar estado */}

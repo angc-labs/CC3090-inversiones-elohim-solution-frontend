@@ -13,7 +13,7 @@ export function useReservas() {
       setIsLoading(true);
       setError(null);
       const response = await fetch(`${API_URL}/api/reservas`, {
-        credentials: "include", // Para incluir cookies de sesión
+        credentials: "include", 
       });
       if (!response.ok) {
         throw new Error("Error al obtener reservas");

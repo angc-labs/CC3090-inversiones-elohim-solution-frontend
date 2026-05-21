@@ -17,7 +17,6 @@ export default function CatalogoPage() {
     return "grid-cols-1! sm:grid-cols-2! lg:grid-cols-3!";
   };
 
-  // Hook de filtros
   const {
     filteredProducts,
     activeFilterType,
@@ -55,7 +54,6 @@ export default function CatalogoPage() {
   // Agrupar productos filtrados según el tipo de filtro activo
   const getGroupedProducts = () => {
     if (activeFilterType === "price") {
-      // Agrupar por rango de precio
       const priceRanges = getPriceRanges();
       const grouped: Record<string, typeof filteredProducts> = {};
 
@@ -67,7 +65,6 @@ export default function CatalogoPage() {
 
       return grouped;
     } else if (activeFilterType === "brand") {
-      // Agrupar por marca
       return filteredProducts.reduce(
         (acc, product) => {
           const brand = product.idMarca ?? "sin-marca";
@@ -80,7 +77,6 @@ export default function CatalogoPage() {
         {} as Record<string, typeof filteredProducts>
       );
     } else {
-      // Agrupar por categoría (default)
       return filteredProducts.reduce(
         (acc, product) => {
           const categoryId = product.categoriaId ?? "sin-categoria";
