@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import clientesMock from "@/mock/clientes.json";
 
-// ─── Tipos ────────────────────────────────────────────────────────────────────
 type TRolUsuario = "administrador" | "empleado" | "cliente";
 
 type TUsuarioAdmin = {
@@ -20,7 +19,6 @@ type TUsuarioAdmin = {
   ultimoAcceso: string;
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 function getInitials(nombre: string) {
   return nombre.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
 }
@@ -37,7 +35,6 @@ const ROL_LABEL: Record<TRolUsuario, string> = {
   cliente:       "Cliente",
 };
 
-// ─── Página ───────────────────────────────────────────────────────────────────
 export default function ClientesPage() {
   const [usuarios, setUsuarios] = useState<TUsuarioAdmin[]>(clientesMock as TUsuarioAdmin[]);
   const [busqueda, setBusqueda]         = useState("");
@@ -71,7 +68,6 @@ export default function ClientesPage() {
   const handleToggleEstado = () => {
     if (!modalUsuario) return;
     setConfirmando(true);
-    // TODO: reemplazar con llamada al endpoint PUT /api/admin/clientes/{id}/estado
     setTimeout(() => {
       setUsuarios((prev) =>
         prev.map((u) =>
