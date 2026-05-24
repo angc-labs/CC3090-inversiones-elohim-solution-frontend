@@ -44,3 +44,66 @@ export async function cambiarEstadoUsuario(
     "No se pudo cambiar el estado del usuario"
   );
 }
+
+export type CrearUsuarioAdminDto = {
+  correo: string;
+  nombre: string;
+  contrasena: string;
+  tipoUsuario: string;
+  apellido?: string;
+  telefono?: string;
+  rol?: string;
+};
+
+export type ActualizarUsuarioAdminDto = {
+  nombre?: string;
+  apellido?: string;
+  telefono?: string;
+  correo?: string;
+  rol?: string;
+};
+
+export async function crearUsuarioAdmin(
+  token: string,
+  dto: CrearUsuarioAdminDto
+): Promise<UsuarioAdminDto> {
+  return apiRequest<UsuarioAdminDto>(
+    "/api/admin/usuarios",
+    {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify(dto),
+    },
+    "No se pudo crear el usuario"
+  );
+}
+
+export async function actualizarUsuarioAdmin(
+  token: string,
+  id: string,
+  dto: ActualizarUsuarioAdminDto
+): Promise<UsuarioAdminDto> {
+  return apiRequest<UsuarioAdminDto>(
+    `/api/admin/usuarios/${id}`,
+    {
+      method: "PUT",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify(dto),
+    },
+    "No se pudo actualizar el usuario"
+  );
+}
+
+export async function eliminarUsuarioAdmin(
+  token: string,
+  id: string
+): Promise<void> {
+  return apiRequest<void>(
+    `/api/admin/usuarios/${id}`,
+    {
+      method: "DELETE",
+      headers: buildAuthHeaders(token),
+    },
+    "No se pudo eliminar el usuario"
+  );
+}

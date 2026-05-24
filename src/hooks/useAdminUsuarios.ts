@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { getAdminUsuarios, cambiarEstadoUsuario } from "@/lib/api/admin";
+import { getAdminUsuarios, cambiarEstadoUsuario, crearUsuarioAdmin, actualizarUsuarioAdmin, eliminarUsuarioAdmin } from "@/lib/api/admin";
+import type { CrearUsuarioAdminDto, ActualizarUsuarioAdminDto } from "@/lib/api/admin";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 export type TRolUsuario = "administrador" | "empleado" | "cliente";
@@ -23,6 +24,10 @@ export function useAdminUsuarios() {
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [modalUsuario, setModalUsuario] = useState<TUsuarioAdmin | null>(null);
   const [confirmando, setConfirmando]   = useState(false);
+  const [modalCrear, setModalCrear]     = useState(false);
+  const [modalEditar, setModalEditar]   = useState<TUsuarioAdmin | null>(null);
+  const [modalEliminar, setModalEliminar] = useState<TUsuarioAdmin | null>(null);
+  const [guardando, setGuardando]       = useState(false);
 
   const cargarUsuarios = useCallback(async () => {
     if (!token) return;
@@ -87,6 +92,65 @@ export function useAdminUsuarios() {
     }
   };
 
+  const handleCrear = async (dto: CrearUsuarioAdminDto) => {
+    if (!token) return;
+    setGuardando(true);
+    try {
+      const nuevo = await crearUsuarioAdmin(token, dto);
+      setUsuarios((prev) => [
+        ...prev,
+        {
+          id: nuevo.id,
+          nombre: [nuevo.nombre, nuevo.apellido].filter(Boolean).join(" "),
+          correo: nuevo.correo,
+          telefono: nuevo.telefono ?? "-",
+          rol: (nuevo.tipoUsuario as TRolUsuario) ?? "empleado",
+          estado: nuevo.estado,
+          ultimoAcceso: new Date(nuevo.fechaCreacion).toLocaleDateString("es-GT"),
+        },
+      ]);
+      setModalCrear(false);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleActualizar = async (dto: ActualizarUsuarioAdminDto) => {
+    if (!modalEditar || !token) return;
+    setGuardando(true);
+    try {
+      const actualizado = await actualizarUsuarioAdmin(token, modalEditar.id, dto);
+      setUsuarios((prev) =>
+        prev.map((u) =>
+          u.id === modalEditar.id
+            ? {
+                ...u,
+                nombre: [actualizado.nombre, actualizado.apellido].filter(Boolean).join(" "),
+                correo: actualizado.correo,
+                telefono: actualizado.telefono ?? "-",
+                rol: (actualizado.tipoUsuario as TRolUsuario) ?? u.rol,
+              }
+            : u
+        )
+      );
+      setModalEditar(null);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleEliminar = async () => {
+    if (!modalEliminar || !token) return;
+    setGuardando(true);
+    try {
+      await eliminarUsuarioAdmin(token, modalEliminar.id);
+      setUsuarios((prev) => prev.filter((u) => u.id !== modalEliminar.id));
+      setModalEliminar(null);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   return {
     cargando,
     filtrados,
@@ -101,5 +165,15 @@ export function useAdminUsuarios() {
     setModalUsuario,
     confirmando,
     handleToggleEstado,
+    modalCrear,
+    setModalCrear,
+    modalEditar,
+    setModalEditar,
+    modalEliminar,
+    setModalEliminar,
+    guardando,
+    handleCrear,
+    handleActualizar,
+    handleEliminar,
   };
 }

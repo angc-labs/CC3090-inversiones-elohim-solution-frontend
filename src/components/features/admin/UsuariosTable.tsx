@@ -1,4 +1,4 @@
-import { SquarePen } from "lucide-react";
+import { SquarePen, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { TUsuarioAdmin, TRolUsuario } from "@/hooks/useAdminUsuarios";
 
@@ -22,9 +22,11 @@ type Props = {
   cargando: boolean;
   filtrados: TUsuarioAdmin[];
   onEditarUsuario: (u: TUsuarioAdmin) => void;
+  onEditarInfo: (u: TUsuarioAdmin) => void;
+  onEliminar: (u: TUsuarioAdmin) => void;
 };
 
-export function UsuariosTable({ cargando, filtrados, onEditarUsuario }: Props) {
+export function UsuariosTable({ cargando, filtrados, onEditarUsuario, onEditarInfo, onEliminar }: Props) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
       {cargando ? (
@@ -71,13 +73,36 @@ export function UsuariosTable({ cargando, filtrados, onEditarUsuario }: Props) {
                   </td>
                   <td className="px-4 py-3 text-gray-500">{usuario.ultimoAcceso}</td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => onEditarUsuario(usuario)}
-                      className="p-1.5 rounded-md bg-blue-50 text-blue-400 hover:bg-blue-100 hover:text-blue-700 transition-colors"
-                      aria-label={`Editar ${usuario.nombre}`}
-                    >
-                      <SquarePen size={15} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => onEditarUsuario(usuario)}
+                        className="p-1.5 rounded-md bg-blue-50 text-blue-400 hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                        aria-label={`Cambiar estado de ${usuario.nombre}`}
+                        title={usuario.estado ? "Desactivar" : "Activar"}
+                      >
+                        <SquarePen size={15} />
+                      </button>
+                      {usuario.rol !== "cliente" && (
+                        <>
+                          <button
+                            onClick={() => onEditarInfo(usuario)}
+                            className="p-1.5 rounded-md bg-amber-50 text-amber-400 hover:bg-amber-100 hover:text-amber-700 transition-colors"
+                            aria-label={`Editar información de ${usuario.nombre}`}
+                            title="Editar información"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            onClick={() => onEliminar(usuario)}
+                            className="p-1.5 rounded-md bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-700 transition-colors"
+                            aria-label={`Eliminar ${usuario.nombre}`}
+                            title="Eliminar usuario"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
