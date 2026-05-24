@@ -25,8 +25,8 @@ export function CatalogoShell({
         {/* Header Card with Search */}
         <div className="px-4! py-6! sm:px-6! lg:px-8!">
           <div className="rounded-3xl! border! border-slate-200/80! bg-white/95! p-4! shadow-[0_24px_70px_rgba(15,23,42,0.10)]! backdrop-blur-sm!">
-            <div className="flex! items-center! justify-between! gap-6!">
-              <div className="flex! items-center! gap-4! p-4!">
+            <div className="flex! flex-wrap! items-center! justify-between! gap-3! sm:gap-6!">
+              <div className="flex! min-w-0! items-center! gap-3! p-2! sm:gap-4! sm:p-4!">
                 <div className="flex! h-7! w-7! items-center! justify-center! rounded-md! bg-blue-600! text-white! shadow-sm!">
                   <svg className="h-4! w-4!" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />

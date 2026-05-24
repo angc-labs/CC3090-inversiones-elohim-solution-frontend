@@ -204,7 +204,7 @@ function PerfilContent() {
             <div className="grid! gap-8! lg:grid-cols-12! lg:gap-10!">
               {/* Panel identidad */}
               <aside className="lg:col-span-4!">
-                <div className="sticky! top-6! overflow-hidden! rounded-3xl! border! border-slate-200/80! bg-white/95! shadow-[0_20px_50px_rgba(15,23,42,0.08)]! backdrop-blur-sm!">
+                <div className="overflow-hidden! rounded-3xl! border! border-slate-200/80! bg-white/95! shadow-[0_20px_50px_rgba(15,23,42,0.08)]! backdrop-blur-sm! lg:sticky! lg:top-6!">
                   <div className="bg-gradient-to-br! from-blue-600! via-blue-700! to-slate-900! px-6! pb-16! pt-10! text-center! text-white!">
                     <div className="mx-auto! flex! h-24! w-24! items-center! justify-center! rounded-full! bg-white/15! ring-4! ring-white/20! backdrop-blur-sm!">
                       <UserCircle2 className="h-16! w-16! text-white/95!" strokeWidth={1} aria-hidden />

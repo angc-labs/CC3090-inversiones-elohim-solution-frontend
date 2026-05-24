@@ -85,7 +85,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
           <div className="flex! flex-col! gap-4! sm:flex-row! sm:items-start! sm:justify-between!">
             <div>
               <p className="text-xs! uppercase! tracking-[0.3em]! text-blue-600!">Producto</p>
-              <h1 className="mt-3! text-4xl! font-black! text-slate-900!">
+              <h1 className="mt-3! text-2xl! font-black! text-slate-900! sm:text-3xl! lg:text-4xl!">
                 {product.nombreProducto}
               </h1>
             </div>

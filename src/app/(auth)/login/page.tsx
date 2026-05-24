@@ -45,6 +45,7 @@ export default function LoginPage() {
           correo: response.correo,
           nombre: response.nombre,
           rol: response.rol,
+          esSuperAdmin: response.esSuperAdmin,
         },
         response.token,
         response.expiraEn

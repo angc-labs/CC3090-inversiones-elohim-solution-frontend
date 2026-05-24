@@ -176,8 +176,8 @@ export default function ResumenCompraPage() {
       <div className="relative! flex! min-h-screen! flex-col!">
         <div className="px-4! py-6! sm:px-6! lg:px-8!">
           <div className="rounded-3xl! border! border-slate-200/80! bg-white/95! p-4! shadow-[0_24px_70px_rgba(15,23,42,0.10)]! backdrop-blur-sm!">
-            <div className="flex! items-center! justify-between! gap-6!">
-              <div className="flex! items-center! gap-4! p-4!">
+            <div className="flex! flex-wrap! items-center! justify-between! gap-3! sm:gap-6!">
+              <div className="flex! min-w-0! items-center! gap-3! p-2! sm:gap-4! sm:p-4!">
                 <div className="flex! h-7! w-7! items-center! justify-center! rounded-md! bg-blue-600! text-white! shadow-sm!">
                   <svg
                     className="h-4! w-4!"
@@ -204,10 +204,10 @@ export default function ResumenCompraPage() {
           </div>
         </div>
 
-        <main className="w-full! flex-1! px-6! py-12! sm:px-8! lg:px-12!">
+        <main className="w-full! flex-1! px-4! py-8! sm:px-6! sm:py-12! lg:px-12!">
           <div className="mx-auto! w-full! max-w-2xl!">
-            <div className="mb-8!">
-              <div className="flex! items-center! justify-center! gap-2! text-sm! font-medium! text-slate-600!">
+            <div className="mb-6! sm:mb-8!">
+              <div className="flex! flex-wrap! items-center! justify-center! gap-1.5! text-xs! font-medium! text-slate-600! sm:gap-2! sm:text-sm!">
                 <div className="flex! h-8! w-8! items-center! justify-center! rounded-full! bg-blue-600! text-white!">
                   1
                 </div>

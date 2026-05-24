@@ -25,8 +25,8 @@ export default function MetodoPagoPage() {
       <div className="relative! flex! min-h-screen! flex-col!">
         {/* Header */}
         <div className="px-4! py-6! sm:px-6! lg:px-8!">
-          <div className="rounded-3xl! border! border-slate-200/80! bg-white/95! p-8! shadow-[0_24px_70px_rgba(15,23,42,0.10)]! backdrop-blur-sm!">
-            <div className="flex! items-center! justify-between! gap-6! mb-8!">
+          <div className="rounded-3xl! border! border-slate-200/80! bg-white/95! p-4! shadow-[0_24px_70px_rgba(15,23,42,0.10)]! backdrop-blur-sm! sm:p-6! lg:p-8!">
+            <div className="mb-4! flex! flex-wrap! items-center! justify-between! gap-3! sm:mb-8! sm:gap-6!">
               <div className="flex! items-center! gap-4! p-4!">
                 <div className="flex! h-7! w-7! items-center! justify-center! rounded-md! bg-blue-600! text-white! shadow-sm!">
                   <svg
@@ -55,7 +55,7 @@ export default function MetodoPagoPage() {
         </div>
 
         {/* Main content */}
-        <main className="flex-1! px-6! py-12! sm:px-8! lg:px-12! w-full!">
+        <main className="flex-1! w-full! px-4! py-8! sm:px-6! sm:py-12! lg:px-12!">
           <div className="w-full! mx-auto! max-w-2xl!">
             {/* Breadcrumb / Progreso */}
             <div className="mb-8!">

@@ -8,6 +8,7 @@ export type TUsuario = {
   correo: string;
   nombre: string;
   rol: TRol;
+  esSuperAdmin?: boolean;
 };
 
 type TAuthStore = {

@@ -146,7 +146,7 @@ export default function CatalogoPage() {
 
           {/* Results Summary */}
           {(searchQuery || selectedValues.length > 0) && (
-            <div className="mb-6! flex! items-center! justify-between!">
+            <div className="mb-6! flex! flex-col! gap-2! sm:flex-row! sm:items-center! sm:justify-between!">
               <p className="text-sm! text-gray-600!">
                 {filteredProducts.length} producto{filteredProducts.length !== 1 ? "s" : ""} encontrado{filteredProducts.length !== 1 ? "s" : ""}
                 {searchQuery && ` para "${searchQuery}"`}
@@ -169,7 +169,7 @@ export default function CatalogoPage() {
                 {/* Group Title - Dinámico según filtro */}
                 <div className="flex! items-center! gap-3! mb-8!">
                   <span className="text-2xl! text-blue-600!">→</span>
-                  <h2 className="text-2xl! font-bold! text-slate-900!">
+                  <h2 className="text-xl! font-bold! text-slate-900! sm:text-2xl!">
                     {activeFilterType === "brand"
                       ? getBrandLabel(groupId)
                       : activeFilterType === "category"

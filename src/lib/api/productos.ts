@@ -1,4 +1,4 @@
-import { apiRequest } from "@/lib/api/client";
+import { apiRequest, buildAuthHeaders } from "@/lib/api/client";
 import { TCategoria, TMarca, TProducto } from "@/types";
 
 export type TProductosParams = {
@@ -94,5 +94,73 @@ export async function obtenerCategorias(): Promise<TCategoria[]> {
       method: "GET",
     },
     "Error al obtener categorías"
+  );
+}
+
+export type CrearProductoInput = {
+  codigoProducto: string;
+  nombreProducto: string;
+  precio: number;
+  stockActual: number;
+  descripcion?: string;
+  idMarca?: string;
+  categoriaId?: string;
+  fechaVencimiento?: string;
+  imagenPrincipal?: string;
+};
+
+export type ActualizarProductoInput = {
+  nombreProducto: string;
+  precio: number;
+  stockActual: number;
+  descripcion?: string;
+  idMarca?: string;
+  categoriaId?: string;
+  fechaVencimiento?: string;
+  imagenPrincipal?: string;
+};
+
+export async function crearProducto(
+  token: string,
+  payload: CrearProductoInput
+): Promise<TProducto> {
+  return apiRequest<TProducto>(
+    "/api/productos",
+    {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify(payload),
+    },
+    "No se pudo crear el producto"
+  );
+}
+
+export async function actualizarProducto(
+  token: string,
+  idProducto: string,
+  payload: ActualizarProductoInput
+): Promise<TProducto> {
+  return apiRequest<TProducto>(
+    `/api/productos/${idProducto}`,
+    {
+      method: "PUT",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify(payload),
+    },
+    "No se pudo actualizar el producto"
+  );
+}
+
+export async function eliminarProducto(
+  token: string,
+  idProducto: string
+): Promise<void> {
+  await apiRequest<void>(
+    `/api/productos/${idProducto}`,
+    {
+      method: "DELETE",
+      headers: buildAuthHeaders(token),
+    },
+    "No se pudo eliminar el producto"
   );
 }

@@ -10,7 +10,7 @@ export default function ReservasPage() {
     <ProtectedRoute>
       <CatalogoShell eyebrow="ESMIRNA" showSidebar={false}>
         <div className="mb-8!">
-          <h1 className="text-3xl! font-bold! tracking-tight! text-slate-900!">Mis compras</h1>
+          <h1 className="text-2xl! font-bold! tracking-tight! text-slate-900! sm:text-3xl!">Mis compras</h1>
           <p className="mt-2! text-slate-600!">
             Historial de reservaciones y pagos asociados a tu cuenta.
           </p>

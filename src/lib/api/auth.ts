@@ -10,6 +10,7 @@ type TAuthApiResponse = {
   tipoCliente?: "mayorista" | "minorista" | "particular" | null;
   token: string;
   expiraEn: string;
+  esSuperAdmin?: boolean;
 };
 
 export type TAuthResponse = {
@@ -17,6 +18,7 @@ export type TAuthResponse = {
   correo: string;
   nombre: string;
   rol: TRol;
+  esSuperAdmin: boolean;
   token: string;
   expiraEn: number;
 };
@@ -49,6 +51,7 @@ function mapAuthResponse(response: TAuthApiResponse): TAuthResponse {
     correo: response.correo,
     nombre: response.nombre,
     rol: mapRol(response),
+    esSuperAdmin: response.esSuperAdmin === true,
     token: response.token,
     expiraEn: Date.parse(response.expiraEn),
   };

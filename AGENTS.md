@@ -12,6 +12,12 @@ Objetivo: cambios seguros, consistentes y fáciles de revisar.
 - Gestor de paquetes: `pnpm`
 - Paquetes clave: `next@16.2.1`, `react@19.2.4`, `eslint@9`, `zustand`
 
+**Documentación del proyecto:**
+
+- `docs/RUTAS.md` — protección de rutas y menú admin
+- `../backend/docs/endpoints.md` — API REST y Swagger
+- Montos en UI: `formatGtq()` (GTQ)
+
 ---
 
 ## 2. Contexto del negocio
@@ -24,7 +30,7 @@ Las pantallas principales son:
 - Detalle de producto con disponibilidad en tiempo real
 - Carrito de compras y confirmación de reservación
 - Historial de reservaciones del cliente
-- Panel de administrador (reportes y gestión de productos)
+- Panel de administrador: dashboard, ventas, reportes, usuarios y productos (admin); cajero sin usuarios/productos
 - Vista del cajero para validar reservaciones por código QR
 
 Tener este contexto presente al evaluar qué componente o página corresponde a cada cambio.
