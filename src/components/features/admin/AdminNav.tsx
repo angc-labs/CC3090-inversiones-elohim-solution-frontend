@@ -83,14 +83,18 @@ export function AdminSidebarPanel({
   onClose,
 }: AdminSidebarPanelProps) {
   return (
-    <>
-      <div className="flex items-center justify-between gap-2 px-3 mb-6">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm select-none">
-            E
+    <div className="flex h-full flex-col">
+      <div className="mb-6 flex items-center justify-between gap-2 px-3">
+        <div className="flex! items-center! gap-2.5!">
+            <div className="flex! h-7! w-7! items-center! justify-center! rounded-md! bg-blue-600! text-white! shadow-sm!">
+              <svg className="h-4! w-4!" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <span className="text-sm! font-semibold! tracking-tight! text-gray-900!">
+              <Link href="/">Esmira</Link>
+            </span>
           </div>
-          <span className="font-semibold text-gray-900 tracking-wide">Esmira</span>
-        </div>
         {showClose && onClose ? (
           <button
             type="button"
@@ -107,9 +111,9 @@ export function AdminSidebarPanel({
 
       <AdminNavLinks items={items} onNavigate={onNavigate} />
 
-      <div className="mt-4 px-1">
+      <div className="mt-auto px-1 pt-4">
         <LogoutButton />
       </div>
-    </>
+    </div>
   );
 }

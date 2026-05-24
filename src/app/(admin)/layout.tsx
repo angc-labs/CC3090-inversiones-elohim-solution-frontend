@@ -23,7 +23,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <AdminRoute>
       <div className="flex min-h-screen flex-col bg-gray-50 lg:flex-row">
         {/* Sidebar escritorio */}
-        <aside className="hidden w-56 shrink-0 flex-col border-r border-gray-200 bg-white py-6 px-3 lg:flex">
+        <aside className="hidden h-screen w-56 shrink-0 flex-col border-r border-gray-200 bg-white py-6 px-3 lg:flex lg:overflow-y-auto">
           <AdminSidebarPanel items={itemsVisibles} />
         </aside>
 
