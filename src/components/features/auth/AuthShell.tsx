@@ -14,7 +14,7 @@ export function AuthShell({
   children,
   title,
   description,
-  eyebrow = "ELOHIM TIENDA ONLINE",
+  eyebrow = "ESMIRA TIENDA ONLINE",
   footerLeft,
   footerRight,
   topRight,

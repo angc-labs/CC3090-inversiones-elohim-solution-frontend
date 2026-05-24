@@ -4,6 +4,7 @@ export type TProducto = {
   nombreProducto: string;
   precio: number;
   stockActual: number;
+  stockMinimo?: number;
   descripcion?: string;
   idMarca?: string;
   categoriaId?: string;

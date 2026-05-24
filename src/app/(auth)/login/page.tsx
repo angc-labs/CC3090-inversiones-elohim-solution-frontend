@@ -83,13 +83,13 @@ export default function LoginPage() {
               </svg>
             </div>
             <span className="text-sm! font-semibold! tracking-tight! text-gray-900!">
-              <Link href="/">ESMIRNA</Link>
+              <Link href="/">Esmira</Link>
             </span>
           </div>
 
           <div className="hidden! md:block!">
             <h2 className="text-3xl! font-bold! leading-tight! tracking-tight! text-gray-900!">
-              Bienvenido de nuevo<br />a ESMIRNA.
+              Bienvenido de nuevo<br />a Esmira.
             </h2>
             <p className="mt-2.5! max-w-xs! text-sm! leading-relaxed! text-gray-400!">
               Accede para continuar tu experiencia de compra sin fricciones.

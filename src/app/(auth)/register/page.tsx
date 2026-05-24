@@ -105,7 +105,7 @@ export default function RegisterPage() {
               </svg>
             </div>
             <span className="text-sm! font-semibold! tracking-tight! text-gray-900!">
-              <Link href="/">ESMIRNA</Link>
+              <Link href="/">Esmira</Link>
             </span>
           </div>
 

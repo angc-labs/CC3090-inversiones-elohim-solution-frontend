@@ -32,7 +32,7 @@ export default function LandingPage() {
               </svg>
             </div>
             <span className="text-sm! font-semibold! tracking-tight! text-gray-900!">
-              <Link href="/">ESMIRNA</Link>
+              <Link href="/">Esmira</Link>
             </span>
           </div>
           <div className="flex! items-center! gap-1.5!">
@@ -70,7 +70,7 @@ export default function LandingPage() {
           {/* Headline */}
           <h1 className="text-[clamp(2.8rem,9vw,5.5rem)]! font-bold! leading-[1.08]! tracking-[-0.02em]! text-gray-900!">
             Tienda {" "}
-            <span className="text-blue-600!">Elohim</span>
+            <span className="text-blue-600!">Esmira</span>
           </h1>
 
           {/* Subheadline */}

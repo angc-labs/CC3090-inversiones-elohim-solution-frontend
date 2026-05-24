@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm select-none">
             E
           </div>
-          <span className="font-semibold text-gray-900 tracking-wide">ESMIRNA</span>
+          <span className="font-semibold text-gray-900 tracking-wide">Esmira</span>
         </div>
 
         {/* Nav */}
