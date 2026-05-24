@@ -47,7 +47,7 @@ const ChartContainer = React.forwardRef<
         data-chart={chartId}
         ref={ref}
         className={cn(
-          "!flex !aspect-video !justify-center !text-xs [&_.recharts-cartesian-axis-tick_text]:!fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:!stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:!stroke-border [&_.recharts-dot[stroke='#fff']]:!stroke-transparent [&_.recharts-layer]:!outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:!stroke-border [&_.recharts-radial-bar-background-sector]:!fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:!fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:!stroke-border [&_.recharts-sector[stroke='#fff']]:!stroke-transparent [&_.recharts-sector]:!outline-none [&_.recharts-surface]:!outline-none",
+          "!relative !flex !aspect-video !justify-center !overflow-visible !text-xs [&_.recharts-cartesian-axis-tick_text]:!fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:!stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:!stroke-border [&_.recharts-default-tooltip]:!border-0 [&_.recharts-default-tooltip]:!bg-transparent [&_.recharts-default-tooltip]:!p-0 [&_.recharts-default-tooltip]:!shadow-none [&_.recharts-dot[stroke='#fff']]:!stroke-transparent [&_.recharts-layer]:!outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:!stroke-border [&_.recharts-radial-bar-background-sector]:!fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:!fill-[rgba(203,213,225,0.55)] [&_.recharts-reference-line_[stroke='#ccc']]:!stroke-border [&_.recharts-sector[stroke='#fff']]:!stroke-transparent [&_.recharts-sector]:!outline-none [&_.recharts-surface]:!outline-none [&_.recharts-tooltip-wrapper]:!z-[100] [&_.recharts-tooltip-wrapper]:!w-auto [&_.recharts-tooltip-wrapper]:!pointer-events-none",
           className
         )}
         {...props}
@@ -90,7 +90,44 @@ ${colorConfig
   );
 };
 
-const ChartTooltip = RechartsPrimitive.Tooltip;
+/** Evita que el contenedor por defecto de Recharts recorte el valor del tooltip. */
+const CHART_TOOLTIP_CONTENT_STYLE: React.CSSProperties = {
+  background: "transparent",
+  border: "none",
+  padding: 0,
+  margin: 0,
+  boxShadow: "none",
+};
+
+const CHART_TOOLTIP_WRAPPER_STYLE: React.CSSProperties = {
+  zIndex: 50,
+  outline: "none",
+};
+
+/** Fondo sólido del cuadro de tooltip (no usar tokens semitransparentes). */
+const CHART_TOOLTIP_BOX_STYLE: React.CSSProperties = {
+  backgroundColor: "#ffffff",
+  border: "1px solid #e2e8f0",
+  boxShadow:
+    "0 10px 15px -3px rgb(15 23 42 / 0.12), 0 4px 6px -4px rgb(15 23 42 / 0.08)",
+};
+
+/** Columna / área resaltada al pasar el mouse (como en el diseño de referencia). */
+const CHART_TOOLTIP_CURSOR = { fill: "rgba(203, 213, 225, 0.55)" };
+
+const ChartTooltip = ({
+  contentStyle,
+  wrapperStyle,
+  cursor = CHART_TOOLTIP_CURSOR,
+  ...props
+}: React.ComponentProps<typeof RechartsPrimitive.Tooltip>) => (
+  <RechartsPrimitive.Tooltip
+    cursor={cursor}
+    contentStyle={{ ...CHART_TOOLTIP_CONTENT_STYLE, ...contentStyle }}
+    wrapperStyle={{ ...CHART_TOOLTIP_WRAPPER_STYLE, ...wrapperStyle }}
+    {...props}
+  />
+);
 
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
@@ -135,28 +172,39 @@ const ChartTooltipContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "!grid !min-w-32 !items-start !gap-1.5 !rounded-lg !border !border-border/50 !bg-background !px-2.5 !py-1.5 !text-xs !shadow-xl",
+          "!box-border !w-max !min-w-[9rem] !max-w-[16rem] !rounded-lg !px-3 !py-2 !text-xs !text-slate-900",
           className
         )}
+        style={CHART_TOOLTIP_BOX_STYLE}
       >
         {!nestLabel && !hideLabel ? (
-          <div className={cn("!font-medium", labelClassName)}>
+          <div className={cn("!mb-1.5 !font-semibold !leading-snug !text-slate-900", labelClassName)}>
             {labelFormatter
               ? labelFormatter(label, payload)
               : label}
           </div>
         ) : null}
-        <div className="!grid !gap-1.5">
+        <div className="!flex !flex-col !gap-2">
           {payload.map((item, index) => {
             const key = `${nameKey ?? item.name ?? item.dataKey ?? "value"}`;
             const itemConfig = config[key];
             const indicatorColor = color ?? item.payload?.fill ?? item.color;
+            const metricLabel = String(itemConfig?.label ?? item.name ?? "");
+            const metricValue =
+              item.value != null
+                ? valueFormatter
+                  ? valueFormatter(
+                      Number(item.value),
+                      String(item.dataKey ?? "")
+                    )
+                  : item.value.toLocaleString()
+                : null;
 
             return (
               <div
                 key={item.dataKey}
                 className={cn(
-                  "!flex !w-full !flex-wrap !items-stretch !gap-2 [&>svg]:!h-2.5 [&>svg]:!w-2.5 [&>svg]:!text-muted-foreground",
+                  "!flex !w-full !min-w-0 !items-start !gap-2 [&>svg]:!h-2.5 [&>svg]:!w-2.5 [&>svg]:!text-muted-foreground",
                   indicator === "dot" && "!items-center"
                 )}
               >
@@ -183,34 +231,29 @@ const ChartTooltipContent = React.forwardRef<
                         }
                       />
                     ) : null}
-                    <div
-                      className={cn(
-                        "!flex !flex-1 !justify-between !leading-none",
-                        nestLabel ? "!items-end" : "!items-center"
-                      )}
-                    >
-                      <div className="!grid !gap-1.5">
-                        {nestLabel && !hideLabel ? (
-                          <div className={cn("!font-medium", labelClassName)}>
-                            {labelFormatter
-                              ? labelFormatter(label, payload)
-                              : label}
-                          </div>
-                        ) : null}
-                        <span className="!text-muted-foreground">
-                          {itemConfig?.label ?? item.name}
-                        </span>
-                      </div>
-                      {item.value != null ? (
-                        <span className="!font-mono !font-medium !tabular-nums !text-foreground">
-                          {valueFormatter
-                            ? valueFormatter(
-                                Number(item.value),
-                                String(item.dataKey ?? "")
-                              )
-                            : item.value.toLocaleString()}
-                        </span>
+                    <div className="!min-w-0 !flex-1">
+                      {nestLabel && !hideLabel ? (
+                        <div
+                          className={cn(
+                            "!mb-1 !font-medium !leading-snug",
+                            labelClassName
+                          )}
+                        >
+                          {labelFormatter
+                            ? labelFormatter(label, payload)
+                            : label}
+                        </div>
                       ) : null}
+                      <div className="!grid !w-full !grid-cols-[minmax(0,1fr)_auto] !items-center !gap-x-3 !gap-y-0.5">
+                        <span className="!truncate !text-muted-foreground">
+                          {metricLabel}
+                        </span>
+                        {metricValue != null ? (
+                          <span className="!shrink-0 !justify-self-end !font-mono !text-sm !font-semibold !tabular-nums !text-foreground">
+                            {metricValue}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   </>
                 )}

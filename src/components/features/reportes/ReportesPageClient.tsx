@@ -248,7 +248,7 @@ export function ReportesPageClient() {
     <div className="!w-full !space-y-6">
       <div className="!flex !flex-col !gap-4 sm:!flex-row sm:!items-start sm:!justify-between">
         <div>
-          <h1 className="!text-3xl !font-bold !text-slate-900">Reportes</h1>
+          <h1 className="!text-2xl !font-bold !text-slate-900 sm:!text-3xl">Reportes</h1>
           <p className="!mt-1 !text-slate-500">
             Analiza el rendimiento de tu negocio
           </p>
@@ -265,7 +265,7 @@ export function ReportesPageClient() {
               Filtrar por fecha
             </Button>
             {mostrarFiltro ? (
-              <div className="!absolute !right-0 !z-20 !mt-2 !w-72 !rounded-lg !border !border-slate-200 !bg-white !p-4 !shadow-lg">
+              <div className="!absolute !left-0 !right-0 !z-20 !mt-2 !w-full !max-w-sm !rounded-lg !border !border-slate-200 !bg-white !p-4 !shadow-lg sm:!left-auto sm:!right-0 sm:!w-72">
                 <p className="!mb-3 !text-sm !font-medium !text-slate-700">
                   Rango de fechas
                 </p>

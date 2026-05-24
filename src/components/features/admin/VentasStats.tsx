@@ -1,3 +1,5 @@
+import { formatGtq } from "@/lib/format";
+
 type Stats = {
   ventasHoy: number;
   ingresosHoy: number;
@@ -19,13 +21,13 @@ export function VentasStats({ stats }: Props) {
     },
     {
       label: "Ingresos Hoy",
-      value: `S/ ${stats.ingresosHoy.toFixed(2)}`,
+      value: formatGtq(stats.ingresosHoy),
       color: "text-green-600",
       borderColor: "border-b-green-500",
     },
     {
       label: "Ticket Promedio",
-      value: `S/ ${stats.ticketPromedio.toFixed(2)}`,
+      value: formatGtq(stats.ticketPromedio),
       color: "text-gray-900",
       borderColor: "border-b-purple-500",
     },
@@ -38,7 +40,7 @@ export function VentasStats({ stats }: Props) {
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 xl:grid-cols-4">
       {items.map((stat) => (
         <div
           key={stat.label}
@@ -48,7 +50,7 @@ export function VentasStats({ stats }: Props) {
             {stat.label}
           </p>
 
-          <p className={`text-3xl font-bold mt-1 ${stat.color}`}>
+          <p className={`text-2xl font-bold mt-1 sm:text-3xl ${stat.color}`}>
             {stat.value}
           </p>
         </div>

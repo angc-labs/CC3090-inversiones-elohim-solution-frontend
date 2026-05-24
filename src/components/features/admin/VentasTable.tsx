@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { formatGtq } from "@/lib/format";
 
 type MetodoPago = "efectivo" | "tarjeta";
 
@@ -105,17 +106,17 @@ export function VentasTable({ cargando, ventas }: Props) {
 
                   {/* Subtotal */}
                   <td className="px-4 py-3 text-gray-700">
-                    S/ {venta.subtotal.toFixed(2)}
+                    {formatGtq(venta.subtotal)}
                   </td>
 
                   {/* Descuento */}
                   <td className="px-4 py-3 text-red-500">
-                    S/ {venta.descuento.toFixed(2)}
+                    {formatGtq(venta.descuento)}
                   </td>
 
                   {/* Total */}
                   <td className="px-4 py-3 font-semibold text-gray-900">
-                    S/ {venta.total.toFixed(2)}
+                    {formatGtq(venta.total)}
                   </td>
 
                   {/* Fecha */}

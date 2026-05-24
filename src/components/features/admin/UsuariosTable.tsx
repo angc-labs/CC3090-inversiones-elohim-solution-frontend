@@ -1,4 +1,4 @@
-import { SquarePen } from "lucide-react";
+import { Shield, SquarePen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { TUsuarioAdmin, TRolUsuario } from "@/hooks/useAdminUsuarios";
 
@@ -22,9 +22,17 @@ type Props = {
   cargando: boolean;
   filtrados: TUsuarioAdmin[];
   onEditarUsuario: (u: TUsuarioAdmin) => void;
+  esSuperAdmin?: boolean;
+  onCambiarRol?: (u: TUsuarioAdmin) => void;
 };
 
-export function UsuariosTable({ cargando, filtrados, onEditarUsuario }: Props) {
+export function UsuariosTable({
+  cargando,
+  filtrados,
+  onEditarUsuario,
+  esSuperAdmin = false,
+  onCambiarRol,
+}: Props) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
       {cargando ? (
@@ -71,13 +79,28 @@ export function UsuariosTable({ cargando, filtrados, onEditarUsuario }: Props) {
                   </td>
                   <td className="px-4 py-3 text-gray-500">{usuario.ultimoAcceso}</td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => onEditarUsuario(usuario)}
-                      className="p-1.5 rounded-md bg-blue-50 text-blue-400 hover:bg-blue-100 hover:text-blue-700 transition-colors"
-                      aria-label={`Editar ${usuario.nombre}`}
-                    >
-                      <SquarePen size={15} />
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      {esSuperAdmin && onCambiarRol ? (
+                        <button
+                          type="button"
+                          onClick={() => onCambiarRol(usuario)}
+                          className="p-1.5 rounded-md bg-violet-50 text-violet-600 hover:bg-violet-100 hover:text-violet-800 transition-colors"
+                          aria-label={`Cambiar rol de ${usuario.nombre}`}
+                          title="Cambiar rol"
+                        >
+                          <Shield size={15} />
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => onEditarUsuario(usuario)}
+                        className="p-1.5 rounded-md bg-blue-50 text-blue-400 hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                        aria-label={`Cambiar estado de ${usuario.nombre}`}
+                        title="Activar / desactivar"
+                      >
+                        <SquarePen size={15} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

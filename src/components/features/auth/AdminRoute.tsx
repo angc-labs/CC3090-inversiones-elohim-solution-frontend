@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { getPostLoginPath, isAdminPanelRol } from "@/lib/auth-routes";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  getPostLoginPath,
+  isAdminOnlyPath,
+  isAdminPanelRol,
+  isAdminRol,
+} from "@/lib/auth-routes";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 type AdminRouteProps = {
@@ -11,6 +16,7 @@ type AdminRouteProps = {
 
 export function AdminRoute({ children }: AdminRouteProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isHydrated, setIsHydrated] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const usuario = useAuthStore((state) => state.usuario);
@@ -37,8 +43,13 @@ export function AdminRoute({ children }: AdminRouteProps) {
 
     if (usuario && !isAdminPanelRol(usuario.rol)) {
       router.push(getPostLoginPath(usuario.rol));
+      return;
     }
-  }, [isHydrated, isAuthenticated, isSessionExpired, logout, router, usuario]);
+
+    if (usuario && isAdminOnlyPath(pathname) && !isAdminRol(usuario.rol)) {
+      router.replace("/admin");
+    }
+  }, [isHydrated, isAuthenticated, isSessionExpired, logout, router, usuario, pathname]);
 
   if (
     !isHydrated ||

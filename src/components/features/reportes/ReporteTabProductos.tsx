@@ -86,8 +86,8 @@ export function ReporteTabProductos({ data }: ReporteTabProductosProps) {
               Cantidad Vendida por Producto
             </CardTitle>
           </CardHeader>
-          <CardContent className="!pb-4">
-            <ChartContainer config={chartConfig} className="!h-72 !w-full">
+          <CardContent className="!overflow-visible !pb-4">
+            <ChartContainer config={chartConfig} className="!h-72 !w-full !overflow-visible">
               <BarChart data={chartCantidad} margin={{ bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
@@ -101,7 +101,7 @@ export function ReporteTabProductos({ data }: ReporteTabProductosProps) {
                   tick={{ fontSize: 11 }}
                 />
                 <YAxis tickLine={false} axisLine={false} />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
                 <Bar dataKey="cantidad" fill="#3b82f6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ChartContainer>
@@ -114,8 +114,8 @@ export function ReporteTabProductos({ data }: ReporteTabProductosProps) {
               Ingresos por Producto
             </CardTitle>
           </CardHeader>
-          <CardContent className="!pb-4">
-            <ChartContainer config={chartConfig} className="!h-72 !w-full">
+          <CardContent className="!overflow-visible !pb-4">
+            <ChartContainer config={chartConfig} className="!h-72 !w-full !overflow-visible">
               <BarChart data={chartIngresos} margin={{ bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
@@ -135,7 +135,10 @@ export function ReporteTabProductos({ data }: ReporteTabProductosProps) {
                 />
                 <ChartTooltip
                   content={
-                    <ChartTooltipContent valueFormatter={reportesChartValueFormatter} />
+                    <ChartTooltipContent
+                      hideIndicator
+                      valueFormatter={reportesChartValueFormatter}
+                    />
                   }
                 />
                 <Bar dataKey="ingresos" fill="#10b981" radius={[4, 4, 0, 0]} />

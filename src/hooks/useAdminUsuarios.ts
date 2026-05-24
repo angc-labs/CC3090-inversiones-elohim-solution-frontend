@@ -1,8 +1,22 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { getAdminUsuarios, cambiarEstadoUsuario } from "@/lib/api/admin";
+import {
+  getAdminUsuarios,
+  cambiarEstadoUsuario,
+  cambiarRolUsuario,
+  crearUsuarioAdmin,
+  type CambiarRolUsuarioInput,
+  type CrearUsuarioAdminInput,
+  type UsuarioAdminDto,
+} from "@/lib/api/admin";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 export type TRolUsuario = "administrador" | "empleado" | "cliente";
+
+function mapRolUsuario(u: UsuarioAdminDto): TRolUsuario {
+  if (u.tipoUsuario === "cliente") return "cliente";
+  if (u.rol === "cajero") return "empleado";
+  return "administrador";
+}
 
 export type TUsuarioAdmin = {
   id: string;
@@ -23,6 +37,11 @@ export function useAdminUsuarios() {
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [modalUsuario, setModalUsuario] = useState<TUsuarioAdmin | null>(null);
   const [confirmando, setConfirmando]   = useState(false);
+  const [modalNuevo, setModalNuevo]     = useState(false);
+  const [guardando, setGuardando]       = useState(false);
+  const [errorCrear, setErrorCrear]     = useState<string | null>(null);
+  const [modalRol, setModalRol]         = useState<TUsuarioAdmin | null>(null);
+  const [errorRol, setErrorRol]         = useState<string | null>(null);
 
   const cargarUsuarios = useCallback(async () => {
     if (!token) return;
@@ -35,7 +54,7 @@ export function useAdminUsuarios() {
           nombre: [u.nombre, u.apellido].filter(Boolean).join(" "),
           correo: u.correo,
           telefono: u.telefono ?? "-",
-          rol: (u.tipoUsuario as TRolUsuario) ?? "cliente",
+          rol: mapRolUsuario(u),
           estado: u.estado,
           ultimoAcceso: new Date(u.fechaCreacion).toLocaleDateString("es-GT"),
         }))
@@ -71,6 +90,58 @@ export function useAdminUsuarios() {
     activos:         usuarios.filter((u) => u.estado).length,
   }), [usuarios]);
 
+  const handleCrearUsuario = async (payload: CrearUsuarioAdminInput) => {
+    if (!token) return;
+    setGuardando(true);
+    setErrorCrear(null);
+    try {
+      const creado = await crearUsuarioAdmin(token, payload);
+      setUsuarios((prev) => [
+        ...prev,
+        {
+          id: creado.id,
+          nombre: [creado.nombre, creado.apellido].filter(Boolean).join(" "),
+          correo: creado.correo,
+          telefono: creado.telefono ?? "-",
+          rol: mapRolUsuario(creado),
+          estado: creado.estado,
+          ultimoAcceso: new Date(creado.fechaCreacion).toLocaleDateString("es-GT"),
+        },
+      ]);
+      setModalNuevo(false);
+    } catch (err) {
+      setErrorCrear(err instanceof Error ? err.message : "No se pudo crear el usuario");
+      throw err;
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleCambiarRol = async (usuarioId: string, payload: CambiarRolUsuarioInput) => {
+    if (!token) return;
+    setGuardando(true);
+    setErrorRol(null);
+    try {
+      const actualizado = await cambiarRolUsuario(token, usuarioId, payload);
+      setUsuarios((prev) =>
+        prev.map((u) =>
+          u.id === usuarioId
+            ? {
+                ...u,
+                rol: mapRolUsuario(actualizado),
+              }
+            : u
+        )
+      );
+      setModalRol(null);
+    } catch (err) {
+      setErrorRol(err instanceof Error ? err.message : "No se pudo cambiar el rol");
+      throw err;
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   const handleToggleEstado = async () => {
     if (!modalUsuario || !token) return;
     setConfirmando(true);
@@ -101,5 +172,15 @@ export function useAdminUsuarios() {
     setModalUsuario,
     confirmando,
     handleToggleEstado,
+    modalNuevo,
+    setModalNuevo,
+    guardando,
+    errorCrear,
+    handleCrearUsuario,
+    modalRol,
+    setModalRol,
+    errorRol,
+    handleCambiarRol,
+    recargar: cargarUsuarios,
   };
 }

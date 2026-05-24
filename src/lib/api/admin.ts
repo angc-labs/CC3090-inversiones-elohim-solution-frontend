@@ -29,6 +29,55 @@ export async function getAdminUsuarios(
   );
 }
 
+export type CrearUsuarioAdminInput = {
+  correo: string;
+  nombre: string;
+  apellido?: string;
+  telefono?: string;
+  contrasena: string;
+  tipoUsuario: "cliente" | "administrador";
+  rol?: "cajero" | "administrador";
+  tipoCliente?: "mayorista" | "minorista" | "particular";
+  direccion?: string;
+};
+
+export async function crearUsuarioAdmin(
+  token: string,
+  payload: CrearUsuarioAdminInput
+): Promise<UsuarioAdminDto> {
+  return apiRequest<UsuarioAdminDto>(
+    "/api/admin/usuarios",
+    {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify(payload),
+    },
+    "No se pudo crear el usuario"
+  );
+}
+
+export type CambiarRolUsuarioInput = {
+  rol: "cliente" | "cajero" | "administrador";
+  tipoCliente?: "mayorista" | "minorista" | "particular";
+  direccion?: string;
+};
+
+export async function cambiarRolUsuario(
+  token: string,
+  id: string,
+  payload: CambiarRolUsuarioInput
+): Promise<UsuarioAdminDto> {
+  return apiRequest<UsuarioAdminDto>(
+    `/api/admin/usuarios/${id}/rol`,
+    {
+      method: "PUT",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify(payload),
+    },
+    "No se pudo cambiar el rol del usuario"
+  );
+}
+
 export async function cambiarEstadoUsuario(
   token: string,
   id: string,
