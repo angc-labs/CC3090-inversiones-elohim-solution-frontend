@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Download } from "lucide-react";
 import { AdminPageHeader } from "@/components/features/admin/AdminPageHeader";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAdminInventario } from "@/hooks/useAdminInventario";
 import { InventarioTable } from "@/components/features/admin/InventarioTable";
+import { AjusteStockModal } from "@/components/features/admin/AjusteStockModal";
+import { ImportarProductosModal } from "@/components/features/admin/ImportarProductosModal";
+import type { TInventarioProducto } from "@/lib/api/admin";
 
 export default function InventarioAdminPage() {
   const {
@@ -29,12 +32,22 @@ export default function InventarioAdminPage() {
     handleOrderChange,
     handlePageChange,
     handleLimitChange,
+    recargar,
     exportCsv,
     filtroActivo,
   } = useAdminInventario();
 
   const [importOpen, setImportOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [ajusteModalOpen, setAjusteModalOpen] = useState(false);
+  const [productoAjuste, setProductoAjuste] = useState<TInventarioProducto | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
+  const [productosDynamic, setProductosDynamic] = useState<TInventarioProducto[]>(productos);
+
+  // Sincronizar productos cuando cambian
+  useEffect(() => {
+    setProductosDynamic(productos);
+  }, [productos]);
 
   const handleExport = async () => {
     try {
@@ -45,6 +58,28 @@ export default function InventarioAdminPage() {
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleAjusteStockClick = (producto: TInventarioProducto) => {
+    setProductoAjuste(producto);
+    setAjusteModalOpen(true);
+  };
+
+  const handleAjusteStockSuccess = (productoActualizado: TInventarioProducto, advertencia?: string) => {
+    // Actualizar el producto en la lista local
+    setProductosDynamic((prev) =>
+      prev.map((p) => (p.idProducto === productoActualizado.idProducto ? productoActualizado : p))
+    );
+
+    // Mostrar advertencia si viene del servidor
+    if (advertencia) {
+      setWarning(advertencia);
+      setTimeout(() => setWarning(null), 5000);
+    }
+  };
+
+  const handleImportSuccess = async () => {
+    await recargar();
   };
 
   return (
@@ -150,9 +185,16 @@ export default function InventarioAdminPage() {
         </div>
       )}
 
+      {/* Warning toast */}
+      {warning && (
+        <div className="fixed top-4 right-4 z-40 bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-700 shadow-lg max-w-md">
+          {warning}
+        </div>
+      )}
+
       {/* Tabla */}
       <InventarioTable
-        productos={productos}
+        productos={productosDynamic}
         cargando={cargando}
         orderBy={orderBy}
         order={order}
@@ -163,20 +205,25 @@ export default function InventarioAdminPage() {
         limit={limit}
         onLimitChange={handleLimitChange}
         filtroActivo={filtroActivo}
+        onAjusteStockClick={handleAjusteStockClick}
       />
 
-      {/* Import modal placeholder */}
-      {importOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
-            <h3 className="text-lg font-semibold">Importar CSV/XLS</h3>
-            <p className="text-sm text-slate-500 mt-2">Funcionalidad a implementar (Tarea 4).</p>
-            <div className="mt-4 flex justify-end">
-              <Button onClick={() => setImportOpen(false)}>Cerrar</Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ImportarProductosModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onSuccess={handleImportSuccess}
+      />
+
+      {/* Ajuste Stock Modal */}
+      <AjusteStockModal
+        open={ajusteModalOpen}
+        producto={productoAjuste}
+        onClose={() => {
+          setAjusteModalOpen(false);
+          setProductoAjuste(null);
+        }}
+        onSuccess={handleAjusteStockSuccess}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronUp, ChevronDown, Edit, Eye } from "lucide-react";
 import Link from "next/link";
 import {
@@ -31,6 +31,7 @@ type InventarioTableProps = {
   limit: number;
   onLimitChange: (limit: number) => void;
   filtroActivo: boolean;
+  onAjusteStockClick?: (producto: TInventarioProducto) => void;
 };
 
 const SORTEABLE_COLUMNS = [
@@ -52,6 +53,7 @@ export function InventarioTable({
   limit,
   onLimitChange,
   filtroActivo,
+  onAjusteStockClick,
 }: InventarioTableProps) {
   const token = useAuthStore((s) => s.token);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -59,7 +61,7 @@ export function InventarioTable({
   const [localProductos, setLocalProductos] = useState<TInventarioProducto[]>(productos);
 
   // Sincronizar productos cuando cambian desde props
-  React.useEffect(() => {
+  useEffect(() => {
     setLocalProductos(productos);
   }, [productos]);
 
@@ -255,7 +257,12 @@ export function InventarioTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-1">
-                    <Button size="sm" variant="outline" title="Ajustar stock">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      title="Ajustar stock"
+                      onClick={() => onAjusteStockClick?.(producto)}
+                    >
                       <Edit size={14} />
                     </Button>
                     <Link href={`/admin/inventario/${producto.idProducto}`}>

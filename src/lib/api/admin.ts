@@ -223,3 +223,96 @@ export async function actualizarStockProducto(
     "No se pudo actualizar el stock"
   );
 }
+
+// Importación Bulk de Productos
+
+export type TCrearProductoInput = {
+  codigoProducto: string;
+  nombreProducto: string;
+  descripcion?: string;
+  precio: number;
+  stockActual: number;
+  stockMinimo: number;
+  categoriaId?: string;
+  idMarca?: string;
+  fechaVencimiento?: string;
+  imagenPrincipal?: string;
+};
+
+export type TProductoBulkError = {
+  fila?: number;
+  codigoProducto?: string;
+  error: string;
+};
+
+export type TProductoBulkResponse = {
+  totalCreados: number;
+  totalFallidos: number;
+  errores: TProductoBulkError[];
+};
+
+export async function importarProductosBulk(
+  token: string,
+  productos: TCrearProductoInput[]
+): Promise<TProductoBulkResponse> {
+  return apiRequest<TProductoBulkResponse>(
+    "/api/productos/bulk",
+    {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify(productos),
+    },
+    "No se pudo importar los productos"
+  );
+}
+
+// Template de ejemplo para descarga
+export function descargarPlantillaCsv() {
+  const headers = [
+    "codigoProducto",
+    "nombreProducto",
+    "descripcion",
+    "precio",
+    "stockActual",
+    "stockMinimo",
+    "categoriaId",
+    "idMarca",
+    "fechaVencimiento",
+    "imagenPrincipal",
+  ];
+
+  const ejemploRows = [
+    [
+      "PROD-001",
+      "Producto Ejemplo 1",
+      "Descripción del producto",
+      "99.99",
+      "100",
+      "10",
+      "categoria-1",
+      "marca-1",
+      "2026-12-31",
+      "https://example.com/image.jpg",
+    ],
+    [
+      "PROD-002",
+      "Producto Ejemplo 2",
+      "Otro producto",
+      "149.99",
+      "50",
+      "5",
+      "categoria-2",
+      "marca-2",
+      "2027-06-30",
+      "https://example.com/image2.jpg",
+    ],
+  ];
+
+  const csv = [headers, ...ejemploRows].map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "plantilla-productos.csv";
+  link.click();
+}
