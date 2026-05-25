@@ -93,3 +93,87 @@ export async function cambiarEstadoUsuario(
     "No se pudo cambiar el estado del usuario"
   );
 }
+
+export type TInventarioResumen = {
+  totalProductos: number;
+  stockNormal: number;
+  stockCritico: number;
+  valorInventario: number;
+};
+
+export type TInventarioProducto = {
+  idProducto: string;
+  codigoProducto: string;
+  nombreProducto: string;
+  descripcion?: string;
+  precio: number;
+  stockActual: number;
+  stockMinimo: number;
+  estado: "normal" | "critico" | "agotado";
+  valorStock: number;
+  descuentoPorcentaje?: number | null;
+  ofertaHasta?: string | null;
+  categoria?: { id: string; nombre: string } | null;
+  marca?: { id: string; nombre: string } | null;
+  imagenPrincipal?: string | null;
+  fechaVencimiento?: string | null;
+  fechaCreacion?: string;
+  fechaActualizacion?: string;
+};
+
+export type TInventarioResponse = {
+  resumen: TInventarioResumen;
+  total: number;
+  pagina: number;
+  limite: number;
+  productos: TInventarioProducto[];
+};
+
+export type TInventarioParams = {
+  q?: string;
+  categoriaId?: string;
+  estado?: "critico" | "normal" | "agotado";
+  orderBy?: string;
+  order?: "asc" | "desc";
+  page?: number;
+  limit?: number;
+};
+
+function buildInventarioQuery(params?: TInventarioParams) {
+  const qs = new URLSearchParams();
+  if (!params) return "";
+  if (params.q) qs.set("q", params.q);
+  if (params.categoriaId) qs.set("categoriaId", params.categoriaId);
+  if (params.estado) qs.set("estado", params.estado);
+  if (params.orderBy) qs.set("orderBy", params.orderBy);
+  if (params.order) qs.set("order", params.order);
+  if (params.page) qs.set("page", String(params.page));
+  if (params.limit) qs.set("limit", String(params.limit));
+  const s = qs.toString();
+  return s ? `?${s}` : "";
+}
+
+export async function getAdminInventario(
+  params?: TInventarioParams
+): Promise<TInventarioResponse> {
+  return apiRequest<TInventarioResponse>(
+    `/api/admin/inventario${buildInventarioQuery(params)}`,
+    { method: "GET" },
+    "Error al obtener inventario"
+  );
+}
+
+export async function exportAdminInventarioCsv(params?: TInventarioParams): Promise<Blob> {
+  const query = buildInventarioQuery(params);
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/admin/inventario/exportar${query}`, {
+    method: "GET",
+    headers: { "Content-Type": "text/csv" },
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(text || "No se pudo exportar inventario");
+  }
+
+  return response.blob();
+}
