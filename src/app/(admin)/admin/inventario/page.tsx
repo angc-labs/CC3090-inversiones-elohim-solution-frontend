@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Download } from "lucide-react";
 import { AdminPageHeader } from "@/components/features/admin/AdminPageHeader";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAdminInventario } from "@/hooks/useAdminInventario";
+import { InventarioTable } from "@/components/features/admin/InventarioTable";
 
 export default function InventarioAdminPage() {
   const {
@@ -21,10 +21,31 @@ export default function InventarioAdminPage() {
     setCategoriaId,
     estado,
     setEstado,
+    orderBy,
+    order,
+    page,
+    limit,
+    total,
+    handleOrderChange,
+    handlePageChange,
+    handleLimitChange,
     exportCsv,
+    filtroActivo,
   } = useAdminInventario();
 
   const [importOpen, setImportOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      await exportCsv();
+    } catch (err) {
+      alert("Error al exportar: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -34,71 +55,85 @@ export default function InventarioAdminPage() {
         description="Reporte y administración del inventario"
         actions={
           <div className="flex gap-2">
-            <Button onClick={() => setImportOpen(true)} className="bg-gray-200 text-gray-700">Importar CSV/XLS</Button>
-            <Button onClick={() => void exportCsv()} className="bg-blue-600 text-white">Exportar</Button>
+            <Button
+              onClick={() => setImportOpen(true)}
+              className="bg-gray-200 text-gray-700 hover:bg-gray-300"
+            >
+              Importar CSV/XLS
+            </Button>
+            <Button
+              onClick={handleExport}
+              disabled={exporting}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Download size={16} className="mr-2" />
+              Exportar
+            </Button>
           </div>
         }
       />
 
       {/* Resumen */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4">
-          <CardHeader>
-            <CardTitle>{resumen?.totalProductos ?? "-"}</CardTitle>
+          <CardHeader className="p-0">
+            <CardTitle className="text-2xl">{resumen?.totalProductos ?? "-"}</CardTitle>
             <CardDescription>Total productos</CardDescription>
           </CardHeader>
         </Card>
 
         <Card className="p-4">
-          <CardHeader>
-            <CardTitle className="text-green-600">{resumen?.stockNormal ?? "-"}</CardTitle>
+          <CardHeader className="p-0">
+            <CardTitle className="text-2xl text-green-600">{resumen?.stockNormal ?? "-"}</CardTitle>
             <CardDescription>Stock normal</CardDescription>
           </CardHeader>
         </Card>
 
         <Card className="p-4">
-          <CardHeader>
-            <CardTitle className="text-orange-600">{resumen?.stockCritico ?? "-"}</CardTitle>
+          <CardHeader className="p-0">
+            <CardTitle className="text-2xl text-orange-600">{resumen?.stockCritico ?? "-"}</CardTitle>
             <CardDescription>Stock crítico</CardDescription>
           </CardHeader>
         </Card>
 
         <Card className="p-4">
-          <CardHeader>
-            <CardTitle>{resumen?.valorInventario ? `${resumen.valorInventario}` : "-"}</CardTitle>
+          <CardHeader className="p-0">
+            <CardTitle className="text-2xl">{resumen?.valorInventario ? `Q${resumen.valorInventario.toLocaleString("es-AR")}` : "-"}</CardTitle>
             <CardDescription>Valor inventario</CardDescription>
           </CardHeader>
         </Card>
       </div>
 
       {/* Toolbar filtros */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="relative w-[320px]">
+      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 sm:flex-none sm:w-[320px]">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Buscar por nombre o código..."
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg"
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <select
             value={categoriaId ?? ""}
             onChange={(e) => setCategoriaId(e.target.value || undefined)}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm"
+            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Todas las categorías</option>
             {categorias.map((c) => (
-              <option key={c.id} value={c.id}>{c.nombreCategoria}</option>
+              <option key={c.id} value={c.id}>
+                {c.nombreCategoria}
+              </option>
             ))}
           </select>
 
           <select
             value={estado}
             onChange={(e) => setEstado(e.target.value as any)}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm"
+            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Todos</option>
             <option value="normal">Normal</option>
@@ -106,51 +141,29 @@ export default function InventarioAdminPage() {
             <option value="agotado">Agotado</option>
           </select>
         </div>
-
-        <div className="flex items-center gap-2">
-          <Button onClick={() => void exportCsv()} className="hidden sm:inline-block">Exportar CSV</Button>
-        </div>
       </div>
+
+      {/* Error message */}
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+          {error}
+        </div>
+      )}
 
       {/* Tabla */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        {cargando ? (
-          <div>Cargando...</div>
-        ) : error ? (
-          <div className="text-red-600">{error}</div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <tr>
-                <TableHead>Código</TableHead>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Marca</TableHead>
-                <TableHead>Precio</TableHead>
-                <TableHead>Stock Actual</TableHead>
-                <TableHead>Stock Min</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Valor Stock</TableHead>
-              </tr>
-            </TableHeader>
-            <TableBody>
-              {productos.map((p) => (
-                <TableRow key={p.idProducto}>
-                  <TableCell>{p.codigoProducto}</TableCell>
-                  <TableCell>{p.nombreProducto}</TableCell>
-                  <TableCell>{p.categoria?.nombre ?? "-"}</TableCell>
-                  <TableCell>{p.marca?.nombre ?? "-"}</TableCell>
-                  <TableCell>{p.precio}</TableCell>
-                  <TableCell>{p.stockActual}</TableCell>
-                  <TableCell>{p.stockMinimo}</TableCell>
-                  <TableCell>{p.estado}</TableCell>
-                  <TableCell>{p.valorStock}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+      <InventarioTable
+        productos={productos}
+        cargando={cargando}
+        orderBy={orderBy}
+        order={order}
+        onOrderChange={handleOrderChange}
+        onPageChange={handlePageChange}
+        page={page}
+        total={total}
+        limit={limit}
+        onLimitChange={handleLimitChange}
+        filtroActivo={filtroActivo}
+      />
 
       {/* Import modal placeholder */}
       {importOpen && (

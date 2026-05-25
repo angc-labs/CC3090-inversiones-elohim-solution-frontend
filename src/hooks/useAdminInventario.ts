@@ -25,6 +25,7 @@ export function useAdminInventario() {
   const [order, setOrder] = useState<"asc" | "desc" | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [total, setTotal] = useState(0);
 
   const cargarCategorias = useCallback(async () => {
     try {
@@ -39,12 +40,22 @@ export function useAdminInventario() {
     setCargando(true);
     setError(null);
     try {
+      let orderByValue = orderBy;
+      let orderValue = order;
+
+      // Si orderBy contiene el formato "campo:asc|desc", extraer ambos
+      if (orderBy?.includes(":")) {
+        const [campo, dir] = orderBy.split(":");
+        orderByValue = campo;
+        orderValue = (dir as "asc" | "desc") || order;
+      }
+
       const params: TInventarioParams = {
         q: q || undefined,
         categoriaId: categoriaId || undefined,
         estado: estado || undefined,
-        orderBy: orderBy,
-        order: order,
+        orderBy: orderByValue,
+        order: orderValue,
         page,
         limit,
       };
@@ -52,6 +63,7 @@ export function useAdminInventario() {
       const res = await getAdminInventario(params);
       setResumen(res.resumen);
       setProductos(res.productos);
+      setTotal(res.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -69,12 +81,21 @@ export function useAdminInventario() {
 
   const exportCsv = useCallback(async () => {
     try {
+      let orderByValue = orderBy;
+      let orderValue = order;
+
+      if (orderBy?.includes(":")) {
+        const [campo, dir] = orderBy.split(":");
+        orderByValue = campo;
+        orderValue = (dir as "asc" | "desc") || order;
+      }
+
       const params: TInventarioParams = {
         q: q || undefined,
         categoriaId: categoriaId || undefined,
         estado: estado || undefined,
-        orderBy: orderBy,
-        order: order,
+        orderBy: orderByValue,
+        order: orderValue,
       };
       const blob = await exportAdminInventarioCsv(params);
       const url = URL.createObjectURL(blob);
@@ -90,12 +111,29 @@ export function useAdminInventario() {
     }
   }, [q, categoriaId, estado, orderBy, order]);
 
+  const handleOrderChange = (newOrderBy: string) => {
+    setPage(1); // Reset a página 1 cuando cambia el ordenamiento
+    setOrderBy(newOrderBy);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    setPage(1); // Reset a página 1 cuando cambia el límite
+    setLimit(newLimit);
+  };
+
+  const filtroActivo = !!(q || categoriaId || estado);
+
   return {
     resumen,
     productos,
     categorias,
     cargando,
     error,
+    total,
     // filtros
     q,
     setQ,
@@ -104,14 +142,15 @@ export function useAdminInventario() {
     estado,
     setEstado,
     orderBy,
-    setOrderBy,
     order,
-    setOrder,
     page,
-    setPage,
     limit,
-    setLimit,
+    handleOrderChange,
+    handlePageChange,
+    handleLimitChange,
     recargar: cargar,
     exportCsv,
+    filtroActivo,
   } as const;
 }
+

@@ -177,3 +177,49 @@ export async function exportAdminInventarioCsv(params?: TInventarioParams): Prom
 
   return response.blob();
 }
+
+export type TActualizarInventarioProductoInput = Partial<{
+  nombreProducto: string;
+  descripcion: string;
+  precio: number;
+  stockActual: number;
+  stockMinimo: number;
+  idMarca: string;
+  categoriaId: string;
+  fechaVencimiento: string;
+  imagenPrincipal: string;
+  codigoProducto: string;
+}>;
+
+export async function actualizarInventarioProducto(
+  token: string,
+  idProducto: string,
+  payload: TActualizarInventarioProductoInput
+): Promise<TInventarioProducto> {
+  return apiRequest<TInventarioProducto>(
+    `/api/productos/${idProducto}`,
+    {
+      method: "PUT",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify(payload),
+    },
+    "No se pudo actualizar el producto"
+  );
+}
+
+export async function actualizarStockProducto(
+  token: string,
+  idProducto: string,
+  stockActual: number,
+  motivo?: string
+): Promise<TInventarioProducto> {
+  return apiRequest<TInventarioProducto>(
+    `/api/productos/${idProducto}/stock`,
+    {
+      method: "PATCH",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify({ stockActual, motivo }),
+    },
+    "No se pudo actualizar el stock"
+  );
+}
