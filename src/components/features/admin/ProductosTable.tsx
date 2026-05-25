@@ -1,15 +1,17 @@
 "use client";
 
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatGtq } from "@/lib/format";
 import type { TProducto } from "@/types";
+import Link from "next/link";
 
 type Props = {
   cargando: boolean;
   productos: TProducto[];
   onEditar: (producto: TProducto) => void;
   onEliminar: (producto: TProducto) => void;
+  onOferta?: (producto: TProducto) => void;
 };
 
 export function ProductosTable({ cargando, productos, onEditar, onEliminar }: Props) {
@@ -38,49 +40,56 @@ export function ProductosTable({ cargando, productos, onEditar, onEliminar }: Pr
                   producto.stockMinimo != null &&
                   producto.stockActual <= producto.stockMinimo;
                 return (
-                  <tr
-                    key={producto.idProducto}
-                    className="border-b border-slate-100 hover:bg-slate-50 transition-colors last:border-0"
-                  >
-                    <td className="px-4 py-3 font-medium text-gray-900">
-                      {producto.codigoProducto}
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">{producto.nombreProducto}</td>
-                    <td className="px-4 py-3 text-right font-medium text-emerald-700">
-                      {formatGtq(producto.precio)}
-                    </td>
-                    <td className="px-4 py-3 text-center text-gray-700">
-                      {producto.stockActual}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge
-                        className={
-                          critico
-                            ? "bg-red-100 text-red-700"
-                            : "bg-green-100 text-green-700"
-                        }
-                      >
-                        {critico ? "Stock bajo" : "OK"}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-1">
-                        <button
-                          type="button"
-                          onClick={() => onEditar(producto)}
-                          className="p-1.5 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100"
-                          aria-label={`Editar ${producto.nombreProducto}`}
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onEliminar(producto)}
-                          className="p-1.5 rounded-md bg-red-50 text-red-500 hover:bg-red-100"
-                          aria-label={`Eliminar ${producto.nombreProducto}`}
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                  <tr key={producto.idProducto} className="border-b last:border-0">
+                    <td colSpan={6} className="px-4 py-3">
+                      <div className="flex items-center justify-between gap-4 hover:bg-slate-50 rounded-md p-3 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="bg-gray-100 rounded-md p-2 text-sm font-medium">{producto.codigoProducto}</div>
+                          <div>
+                            <Link href={`/productos/${producto.idProducto}`} className="text-gray-900 font-medium hover:underline">
+                              {producto.nombreProducto}
+                            </Link>
+                            <div className="text-sm text-gray-600">{formatGtq(producto.precio)}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="text-center">
+                            <div className="text-sm text-gray-500">Stock</div>
+                            <div className="font-medium text-gray-800">{producto.stockActual}</div>
+                          </div>
+                          <div>
+                            <Badge className={critico ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}>
+                              {critico ? "Stock bajo" : "OK"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => onOferta?.(producto)}
+                              className="p-1.5 rounded-md bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
+                              aria-label={`Oferta ${producto.nombreProducto}`}
+                            >
+                              <Tag size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onEditar(producto)}
+                              className="p-1.5 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100"
+                              aria-label={`Editar ${producto.nombreProducto}`}
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onEliminar(producto)}
+                              className="p-1.5 rounded-md bg-red-50 text-red-500 hover:bg-red-100"
+                              aria-label={`Eliminar ${producto.nombreProducto}`}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </td>
                   </tr>

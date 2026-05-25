@@ -164,3 +164,75 @@ export async function eliminarProducto(
     "No se pudo eliminar el producto"
   );
 }
+
+export type StockPatchInput = {
+  stockActual?: number;
+  stockIncremento?: number; // si se quiere incrementar/decrementar
+};
+
+export async function patchProductoStock(
+  token: string,
+  idProducto: string,
+  payload: StockPatchInput
+): Promise<TProducto> {
+  return apiRequest<TProducto>(
+    `/api/productos/${idProducto}/stock`,
+    {
+      method: "PATCH",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify(payload),
+    },
+    "No se pudo actualizar el stock del producto"
+  );
+}
+
+export type OfertaInput = {
+  precioOferta: number;
+  fechaVence?: string; // ISO
+  descripcionCorta?: string;
+};
+
+export async function crearOfertaProducto(
+  token: string,
+  idProducto: string,
+  payload: OfertaInput
+): Promise<TProducto> {
+  return apiRequest<TProducto>(
+    `/api/productos/${idProducto}/oferta`,
+    {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify(payload),
+    },
+    "No se pudo crear la oferta para el producto"
+  );
+}
+
+export async function eliminarOfertaProducto(
+  token: string,
+  idProducto: string
+): Promise<void> {
+  await apiRequest<void>(
+    `/api/productos/${idProducto}/oferta`,
+    {
+      method: "DELETE",
+      headers: buildAuthHeaders(token),
+    },
+    "No se pudo eliminar la oferta del producto"
+  );
+}
+
+export async function crearProductosBulk(
+  token: string,
+  payload: CrearProductoInput[]
+): Promise<TProducto[]> {
+  return apiRequest<TProducto[]>(
+    `/api/productos/bulk`,
+    {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify({ productos: payload }),
+    },
+    "No se pudo crear el lote de productos"
+  );
+}

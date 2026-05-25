@@ -1,11 +1,14 @@
 "use client";
 
 import { Plus, Search } from "lucide-react";
+import { useState } from "react";
+import type { TProducto } from "@/types";
 import { Button } from "@/components/ui/button";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { AdminPageHeader } from "@/components/features/admin/AdminPageHeader";
 import { ProductoFormModal } from "@/components/features/admin/ProductoFormModal";
 import { ProductosTable } from "@/components/features/admin/ProductosTable";
+import { OfertaModal } from "@/components/features/admin/OfertaModal";
 import { useAdminProductos } from "@/hooks/useAdminProductos";
 
 export default function ProductosAdminPage() {
@@ -27,7 +30,11 @@ export default function ProductosAdminPage() {
     cerrarModal,
     guardarProducto,
     confirmarEliminar,
+    recargar: cargar,
   } = useAdminProductos();
+
+  const [ofertaProducto, setOfertaProducto] = useState<null | TProducto>(null);
+  const [ofertaOpen, setOfertaOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -68,6 +75,10 @@ export default function ProductosAdminPage() {
         productos={productos}
         onEditar={abrirEditar}
         onEliminar={setProductoEliminar}
+        onOferta={(p) => {
+          setOfertaProducto(p);
+          setOfertaOpen(true);
+        }}
       />
 
       <ProductoFormModal
@@ -93,6 +104,13 @@ export default function ProductosAdminPage() {
           onCancel={() => setProductoEliminar(null)}
         />
       )}
+
+      <OfertaModal
+        open={ofertaOpen}
+        producto={ofertaProducto}
+        onClose={() => setOfertaOpen(false)}
+        onSuccess={() => void cargar()}
+      />
     </div>
   );
 }
