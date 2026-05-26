@@ -110,25 +110,35 @@ export default function VentasPage() {
   // Exportar ventas
 
   const exportarVentas = async () => {
-    try {
+  try {
 
-      const response = await fetch(
-        "http://localhost:5000/api/ventas/export"
-      );
+    const response = await fetch(
+      "http://localhost:5000/api/ventas/export"
+    );
 
-      const data = await response.json();
+    const blob = await response.blob();
 
-      console.log(data);
+    const url = window.URL.createObjectURL(blob);
 
-      alert("Ventas exportadas");
+    const link = document.createElement("a");
 
-    } catch (error) {
+    link.href = url;
 
-      console.error(
-        "Error exportando ventas:",
-        error
-      );
-    }
+    link.download = "ventas.csv";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+  } catch (error) {
+
+    console.error(
+      "Error exportando ventas:",
+      error
+    );
+  }
   };
 
   // useEffect inicial
