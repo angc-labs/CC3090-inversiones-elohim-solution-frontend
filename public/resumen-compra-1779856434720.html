@@ -1,0 +1,213 @@
+
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Resumen de Compra - ESMIRNA</title>
+      <style>
+        
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f6f8fc;
+    padding: 20px;
+    color: #333;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    padding: 40px 30px;
+    text-align: center;
+    border-bottom: 4px solid #1e40af;
+  }
+  .header h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .header p {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+  .content {
+    padding: 40px;
+  }
+  .section {
+    margin-bottom: 35px;
+  }
+  .section h2 {
+    color: #2563eb;
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  thead {
+    background: #f3f4f6;
+  }
+  th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+    border-bottom: 2px solid #d1d5db;
+  }
+  td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  .cantidad {
+    text-align: center;
+  }
+  .precio {
+    text-align: right;
+  }
+  .subtotal {
+    text-align: right;
+  }
+  .total-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  .total-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin-right: 20px;
+  }
+  .total-amount {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2563eb;
+  }
+  .metodo-pago {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+    padding: 15px;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+  .metodo-label {
+    font-weight: 600;
+    color: #374151;
+    min-width: 120px;
+  }
+  .metodo-valor {
+    color: #6b7280;
+  }
+  .footer {
+    background: #f9fafb;
+    padding: 30px;
+    text-align: center;
+    border-top: 1px solid #e5e7eb;
+    font-size: 12px;
+    color: #6b7280;
+  }
+  .footer p {
+    margin: 5px 0;
+  }
+  .timestamp {
+    margin-top: 10px;
+    color: #9ca3af;
+    font-size: 11px;
+  }
+  @media print {
+    body {
+      background: white;
+      padding: 0;
+    }
+    .container {
+      box-shadow: none;
+      border-radius: 0;
+    }
+  }
+
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>⚡ ESMIRNA</h1>
+          <p>Resumen de tu Compra</p>
+        </div>
+        
+        <div class="content">
+          <div class="section">
+            <h2>Detalles de Productos</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th class="cantidad">Cantidad</th>
+                  <th class="precio">Precio Unitario</th>
+                  <th class="subtotal">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                  <tr>
+                    <td>Yogurt Natural</td>
+                    <td class="cantidad">4</td>
+                    <td class="precio">Q 12.00</td>
+                    <td class="subtotal">Q 48.00</td>
+                  </tr>
+                
+              </tbody>
+            </table>
+          </div>
+
+          <div class="total-section">
+            <span class="total-label">TOTAL A PAGAR:</span>
+            <span class="total-amount">Q 48.00</span>
+          </div>
+
+          <div class="section">
+            <h2>Método de Pago</h2>
+            <div class="metodo-pago">
+              <span class="metodo-label">Tipo:</span>
+              <span class="metodo-valor">Tarjeta de Crédito/Débito (Nueva tarjeta)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p><strong>Gracias por tu compra 🎉</strong></p>
+          <p>Este es un comprobante de tu pedido. Consérvalo para tus registros.</p>
+          <div class="timestamp">
+            <p>Generado: 26/05/2026, 22:36</p>
+            <p>© 2026 ESMIRNA - Todos los derechos reservados</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  
