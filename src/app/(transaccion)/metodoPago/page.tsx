@@ -4,6 +4,7 @@ import { MetodoPagoShell } from "@/components/features/pago/pago";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ShopNavbarActions } from "@/components/ui/ShopNavbarActions";
+import { ClientProtectedRoute } from "@/components/features/auth/ClientProtectedRoute";
 
 export default function MetodoPagoPage() {
   const router = useRouter();
@@ -17,7 +18,8 @@ export default function MetodoPagoPage() {
   };
 
   return (
-    <div className="relative! min-h-screen! bg-[#f6f8fc]! text-slate-900!">
+    <ClientProtectedRoute>
+      <div className="relative! min-h-screen! bg-[#f6f8fc]! text-slate-900!">
       {/* Background decorations */}
       <div className="pointer-events-none! absolute! inset-0! bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.08),transparent_30%),radial-gradient(circle_at_top_right,rgba(34,197,94,0.08),transparent_26%),linear-gradient(to_bottom,#ffffff_0%,#f4f7fb_100%)]!" />
       <div className="pointer-events-none! absolute! left-1/2! top-10! h-32! w-32! -translate-x-1/2! rounded-full! bg-blue-500/10! blur-3xl!" />
@@ -109,5 +111,6 @@ export default function MetodoPagoPage() {
         </main>
       </div>
     </div>
+    </ClientProtectedRoute>
   );
 }

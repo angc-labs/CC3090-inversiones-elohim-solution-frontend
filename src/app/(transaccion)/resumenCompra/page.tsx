@@ -5,13 +5,14 @@ import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import Link from "next/link";
 import { ShopNavbarActions } from "@/components/ui/ShopNavbarActions";
+import { ClientProtectedRoute } from "@/components/features/auth/ClientProtectedRoute";
 import { crearReservacion } from "@/lib/api/reservacion";
 import {
   crearPaymentIntent,
   obtenerConfigStripe,
   obtenerEstadoPago,
 } from "@/lib/api/pago";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { useClientAuthStore } from "@/stores/useClientAuthStore";
 import { useCarrito } from "@/hooks/useCarrito";
 import { useMetodoPagoStore } from "@/stores/useMetodoPagoStore";
 import { useConfirmarReservacion } from "@/hooks/useConfirmarReservacion";
@@ -21,7 +22,7 @@ import { ResumenCompraUI } from "@/components/features/resumen";
 
 export default function ResumenCompraPage() {
   const router = useRouter();
-  const token = useAuthStore((state) => state.token);
+  const token = useClientAuthStore((state) => state.token);
   const { items, total, isLoading, isError, error, mutate } = useCarrito();
   const { metodoPagoSeleccionado } = useMetodoPagoStore();
   const { confirmar, isLoading: isConfirmingReserva, error: confirmError, clearError } =
@@ -169,96 +170,98 @@ export default function ResumenCompraPage() {
   }
 
   return (
-    <div className="relative! min-h-screen! bg-[#f6f8fc]! text-slate-900!">
-      <div className="pointer-events-none! absolute! inset-0! bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.08),transparent_30%),radial-gradient(circle_at_top_right,rgba(34,197,94,0.08),transparent_26%),linear-gradient(to_bottom,#ffffff_0%,#f4f7fb_100%)]!" />
-      <div className="pointer-events-none! absolute! left-1/2! top-10! h-32! w-32! -translate-x-1/2! rounded-full! bg-blue-500/10! blur-3xl!" />
+    <ClientProtectedRoute>
+      <div className="relative! min-h-screen! bg-[#f6f8fc]! text-slate-900!">
+        <div className="pointer-events-none! absolute! inset-0! bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.08),transparent_30%),radial-gradient(circle_at_top_right,rgba(34,197,94,0.08),transparent_26%),linear-gradient(to_bottom,#ffffff_0%,#f4f7fb_100%)]!" />
+        <div className="pointer-events-none! absolute! left-1/2! top-10! h-32! w-32! -translate-x-1/2! rounded-full! bg-blue-500/10! blur-3xl!" />
 
-      <div className="relative! flex! min-h-screen! flex-col!">
-        <div className="px-4! py-6! sm:px-6! lg:px-8!">
-          <div className="rounded-3xl! border! border-slate-200/80! bg-white/95! p-4! shadow-[0_24px_70px_rgba(15,23,42,0.10)]! backdrop-blur-sm!">
-            <div className="flex! flex-wrap! items-center! justify-between! gap-3! sm:gap-6!">
-              <div className="flex! min-w-0! items-center! gap-3! p-2! sm:gap-4! sm:p-4!">
-                <div className="flex! h-7! w-7! items-center! justify-center! rounded-md! bg-blue-600! text-white! shadow-sm!">
-                  <svg
-                    className="h-4! w-4!"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
+        <div className="relative! flex! min-h-screen! flex-col!">
+          <div className="px-4! py-6! sm:px-6! lg:px-8!">
+            <div className="rounded-3xl! border! border-slate-200/80! bg-white/95! p-4! shadow-[0_24px_70px_rgba(15,23,42,0.10)]! backdrop-blur-sm!">
+              <div className="flex! flex-wrap! items-center! justify-between! gap-3! sm:gap-6!">
+                <div className="flex! min-w-0! items-center! gap-3! p-2! sm:gap-4! sm:p-4!">
+                  <div className="flex! h-7! w-7! items-center! justify-center! rounded-md! bg-blue-600! text-white! shadow-sm!">
+                    <svg
+                      className="h-4! w-4!"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <span className="text-sm! font-semibold! tracking-tight! text-gray-900!">
+                      <Link href="/">ESMIRNA</Link>
+                    </span>
+                  </div>
+                </div>
+                <ShopNavbarActions showCart showCatalog />
+              </div>
+            </div>
+          </div>
+
+          <main className="w-full! flex-1! px-4! py-8! sm:px-6! sm:py-12! lg:px-12!">
+            <div className="mx-auto! w-full! max-w-2xl!">
+              <div className="mb-6! sm:mb-8!">
+                <div className="flex! flex-wrap! items-center! justify-center! gap-1.5! text-xs! font-medium! text-slate-600! sm:gap-2! sm:text-sm!">
+                  <div className="flex! h-8! w-8! items-center! justify-center! rounded-full! bg-blue-600! text-white!">
+                    1
+                  </div>
+                  <span className="font-semibold! text-blue-600!">Carrito</span>
+                  <svg className="h-4! w-4!" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
-                </div>
-                <div>
-                  <span className="text-sm! font-semibold! tracking-tight! text-gray-900!">
-                    <Link href="/">ESMIRNA</Link>
-                  </span>
+                  <div className="flex! h-8! w-8! items-center! justify-center! rounded-full! bg-blue-600! text-white!">
+                    2
+                  </div>
+                  <span className="font-semibold! text-blue-600!">Método</span>
+                  <svg className="h-4! w-4!" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  <div className="flex! h-8! w-8! items-center! justify-center! rounded-full! bg-blue-600! text-white!">
+                    3
+                  </div>
+                  <span className="font-semibold! text-blue-600!">Resumen</span>
                 </div>
               </div>
-              <ShopNavbarActions showCart showCatalog />
+
+              <div className="mb-8!">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="flex! items-center! gap-2! rounded-lg! border! border-slate-200! px-4! py-2! font-medium! text-slate-700! transition-colors! hover:bg-slate-50!"
+                >
+                  <svg className="h-4! w-4!" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Atrás
+                </button>
+              </div>
+
+              <ResumenCompraUI
+                items={items}
+                totalPrecio={total}
+                metodoPagoSeleccionado={metodoPagoSeleccionado}
+                onConfirm={() => {
+                  void handleConfirmar();
+                }}
+                isConfirming={isBusy}
+                error={errorMessage}
+                showConfirmButton
+                confirmLabel={
+                  metodoPagoSeleccionado.metodo === "tarjeta" ? "Pagar con tarjeta" : "Confirmar reserva"
+                }
+              />
             </div>
-          </div>
+          </main>
         </div>
-
-        <main className="w-full! flex-1! px-4! py-8! sm:px-6! sm:py-12! lg:px-12!">
-          <div className="mx-auto! w-full! max-w-2xl!">
-            <div className="mb-6! sm:mb-8!">
-              <div className="flex! flex-wrap! items-center! justify-center! gap-1.5! text-xs! font-medium! text-slate-600! sm:gap-2! sm:text-sm!">
-                <div className="flex! h-8! w-8! items-center! justify-center! rounded-full! bg-blue-600! text-white!">
-                  1
-                </div>
-                <span className="font-semibold! text-blue-600!">Carrito</span>
-                <svg className="h-4! w-4!" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-                <div className="flex! h-8! w-8! items-center! justify-center! rounded-full! bg-blue-600! text-white!">
-                  2
-                </div>
-                <span className="font-semibold! text-blue-600!">Método</span>
-                <svg className="h-4! w-4!" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-                <div className="flex! h-8! w-8! items-center! justify-center! rounded-full! bg-blue-600! text-white!">
-                  3
-                </div>
-                <span className="font-semibold! text-blue-600!">Resumen</span>
-              </div>
-            </div>
-
-            <div className="mb-8!">
-              <button
-                type="button"
-                onClick={handleBack}
-                className="flex! items-center! gap-2! rounded-lg! border! border-slate-200! px-4! py-2! font-medium! text-slate-700! transition-colors! hover:bg-slate-50!"
-              >
-                <svg className="h-4! w-4!" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Atrás
-              </button>
-            </div>
-
-            <ResumenCompraUI
-              items={items}
-              totalPrecio={total}
-              metodoPagoSeleccionado={metodoPagoSeleccionado}
-              onConfirm={() => {
-                void handleConfirmar();
-              }}
-              isConfirming={isBusy}
-              error={errorMessage}
-              showConfirmButton
-              confirmLabel={
-                metodoPagoSeleccionado.metodo === "tarjeta" ? "Pagar con tarjeta" : "Confirmar reserva"
-              }
-            />
-          </div>
-        </main>
       </div>
-    </div>
+    </ClientProtectedRoute>
   );
 }

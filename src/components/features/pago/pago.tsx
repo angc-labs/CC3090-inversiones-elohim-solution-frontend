@@ -11,7 +11,7 @@ import {
   listarMetodosPagoGuardados,
   obtenerConfigStripe,
 } from "@/lib/api/pago";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { useClientAuthStore } from "@/stores/useClientAuthStore";
 import { StripeNuevaTarjetaForm } from "@/components/features/pago/StripeNuevaTarjetaForm";
 
 type MetodoPagoShellProps = {
@@ -28,29 +28,50 @@ export function MetodoPagoShell({ onContinue }: MetodoPagoShellProps) {
   const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isStripeLoading, setIsStripeLoading] = useState(true);
   const [cargaTarjetasOk, setCargaTarjetasOk] = useState(false);
 
   const seleccionarMetodoPago = useMetodoPagoStore((s) => s.seleccionarMetodoPago);
-  const token = useAuthStore((state) => state.token);
+  const token = useClientAuthStore((state) => state.token);
 
-  const cargarTarjetasYConfig = useCallback(async () => {
+  useEffect(() => {
     if (!token) {
+      setIsStripeLoading(false);
       return;
     }
+
+    setIsStripeLoading(true);
     setError(null);
-    try {
-      const [lista, cfg] = await Promise.all([
-        listarMetodosPagoGuardados(token),
-        obtenerConfigStripe(token),
-      ]);
-      setTarjetasGuardadas(lista);
-      setPublishableKey(cfg.publishableKey);
-      setStripePromise(loadStripe(cfg.publishableKey));
-      setCargaTarjetasOk(true);
-    } catch (err) {
-      setCargaTarjetasOk(false);
-      setError(err instanceof Error ? err.message : "No se pudo cargar el pago con tarjeta.");
-    }
+
+    obtenerConfigStripe(token)
+      .then((cfg) => {
+        if (cfg && cfg.publishableKey) {
+          setPublishableKey(cfg.publishableKey);
+          setStripePromise(loadStripe(cfg.publishableKey));
+          
+          return listarMetodosPagoGuardados(token);
+        } else {
+          setPublishableKey(null);
+          setStripePromise(null);
+          setCargaTarjetasOk(false);
+        }
+      })
+      .then((lista) => {
+        if (lista) {
+          setTarjetasGuardadas(lista);
+          setCargaTarjetasOk(true);
+        }
+      })
+      .catch((err) => {
+        // Ignorar silenciosamente si no está configurado (p. ej. error 503 o 500)
+        console.warn("Stripe no está configurado para esta tienda:", err);
+        setPublishableKey(null);
+        setStripePromise(null);
+        setCargaTarjetasOk(false);
+      })
+      .finally(() => {
+        setIsStripeLoading(false);
+      });
   }, [token]);
 
   useEffect(() => {
@@ -88,27 +109,51 @@ export function MetodoPagoShell({ onContinue }: MetodoPagoShellProps) {
     };
   }, []);
 
-  useEffect(() => {
-    if (modalidad !== "tarjeta" || !token) {
-      return;
+  const opcionesModalidad = useMemo(() => {
+    const opts: Array<{
+      readonly id: "contra_entrega" | "tarjeta";
+      readonly titulo: string;
+      readonly descripcion: string;
+      readonly icono: string;
+    }> = [
+      {
+        id: "contra_entrega" as const,
+        titulo: "Pago contra entrega (reserva)",
+        descripcion: "Reservamos los productos. Pagás al retirar en tienda. Recibís un comprobante al confirmar.",
+        icono: "📦",
+      },
+    ];
+
+    if (publishableKey) {
+      opts.push({
+        id: "tarjeta" as const,
+        titulo: "Pago con tarjeta (Stripe)",
+        descripcion: "Cobro seguro con tarjeta antes de retirar. Podés usar una tarjeta guardada o ingresar una nueva.",
+        icono: "💳",
+      });
     }
-    const t = window.setTimeout(() => {
-      void cargarTarjetasYConfig();
-    }, 0);
-    return () => window.clearTimeout(t);
-  }, [modalidad, token, cargarTarjetasYConfig]);
+
+    return opts;
+  }, [publishableKey]);
+
+  useEffect(() => {
+    if (isStripeLoading) return;
+
+    if (!publishableKey) {
+      if (modalidad === "tarjeta") {
+        setModalidad("contra_entrega");
+        setTarjetaSeleccionadaId(null);
+      } else if (modalidad === null) {
+        setModalidad("contra_entrega");
+      }
+    }
+  }, [isStripeLoading, publishableKey, modalidad]);
 
   const handleElegirModalidad = (m: TModalidadCheckout) => {
     setModalidad(m);
     setError(null);
-    setTarjetaSeleccionadaId(null);
     if (m === "contra_entrega") {
-      setPublishableKey(null);
-      setStripePromise(null);
-      setCargaTarjetasOk(false);
-    }
-    if (m === "tarjeta" && token) {
-      void cargarTarjetasYConfig();
+      setTarjetaSeleccionadaId(null);
     }
   };
 
@@ -136,7 +181,7 @@ export function MetodoPagoShell({ onContinue }: MetodoPagoShellProps) {
 
   const handleContinuar = () => {
     if (!modalidad) {
-      setError("Elegí una modalidad de pago.");
+      setError("Elegir una modalidad de pago.");
       return;
     }
     if (!token) {
@@ -175,24 +220,7 @@ export function MetodoPagoShell({ onContinue }: MetodoPagoShellProps) {
     onContinue?.();
   };
 
-  const opcionesModalidad = useMemo(
-    () =>
-      [
-        {
-          id: "contra_entrega" as const,
-          titulo: "Pago contra entrega (reserva)",
-          descripcion: "Reservamos los productos. Pagás al retirar en tienda. Recibís un comprobante al confirmar.",
-          icono: "📦",
-        },
-        {
-          id: "tarjeta" as const,
-          titulo: "Pago con tarjeta (Stripe)",
-          descripcion: "Cobro seguro con tarjeta antes de retirar. Podés usar una tarjeta guardada o ingresar una nueva.",
-          icono: "💳",
-        },
-      ] as const,
-    []
-  );
+
 
   return (
     <div className="space-y-8!">
