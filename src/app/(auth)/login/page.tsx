@@ -4,9 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { Alert } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { login } from "@/lib/api/auth";
 import { getPostLoginPath } from "@/lib/auth-routes";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -19,7 +16,6 @@ export default function LoginPage() {
   const [contrasena, setContrasena] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [isLocked, setIsLocked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
@@ -59,7 +55,6 @@ export default function LoginPage() {
       if (err instanceof Error) {
         if (err.message === "ACCOUNT_LOCKED") {
           setError("Cuenta bloqueada temporalmente");
-          setIsLocked(true);
         } else {
           setError(err.message);
         }
@@ -73,113 +68,118 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative! flex! min-h-screen! flex-col! bg-[#f8f8f6]! md:flex-row!">
-      <div className="relative! mr-6! flex-1! overflow-hidden! bg-[#f0f0ec]!">
-        <div className="absolute! inset-0! bg-[radial-gradient(ellipse_80%_60%_at_30%_50%,rgba(59,130,246,0.08),transparent)]!" />
-        <div className="relative! flex! h-full! min-h-50! flex-col! justify-between! p-10! md:pt-20! md:pr-16! md:pb-14! md:pl-24!">
-          <div className="flex! items-center! gap-2.5!">
-            <div className="flex! h-7! w-7! items-center! justify-center! rounded-md! bg-blue-600! text-white! shadow-sm!">
-              <svg className="h-4! w-4!" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <span className="text-sm! font-semibold! tracking-tight! text-gray-900!">
-              <Link href="/">Esmira</Link>
-            </span>
-          </div>
+    <div className="relative! flex! min-h-screen! flex-col! items-center! justify-center! bg-gradient-to-b! from-[#081018]! via-[#0b1420]! to-[#081018]! text-slate-100! px-4! py-12! font-sans! overflow-hidden!">
+      {/* Decorative Blur Gradients */}
+      <div className="pointer-events-none! absolute! top-0! left-1/4! h-[500px]! w-[500px]! -translate-x-1/2! rounded-full! bg-brand-primary/5! blur-[120px]! opacity-50!" />
+      <div className="pointer-events-none! absolute! top-1/3! right-1/4! h-[600px]! w-[600px]! translate-x-1/2! rounded-full! bg-brand-secondary/5! blur-[150px]! opacity-40!" />
 
-          <div className="hidden! md:block!">
-            <h2 className="text-3xl! font-bold! leading-tight! tracking-tight! text-gray-900!">
-              Bienvenido de nuevo<br />a Esmira.
-            </h2>
-            <p className="mt-2.5! max-w-xs! text-sm! leading-relaxed! text-gray-400!">
-              Accede para continuar tu experiencia de compra sin fricciones.
-            </p>
+      {/* Login Card */}
+      <div className="w-full! max-w-md! rounded-2xl! border! border-slate-800/80! bg-slate-950/80! p-8! shadow-2xl! shadow-black/80! backdrop-blur-md!">
+        <div className="flex! items-center! justify-center! mb-6!">
+          <div className="flex! h-11! w-11! items-center! justify-center! rounded-xl! bg-gradient-to-tr! from-brand-primary! to-brand-secondary! text-slate-900! font-black! shadow-[0_0_20px_rgba(34,211,166,0.3)]!">
+            DH
           </div>
-
-          <p className="text-xs! text-gray-400!"></p>
         </div>
-      </div>
 
-      <div className="flex! flex-1! items-center! justify-center! bg-white! p-10! md:p-20!">
-        <div className="w-full! max-w-sm!">
-          <div className="mb-8!">
-            <h3 className="text-xl! font-semibold! tracking-tight! text-gray-900!">Iniciar sesión</h3>
+        <h3 className="text-center! text-2xl! font-black! tracking-tight! text-white! mb-2!">Iniciar sesión</h3>
+        <p className="text-center! text-xs! text-slate-400! mb-8!">Ingresa a tu cuenta para continuar</p>
+
+        <form onSubmit={handleSubmit} className="flex! flex-col!">
+          {error && (
+            <div className="mb-6! p-3.5! rounded-xl! border! border-rose-900/50! bg-rose-950/30! text-xs! font-mono! text-rose-400! leading-relaxed!">
+              {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="mb-6! p-3.5! rounded-xl! border! border-emerald-900/50! bg-emerald-950/30! text-xs! font-mono! text-emerald-400! leading-relaxed!">
+              {success}
+            </div>
+          )}
+
+          <div className="flex! flex-col! gap-1.5! mb-5!">
+            <label htmlFor="correo" className="text-xs! font-bold! text-slate-400! uppercase! tracking-wider!">
+              Correo electrónico
+            </label>
+            <input
+              id="correo"
+              type="email"
+              placeholder="correo@ejemplo.com"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+              disabled={isLoading}
+              required
+              className="h-11! w-full! rounded-xl! border! border-slate-800! bg-slate-900/60! px-4! text-sm! text-slate-100! placeholder:text-slate-650! outline-none! transition-all! focus:border-brand-primary! focus:ring-1! focus:ring-brand-primary!"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="flex! flex-col! gap-8! space-y-7!">
-            {error && <Alert type="error" message={error} onClose={() => setError("")} />}
-            {success && <Alert type="success" message={success} />}
-
-            <div className="space-y-1.5!">
-              <label className="text-xs! font-medium! uppercase! tracking-wide! text-gray-500!">Correo electrónico</label>
-              <Input
-                type="email"
-                placeholder="correo@ejemplo.com"
-                value={correo}
-                onChange={(e) => setCorreo(e.target.value)}
-                disabled={isLoading || isLocked}
+          <div className="flex! flex-col! gap-1.5! mb-6!">
+            <div className="flex! items-center! justify-between!">
+              <label htmlFor="contrasena" className="text-xs! font-bold! text-slate-400! uppercase! tracking-wider!">
+                Contraseña
+              </label>
+              <Link
+                href="/recuperar"
+                className="text-[11px]! font-bold! text-brand-primary! hover:text-[#1ebda1]! transition-colors!"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+            <div className="relative!">
+              <input
+                id="contrasena"
+                type={mostrarContrasena ? "text" : "password"}
+                placeholder="Tu contraseña"
+                value={contrasena}
+                onChange={(e) => setContrasena(e.target.value)}
+                disabled={isLoading}
                 required
-                className="h-11! rounded-lg! border-gray-200! bg-gray-50! text-gray-900! placeholder:text-gray-300! transition-colors! focus:border-blue-400! focus:bg-white! focus:ring-blue-400/30!"
+                className="h-11! w-full! rounded-xl! border! border-slate-800! bg-slate-900/60! pr-11! pl-4! text-sm! text-slate-100! placeholder:text-slate-650! outline-none! transition-all! focus:border-brand-primary! focus:ring-1! focus:ring-brand-primary!"
               />
+              <button
+                type="button"
+                onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                className="absolute! right-3.5! top-1/2! -translate-y-1/2! text-slate-500! hover:text-slate-350! transition-colors! cursor-pointer! bg-transparent! border-none! p-0!"
+              >
+                {mostrarContrasena ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
+          </div>
 
-            <div className="space-y-1.5!">
-              <label className="text-xs! font-medium! uppercase! tracking-wide! text-gray-500!">Contraseña</label>
-              <div className="relative!">
-                <Input
-                  type={mostrarContrasena ? "text" : "password"}
-                  placeholder="Tu contraseña"
-                  value={contrasena}
-                  onChange={(e) => setContrasena(e.target.value)}
-                  disabled={isLoading || isLocked}
-                  required
-                  className="h-11! rounded-lg! border-gray-200! bg-gray-50! pr-10! text-gray-900! placeholder:text-gray-300! transition-colors! focus:border-blue-400! focus:bg-white! focus:ring-blue-400/30!"
-                />
-                <button
-                  type="button"
-                  onClick={() => setMostrarContrasena(!mostrarContrasena)}
-                  className="absolute! top-1/2! right-3! -translate-y-1/2! text-gray-300! transition-colors! hover:text-gray-500!"
-                >
-                  {mostrarContrasena ? <EyeOff className="h-4! w-4!" /> : <Eye className="h-4! w-4!" />}
-                </button>
-              </div>
-              <div className="mt-2! flex! items-center! justify-end!">
-                <Link
-                  href="/recuperar"
-                  className="text-xs! font-medium! text-blue-600! transition-colors! hover:text-blue-700!"
-                >
-                  ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
-            </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="mt-2! h-12! w-full! rounded-xl! bg-brand-primary! hover:bg-[#1ebda1]! text-brand-tertiary! font-bold! shadow-[0_4px_14px_0_rgba(34,211,166,0.2)]! transition-all! hover:scale-[1.01]! cursor-pointer! border-none!"
+          >
+            {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
+          </button>
+        </form>
 
-            <Button
-              type="submit"
-              disabled={isLoading || isLocked}
-              className="mt-2! h-11! w-full! rounded-lg! bg-blue-600! font-medium! text-white! shadow-sm! transition-all! hover:bg-blue-700! hover:shadow-md!"
-            >
-              {isLoading ? "Iniciando..." : "Iniciar sesión"}
-            </Button>
-          </form>
+        <p className="mt-8! text-center! text-xs! text-slate-500!">
+          ¿No tienes cuenta?{" "}
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                const params = new URLSearchParams(window.location.search);
+                const role = params.get("role") || params.get("tipo") || "";
+                router.push(`/register${role ? `?role=${role}` : ""}`);
+              } else {
+                router.push("/register");
+              }
+            }}
+            className="font-bold! text-brand-primary! hover:text-[#1ebda1]! transition-colors! cursor-pointer! bg-transparent! border-none! p-0!"
+          >
+            Regístrate
+          </button>
+        </p>
 
-          <p className="mt-6! text-center! text-sm! text-gray-400!">
-            ¿No tienes cuenta?{" "}
-            <button
-              onClick={() => router.push("/register")}
-              className="font-medium! text-blue-600! transition-colors! hover:text-blue-700!"
-            >
-              Regístrate
-            </button>
-          </p>
-
-          <p className="mt-3! text-center! text-xs! text-gray-400!">
-            ¿Ya tienes enlace de recuperación?{" "}
-            <Link href="/new-password" className="font-medium! text-blue-600! transition-colors! hover:text-blue-700!">
-              Cambiar contraseña
-            </Link>
-          </p>
-        </div>
+        <p className="mt-3! text-center! text-xs! text-slate-500!">
+          ¿Ya tienes enlace de recuperación?{" "}
+          <Link href="/new-password" className="font-bold! text-brand-primary! hover:text-[#1ebda1]! transition-colors!">
+            Cambiar contraseña
+          </Link>
+        </p>
       </div>
     </div>
   );

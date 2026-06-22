@@ -2,18 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
+import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { register } from "@/lib/api/auth";
 import { getPostLoginPath } from "@/lib/auth-routes";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { Eye, EyeOff } from "lucide-react";
-import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const loginStore = useAuthStore(state => state.login);
+  const loginStore = useAuthStore((state) => state.login);
+
   const [formData, setFormData] = useState({
     nombre: "",
     correo: "",
@@ -21,13 +19,14 @@ export default function RegisterPage() {
     telefono: "",
     direccion: "",
   });
+
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const validateForm = (): boolean => {
@@ -59,25 +58,45 @@ export default function RegisterPage() {
 
     try {
       setSuccess("Creando tu cuenta...");
+
+      let tipoUsuario: "cliente" | "administrador" = "administrador";
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const role = params.get("role") || params.get("tipo");
+        if (role === "cliente" || role === "client") {
+          tipoUsuario = "cliente";
+        } else if (role === "administrador" || role === "admin") {
+          tipoUsuario = "administrador";
+        } else {
+          // Fallback to active_tenant_id check
+          const tenantId = window.localStorage.getItem("active_tenant_id");
+          if (tenantId) {
+            tipoUsuario = "cliente";
+          }
+        }
+      }
+
       const response = await register({
         nombre: formData.nombre,
         correo: formData.correo,
         contrasena: formData.contrasena,
         telefono: formData.telefono || undefined,
         direccion: formData.direccion || undefined,
+        tipoUsuario,
       });
-      
+
       loginStore(
         {
           usuarioId: response.usuarioId,
           correo: response.correo,
           nombre: response.nombre,
           rol: response.rol,
+          esSuperAdmin: response.esSuperAdmin,
         },
         response.token,
         response.expiraEn
       );
-      
+
       setSuccess("¡Cuenta creada exitosamente! Redirigiendo...");
       setTimeout(() => {
         router.push(getPostLoginPath(response.rol));
@@ -92,148 +111,147 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative! flex! min-h-screen! flex-col! bg-[#f8f8f6]! md:flex-row!">
+    <div className="relative! flex! min-h-screen! flex-col! items-center! justify-center! bg-gradient-to-b! from-[#081018]! via-[#0b1420]! to-[#081018]! text-slate-100! px-4! py-12! font-sans! overflow-hidden!">
+      {/* Decorative Blur Gradients */}
+      <div className="pointer-events-none! absolute! top-0! left-1/4! h-[500px]! w-[500px]! -translate-x-1/2! rounded-full! bg-brand-primary/5! blur-[120px]! opacity-50!" />
+      <div className="pointer-events-none! absolute! top-1/3! right-1/4! h-[600px]! w-[600px]! translate-x-1/2! rounded-full! bg-brand-secondary/5! blur-[150px]! opacity-40!" />
 
-      {/* Left panel */}
-      <div className="relative! flex-1! overflow-hidden! bg-[#f0f0ec]!">
-        <div className="absolute! inset-0! bg-[radial-gradient(ellipse_80%_60%_at_30%_50%,rgba(59,130,246,0.08),transparent)]!" />
-        <div className="relative! flex! h-full! min-h-50! flex-col! justify-between! p-10! md:py-14! md:pl-24! md:pr-16! md:pt-20!">
-          <div className="flex! items-center! gap-2.5!">
-            <div className="flex! h-7! w-7! items-center! justify-center! rounded-md! bg-blue-600! text-white! shadow-sm!">
-              <svg className="h-4! w-4!" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <span className="text-sm! font-semibold! tracking-tight! text-gray-900!">
-              <Link href="/">Esmira</Link>
-            </span>
+      {/* Registration Card */}
+      <div className="w-full! max-w-lg! rounded-2xl! border! border-slate-800/80! bg-slate-950/80! p-8! shadow-2xl! shadow-black/80! backdrop-blur-md!">
+        <div className="flex! items-center! justify-center! mb-6!">
+          <div className="flex! h-11! w-11! items-center! justify-center! rounded-xl! bg-gradient-to-tr! from-brand-primary! to-brand-secondary! text-slate-900! font-black! shadow-[0_0_20px_rgba(34,211,166,0.3)]!">
+            DH
           </div>
-
-          <div className="hidden! md:block!">
-            <h2 className="text-3xl! font-bold! leading-tight! tracking-tight! text-gray-900!">
-              Lorem ipsum dolor<br />sit amet.
-            </h2>
-            <p className="mt-2.5! text-sm! text-gray-400! max-w-xs! leading-relaxed!">
-              Consectetur adipisicing elit. Obcaecati ea harum animi sint officiis quisquam.
-            </p>
-          </div>
-
-          <p className="text-xs! text-gray-400!"></p>
         </div>
-      </div>
 
-      {/* Right panel — form */}
-      <div className="flex! flex-1! items-center! justify-center! bg-white! p-10! md:p-20!">
-        <div className="w-full! max-w-sm!">
+        <h3 className="text-center! text-2xl! font-black! tracking-tight! text-white! mb-2!">Crear cuenta</h3>
+        <p className="text-center! text-xs! text-slate-400! mb-8!">Regístrate para continuar</p>
 
-          <div className="mb-8!">
-            <h3 className="text-xl! font-semibold! text-gray-900! tracking-tight!">Crear cuenta</h3>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-7! flex! gap-8! flex-col!">
-            {error && (
-              <Alert type="error" message={error} onClose={() => setError("")} />
-            )}
-
-            {success && (
-              <Alert type="success" message={success} />
-            )}
-
-            <div className="space-y-1.5!">
-              <label className="text-xs! font-medium! text-gray-500! uppercase! tracking-wide!">Nombre completo</label>
-              <Input
-                name="nombre"
-                placeholder="Juan Pérez"
-                value={formData.nombre}
-                onChange={handleChange}
-                required
-                disabled={isLoading}
-                className="h-11! rounded-lg! border-gray-200! bg-gray-50! text-gray-900! placeholder:text-gray-300! focus:bg-white! focus:border-blue-400! focus:ring-blue-400/30! transition-colors!"
-              />
+        <form onSubmit={handleSubmit} className="flex! flex-col!">
+          {error && (
+            <div className="mb-6! p-3.5! rounded-xl! border! border-rose-900/50! bg-rose-950/30! text-xs! font-mono! text-rose-400! leading-relaxed!">
+              {error}
             </div>
+          )}
 
-            <div className="space-y-1.5!">
-              <label className="text-xs! font-medium! text-gray-500! uppercase! tracking-wide!">Correo electrónico</label>
-              <Input
-                type="email"
-                name="correo"
-                placeholder="correo@ejemplo.com"
-                value={formData.correo}
-                onChange={handleChange}
-                required
-                disabled={isLoading}
-                className="h-11! rounded-lg! border-gray-200! bg-gray-50! text-gray-900! placeholder:text-gray-300! focus:bg-white! focus:border-blue-400! focus:ring-blue-400/30! transition-colors!"
-              />
+          {success && (
+            <div className="mb-6! p-3.5! rounded-xl! border! border-emerald-900/50! bg-emerald-950/30! text-xs! font-mono! text-emerald-400! leading-relaxed!">
+              {success}
             </div>
+          )}
 
-            <div className="space-y-1.5!">
-              <label className="text-xs! font-medium! text-gray-500! uppercase! tracking-wide!">Contraseña</label>
-              <div className="relative!">
-                <Input
-                  type={mostrarContrasena ? "text" : "password"}
-                  name="contrasena"
-                  placeholder="Crea una contraseña"
-                  value={formData.contrasena}
-                  onChange={handleChange}
-                  required
-                  disabled={isLoading}
-                  className="h-11! rounded-lg! border-gray-200! bg-gray-50! pr-10! text-gray-900! placeholder:text-gray-300! focus:bg-white! focus:border-blue-400! focus:ring-blue-400/30! transition-colors!"
-                />
-                <button
-                  type="button"
-                  onClick={() => setMostrarContrasena(!mostrarContrasena)}
-                  className="absolute! right-3! top-1/2! -translate-y-1/2! text-gray-300! hover:text-gray-500! transition-colors!"
-                >
-                  {mostrarContrasena ? <EyeOff className="h-4! w-4!" /> : <Eye className="h-4! w-4!" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="grid! grid-cols-1! gap-3! sm:grid-cols-2!">
-              <div className="space-y-1.5!">
-                <label className="text-xs! font-medium! text-gray-500! uppercase! tracking-wide!">Teléfono <span className="normal-case! text-gray-300!">(opc)</span></label>
-                <Input
-                  type="tel"
-                  name="telefono"
-                  placeholder="Teléfono"
-                  value={formData.telefono}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  className="h-11! rounded-lg! border-gray-200! bg-gray-50! text-gray-900! placeholder:text-gray-300! focus:bg-white! focus:border-blue-400! focus:ring-blue-400/30! transition-colors!"
-                />
-              </div>
-              <div className="space-y-1.5!">
-                <label className="text-xs! font-medium! text-gray-500! uppercase! tracking-wide!">Dirección <span className="normal-case! text-gray-300!">(opc)</span></label>
-                <Input
-                  name="direccion"
-                  placeholder="Dirección"
-                  value={formData.direccion}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  className="h-11! rounded-lg! border-gray-200! bg-gray-50! text-gray-900! placeholder:text-gray-300! focus:bg-white! focus:border-blue-400! focus:ring-blue-400/30! transition-colors!"
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
+          <div className="flex! flex-col! gap-1.5! mb-4!">
+            <label htmlFor="nombre" className="text-xs! font-bold! text-slate-400! uppercase! tracking-wider!">
+              Nombre completo
+            </label>
+            <input
+              id="nombre"
+              name="nombre"
+              type="text"
+              placeholder="Juan Pérez"
+              value={formData.nombre}
+              onChange={handleChange}
               disabled={isLoading}
-              className="h-11! w-full! rounded-lg! bg-blue-600! font-medium! text-white! hover:bg-blue-700! shadow-sm! transition-all! hover:shadow-md! mt-2!"
-            >
-              {isLoading ? "Creando cuenta..." : "Crear cuenta"}
-            </Button>
-          </form>
+              required
+              className="h-11! w-full! rounded-xl! border! border-slate-800! bg-slate-900/60! px-4! text-sm! text-slate-100! placeholder:text-slate-650! outline-none! transition-all! focus:border-brand-primary! focus:ring-1! focus:ring-brand-primary!"
+            />
+          </div>
 
-          <p className="mt-6! text-center! text-sm! text-gray-400!">
-            ¿Ya tienes cuenta?{" "}
-            <button
-              onClick={() => router.push("/login")}
-              className="font-medium! text-blue-600! hover:text-blue-700! transition-colors!"
-            >
-              Iniciar sesión
-            </button>
-          </p>
-        </div>
+          <div className="flex! flex-col! gap-1.5! mb-4!">
+            <label htmlFor="correo" className="text-xs! font-bold! text-slate-400! uppercase! tracking-wider!">
+              Correo electrónico
+            </label>
+            <input
+              id="correo"
+              name="correo"
+              type="email"
+              placeholder="correo@ejemplo.com"
+              value={formData.correo}
+              onChange={handleChange}
+              disabled={isLoading}
+              required
+              className="h-11! w-full! rounded-xl! border! border-slate-800! bg-slate-900/60! px-4! text-sm! text-slate-100! placeholder:text-slate-650! outline-none! transition-all! focus:border-brand-primary! focus:ring-1! focus:ring-brand-primary!"
+            />
+          </div>
+
+          <div className="flex! flex-col! gap-1.5! mb-4!">
+            <label htmlFor="contrasena" className="text-xs! font-bold! text-slate-400! uppercase! tracking-wider!">
+              Contraseña
+            </label>
+            <div className="relative!">
+              <input
+                id="contrasena"
+                name="contrasena"
+                type={mostrarContrasena ? "text" : "password"}
+                placeholder="Crea una contraseña"
+                value={formData.contrasena}
+                onChange={handleChange}
+                disabled={isLoading}
+                required
+                className="h-11! w-full! rounded-xl! border! border-slate-800! bg-slate-900/60! pr-11! pl-4! text-sm! text-slate-100! placeholder:text-slate-650! outline-none! transition-all! focus:border-brand-primary! focus:ring-1! focus:ring-brand-primary!"
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                className="absolute! right-3.5! top-1/2! -translate-y-1/2! text-slate-500! hover:text-slate-350! transition-colors! cursor-pointer! bg-transparent! border-none! p-0!"
+              >
+                {mostrarContrasena ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="grid! grid-cols-1! gap-4! sm:grid-cols-2! mb-6!">
+            <div className="flex! flex-col! gap-1.5!">
+              <label htmlFor="telefono" className="text-xs! font-bold! text-slate-400! uppercase! tracking-wider!">
+                Teléfono <span className="normal-case! text-slate-600! font-normal!">(opc)</span>
+              </label>
+              <input
+                id="telefono"
+                name="telefono"
+                type="tel"
+                placeholder="Teléfono"
+                value={formData.telefono}
+                onChange={handleChange}
+                disabled={isLoading}
+                className="h-11! w-full! rounded-xl! border! border-slate-800! bg-slate-900/60! px-4! text-sm! text-slate-100! placeholder:text-slate-650! outline-none! transition-all! focus:border-brand-primary! focus:ring-1! focus:ring-brand-primary!"
+              />
+            </div>
+            <div className="flex! flex-col! gap-1.5!">
+              <label htmlFor="direccion" className="text-xs! font-bold! text-slate-400! uppercase! tracking-wider!">
+                Dirección <span className="normal-case! text-slate-600! font-normal!">(opc)</span>
+              </label>
+              <input
+                id="direccion"
+                name="direccion"
+                type="text"
+                placeholder="Dirección"
+                value={formData.direccion}
+                onChange={handleChange}
+                disabled={isLoading}
+                className="h-11! w-full! rounded-xl! border! border-slate-800! bg-slate-900/60! px-4! text-sm! text-slate-100! placeholder:text-slate-650! outline-none! transition-all! focus:border-brand-primary! focus:ring-1! focus:ring-brand-primary!"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="h-12! w-full! rounded-xl! bg-brand-primary! hover:bg-[#1ebda1]! text-brand-tertiary! font-bold! shadow-[0_4px_14px_0_rgba(34,211,166,0.2)]! transition-all! hover:scale-[1.01]! cursor-pointer! border-none!"
+          >
+            {isLoading ? "Creando cuenta..." : "Crear cuenta"}
+          </button>
+        </form>
+
+        <p className="mt-8! text-center! text-xs! text-slate-500!">
+          ¿Ya tienes cuenta?{" "}
+          <button
+            type="button"
+            onClick={() => router.push("/login")}
+            className="font-bold! text-brand-primary! hover:text-[#1ebda1]! transition-colors! cursor-pointer! bg-transparent! border-none! p-0!"
+          >
+            Iniciar sesión
+          </button>
+        </p>
       </div>
     </div>
   );

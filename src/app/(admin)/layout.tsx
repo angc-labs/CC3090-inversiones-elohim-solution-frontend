@@ -23,7 +23,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <AdminRoute>
       <div className="flex min-h-screen flex-col bg-gray-50 lg:flex-row">
         {/* Sidebar escritorio */}
-        <aside className="fixed hidden h-screen w-56 shrink-0 flex-col border-r border-gray-200 bg-white py-6 px-3 lg:flex lg:overflow-y-auto">
+        <aside className="fixed hidden h-[100dvh] max-h-[100dvh] w-56 shrink-0 flex-col border-r border-gray-200 bg-white py-6 px-3 lg:flex lg:overflow-y-auto">
           <AdminSidebarPanel items={itemsVisibles} />
         </aside>
 
@@ -38,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         ) : null}
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-50 flex w-[min(100%,16rem)] flex-col border-r border-gray-200 bg-white py-6 px-3 shadow-xl transition-transform duration-200 lg:hidden",
+            "fixed inset-y-0 left-0 z-50 flex w-[min(100%,16rem)] h-[100dvh] max-h-[100dvh] overflow-y-auto flex-col border-r border-gray-200 bg-white py-6 px-3 shadow-xl transition-transform duration-200 lg:hidden",
             menuAbierto ? "translate-x-0" : "-translate-x-full"
           )}
           aria-hidden={!menuAbierto}

@@ -9,12 +9,10 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShopNavbarActions } from "@/components/ui/ShopNavbarActions";
-import { ProtectedRoute } from "@/components/features/auth/ProtectedRoute";
-import { useSessionExpiration } from "@/hooks/useSessionExpiration";
-import { SessionExpirationWarning } from "@/components/features/auth/SessionExpirationWarning";
+import { ClientProtectedRoute } from "@/components/features/auth/ClientProtectedRoute";
 import { getProfile, updateProfile } from "@/lib/api/perfil";
 import type { UserProfile } from "@/lib/api/perfil";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { useClientAuthStore } from "@/stores/useClientAuthStore";
 import { cn } from "@/lib/utils";
 
 function validarTelefono(telefono: string): boolean {
@@ -28,8 +26,12 @@ function validarTexto(valor: string, min = 2): boolean {
 
 function PerfilContent() {
   const router = useRouter();
-  const token = useAuthStore((s) => s.token);
-  const { handleLogout } = useSessionExpiration();
+  const token = useClientAuthStore((s) => s.token);
+  const logout = useClientAuthStore((s) => s.logout);
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
 
   const [perfil, setPerfil] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState({
@@ -401,8 +403,6 @@ function PerfilContent() {
             </div>
           </div>
         </main>
-
-        <SessionExpirationWarning />
       </div>
     </div>
   );
@@ -410,8 +410,8 @@ function PerfilContent() {
 
 export default function PerfilPage() {
   return (
-    <ProtectedRoute>
+    <ClientProtectedRoute>
       <PerfilContent />
-    </ProtectedRoute>
+    </ClientProtectedRoute>
   );
 }

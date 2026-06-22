@@ -9,6 +9,7 @@ export const ADMIN_ONLY_PATHS = ["/admin/usuarios", "/admin/productos"] as const
 /** Rutas de tienda para clientes autenticados. */
 export const CLIENT_PROTECTED_PREFIXES = [
   "/home",
+  "/portal",
   "/catalogo",
   "/carrito",
   "/perfil",
@@ -20,11 +21,7 @@ export const CLIENT_PROTECTED_PREFIXES = [
 ] as const;
 
 export function getPostLoginPath(rol: TRol): string {
-  if (rol === "admin" || rol === "cajero") {
-    return "/admin";
-  }
-
-  return "/home";
+  return "/portal";
 }
 
 export function isAdminPanelRol(rol: TRol): boolean {

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type TRol = "cliente" | "cajero" | "admin";
+export type TRol = "cliente" | "cajero" | "admin" | "superadmin";
 
 export type TUsuario = {
   usuarioId: string;
@@ -29,11 +29,19 @@ export const useAuthStore = create<TAuthStore>()(
       expiraEn: null,
       isAuthenticated: false,
 
-      login: (usuario, token, expiraEn) =>
-        set({ usuario, token, expiraEn, isAuthenticated: true }),
+      login: (usuario, token, expiraEn) => {
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem("active_tenant_id");
+        }
+        set({ usuario, token, expiraEn, isAuthenticated: true });
+      },
 
-      logout: () =>
-        set({ usuario: null, token: null, expiraEn: null, isAuthenticated: false }),
+      logout: () => {
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem("active_tenant_id");
+        }
+        set({ usuario: null, token: null, expiraEn: null, isAuthenticated: false });
+      },
 
       isSessionExpired: () => {
         const state = get();

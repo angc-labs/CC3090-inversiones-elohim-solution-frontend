@@ -1,13 +1,13 @@
 "use client";
 
 import { Suspense } from "react";
-import { ProtectedRoute } from "@/components/features/auth/ProtectedRoute";
+import { ClientProtectedRoute } from "@/components/features/auth/ClientProtectedRoute";
 import { CatalogoShell } from "@/components/features/catalogo/CatalogoShell";
 import { ReservasShell } from "@/components/features/reservas";
 
 export default function ReservasPage() {
   return (
-    <ProtectedRoute>
+    <ClientProtectedRoute>
       <CatalogoShell eyebrow="ESMIRNA" showSidebar={false}>
         <div className="mb-8!">
           <h1 className="text-2xl! font-bold! tracking-tight! text-slate-900! sm:text-3xl!">Mis compras</h1>
@@ -19,6 +19,6 @@ export default function ReservasPage() {
           <ReservasShell />
         </Suspense>
       </CatalogoShell>
-    </ProtectedRoute>
+    </ClientProtectedRoute>
   );
 }
