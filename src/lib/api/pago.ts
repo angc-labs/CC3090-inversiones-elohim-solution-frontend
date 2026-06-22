@@ -72,13 +72,17 @@ export async function asegurarMetodoContraEntrega(token: string): Promise<TMetod
   );
 }
 
-export async function crearPaymentIntent(token: string, reservacionId: string): Promise<TPaymentIntentCreado> {
+export async function crearPaymentIntent(
+  token: string,
+  reservacionId: string,
+  metodoPagoId?: string
+): Promise<TPaymentIntentCreado> {
   return apiRequest<TPaymentIntentCreado>(
     "/api/pagos/create-intent",
     {
       method: "POST",
       headers: buildAuthHeaders(token),
-      body: JSON.stringify({ reservacionId }),
+      body: JSON.stringify({ reservacionId, metodoPagoId }),
     },
     "Error al iniciar el pago con tarjeta"
   );
@@ -92,5 +96,16 @@ export async function obtenerEstadoPago(token: string, paymentIntentId: string):
       headers: buildAuthHeaders(token),
     },
     "Error al consultar el estado del pago"
+  );
+}
+
+export async function eliminarMetodoStripe(token: string, id: string): Promise<void> {
+  return apiRequest<void>(
+    `/api/metodoPago/${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+      headers: buildAuthHeaders(token),
+    },
+    "Error al eliminar la tarjeta"
   );
 }

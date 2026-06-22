@@ -63,13 +63,59 @@ export async function apiRequest<T>(
   return payload as T;
 }
 
-export function buildAuthHeaders(token?: string): HeadersInit {
-  if (!token) {
-    return { "Content-Type": "application/json" };
+function getSubdomain(): string | null {
+  if (typeof window === "undefined") return null;
+
+  const hostname = window.location.hostname;
+
+  // localhost
+  if (hostname.endsWith(".localhost")) {
+    const parts = hostname.split(".localhost");
+    if (parts.length > 1 && parts[0]) {
+      return parts[0];
+    }
   }
 
-  return {
+  // lvh.me (para pruebas de subdominios localmente)
+  if (hostname.endsWith(".lvh.me")) {
+    const parts = hostname.split(".lvh.me");
+    if (parts.length > 1 && parts[0]) {
+      return parts[0];
+    }
+  }
+
+  // Dominio principal en producción
+  const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN;
+  if (mainDomain && hostname.endsWith(`.${mainDomain}`)) {
+    const parts = hostname.split(`.${mainDomain}`);
+    if (parts.length > 1 && parts[0]) {
+      return parts[0];
+    }
+  }
+
+  return null;
+}
+
+export function buildAuthHeaders(token?: string, skipTenant?: boolean): HeadersInit {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
   };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  if (!skipTenant && typeof window !== "undefined") {
+    const subdomain = getSubdomain();
+    if (subdomain && subdomain !== "www" && subdomain !== "admin") {
+      headers["X-Tenant-Slug"] = subdomain.toLowerCase();
+    } else {
+      const tenantId = window.localStorage.getItem("active_tenant_id");
+      if (tenantId) {
+        headers["X-Tenant-ID"] = tenantId;
+      }
+    }
+  }
+
+  return headers;
 }

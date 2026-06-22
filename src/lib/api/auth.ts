@@ -6,7 +6,7 @@ type TAuthApiResponse = {
   correo: string;
   nombre: string;
   tipoUsuario: "cliente" | "administrador";
-  rol?: "cajero" | "administrador" | null;
+  rol?: "cajero" | "administrador" | "superadmin" | null;
   tipoCliente?: "mayorista" | "minorista" | "particular" | null;
   token: string;
   expiraEn: string;
@@ -31,6 +31,7 @@ export type TRegisterInput = {
   telefono?: string;
   direccion?: string;
   tipoCliente?: "mayorista" | "minorista" | "particular";
+  tipoUsuario?: "cliente" | "administrador";
 };
 
 function mapRol(response: TAuthApiResponse): TRol {
@@ -40,6 +41,10 @@ function mapRol(response: TAuthApiResponse): TRol {
 
   if (response.rol === "cajero") {
     return "cajero";
+  }
+
+  if (response.rol === "superadmin" || response.esSuperAdmin) {
+    return "superadmin";
   }
 
   return "admin";
@@ -59,7 +64,7 @@ function mapAuthResponse(response: TAuthApiResponse): TAuthResponse {
 
 export async function login(correo: string, contrasena: string): Promise<TAuthResponse> {
   const response = await apiRequest<TAuthApiResponse>(
-    "/api/auth/login",
+    "/api/v1/auth/login",
     {
       method: "POST",
       headers: buildAuthHeaders(),
@@ -72,16 +77,18 @@ export async function login(correo: string, contrasena: string): Promise<TAuthRe
 }
 
 export async function register(data: TRegisterInput): Promise<TAuthResponse> {
+  const isClient = data.tipoUsuario === "cliente";
   const response = await apiRequest<TAuthApiResponse>(
-    "/api/auth/register",
+    "/api/v1/auth/register",
     {
       method: "POST",
-      headers: buildAuthHeaders(),
+      headers: buildAuthHeaders(undefined, !isClient),
       body: JSON.stringify({
         correo: data.correo,
         nombre: data.nombre,
         contrasena: data.contrasena,
-        tipoUsuario: "cliente",
+        tipoUsuario: data.tipoUsuario || "administrador",
+        rol: data.tipoUsuario === "cliente" ? undefined : "administrador",
         tipoCliente: data.tipoCliente ?? "particular",
         apellido: data.apellido,
         telefono: data.telefono,
@@ -95,7 +102,7 @@ export async function register(data: TRegisterInput): Promise<TAuthResponse> {
 }
 
 export async function logout(token: string): Promise<void> {
-  const response = await fetch(`${API_URL}/api/auth/logout`, {
+  const response = await fetch(`${API_URL}/api/v1/auth/logout`, {
     method: "POST",
     headers: buildAuthHeaders(token),
   });
@@ -107,7 +114,7 @@ export async function logout(token: string): Promise<void> {
 
 export async function forgotPassword(correo: string): Promise<void> {
   await apiRequest<{ mensaje: string }>(
-    "/api/auth/forgot-password",
+    "/api/v1/auth/forgot-password",
     {
       method: "POST",
       headers: buildAuthHeaders(),
@@ -123,12 +130,74 @@ export async function changePassword(
   token?: string
 ): Promise<void> {
   await apiRequest<void>(
-    "/api/auth/change-password",
+    "/api/v1/auth/change-password",
     {
       method: "POST",
       headers: buildAuthHeaders(token),
       body: JSON.stringify({ contrasenaActual, nuevaContrasena }),
     },
     "Error al cambiar la contraseña"
+  );
+}
+
+export type TRecoveryCodesResponse = {
+  usuarioId: string;
+  correo: string;
+  nombre: string;
+  codigos: string[];
+};
+
+/**
+ * Admin generates 8 recovery codes for a user.
+ * Only admins/superadmins can call this.
+ */
+export async function adminResetPassword(
+  usuarioId: string,
+  token: string
+): Promise<TRecoveryCodesResponse> {
+  return apiRequest<TRecoveryCodesResponse>(
+    `/api/admin/usuarios/${usuarioId}/reset-password`,
+    {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+    },
+    "Error al generar códigos de recuperación"
+  );
+}
+
+/**
+ * Recover password using a recovery code (no email required).
+ */
+export async function recoverWithCode(
+  correo: string,
+  codigo: string,
+  nuevaContrasena: string
+): Promise<{ mensaje: string }> {
+  return apiRequest<{ mensaje: string }>(
+    "/api/v1/auth/recover-with-code",
+    {
+      method: "POST",
+      headers: buildAuthHeaders(),
+      body: JSON.stringify({ correo, codigo, nuevaContrasena }),
+    },
+    "Error al recuperar la contraseña"
+  );
+}
+
+export async function solicitarCodigoRecuperacion(
+  correo: string,
+  tiendaId: string
+): Promise<{ mensaje: string }> {
+  return apiRequest<{ mensaje: string }>(
+    "/api/v1/auth/forgot-password",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Tenant-ID": tiendaId,
+      },
+      body: JSON.stringify({ correo }),
+    },
+    "Error al solicitar el código de recuperación"
   );
 }

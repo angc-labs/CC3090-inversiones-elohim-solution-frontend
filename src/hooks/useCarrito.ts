@@ -1,15 +1,16 @@
 import useSWR from "swr";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { eliminarArticuloCarrito, actualizarArticuloCarrito, obtenerCarrito } from "@/lib/api/carrito";
 import { obtenerProductoPorId } from "@/lib/api/productos";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { useClientAuthStore } from "@/stores/useClientAuthStore";
 import { TCarritoApi } from "@/types";
 
 export function useCarrito() {
-  const token = useAuthStore((state) => state.token);
+  const token = useClientAuthStore((state) => state.token);
   const [stockWarning, setStockWarning] = useState<string | null>(null);
   const [isRemovingItemId, setIsRemovingItemId] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
+  const inFlightAdjustments = useRef<Set<string>>(new Set());
 
   const { data, error, isLoading, mutate } = useSWR(
     token ? ["carrito", token] : null,
@@ -21,29 +22,46 @@ export function useCarrito() {
   useEffect(() => {
     if (data?.items && token) {
       const ajustarStocks = async () => {
-        const ajustes: Array<Promise<unknown>> = [];
+        let quantityAdjusted = false;
         let adjusted = false;
 
         for (const item of data.items) {
+          if (inFlightAdjustments.current.has(item.articuloId)) {
+            continue;
+          }
+
           try {
+            inFlightAdjustments.current.add(item.articuloId);
             const producto = await obtenerProductoPorId(item.productoId);
             if (item.cantidad > producto.stockActual) {
-              ajustes.push(
-                actualizarArticuloCarrito(token, item.articuloId, producto.stockActual)
-              );
+              await actualizarArticuloCarrito(token, item.articuloId, producto.stockActual);
+              quantityAdjusted = true;
               adjusted = true;
             }
+            inFlightAdjustments.current.delete(item.articuloId);
           } catch (err) {
             console.error(`Error obteniendo stock para ${item.productoId}:`, err);
+            // Si el producto no se encuentra (404), eliminamos el artículo inválido del carrito automáticamente
+            if (err && typeof err === "object" && "status" in err && err.status === 404) {
+              try {
+                await eliminarArticuloCarrito(token, item.articuloId);
+                adjusted = true;
+              } catch (deleteErr) {
+                console.error(`Error al intentar eliminar artículo inválido ${item.articuloId}:`, deleteErr);
+                inFlightAdjustments.current.delete(item.articuloId);
+              }
+            } else {
+              inFlightAdjustments.current.delete(item.articuloId);
+            }
           }
         }
 
-        if (ajustes.length > 0) {
-          await Promise.all(ajustes);
+        if (adjusted) {
           await mutate(); // Refrescar el carrito
-          if (adjusted) {
+          if (quantityAdjusted) {
             setStockWarning("Algunas cantidades se ajustaron debido a cambios en el stock disponible.");
           }
+          inFlightAdjustments.current.clear();
         }
       };
 

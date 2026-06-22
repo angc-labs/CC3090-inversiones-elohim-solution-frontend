@@ -44,6 +44,7 @@ export async function obtenerProductos(params?: TProductosParams): Promise<TProd
     `/api/productos${buildProductosQuery(params)}`,
     {
       method: "GET",
+      headers: buildAuthHeaders(),
     },
     "Error al obtener productos"
   );
@@ -59,6 +60,7 @@ export async function obtenerProductoPorId(idProducto: string): Promise<TProduct
     `/api/productos/${idProducto}`,
     {
       method: "GET",
+      headers: buildAuthHeaders(),
     },
     "Error al obtener detalle del producto"
   );
@@ -70,6 +72,7 @@ export async function buscarProductos(query: string): Promise<TProductoBusqueda[
     `/api/productos/buscar?${params.toString()}`,
     {
       method: "GET",
+      headers: buildAuthHeaders(),
     },
     "Error al buscar productos"
   );
@@ -82,6 +85,7 @@ export async function obtenerMarcas(): Promise<TMarca[]> {
     "/api/marcas",
     {
       method: "GET",
+      headers: buildAuthHeaders(),
     },
     "Error al obtener marcas"
   );
@@ -92,6 +96,7 @@ export async function obtenerCategorias(): Promise<TCategoria[]> {
     "/api/categorias",
     {
       method: "GET",
+      headers: buildAuthHeaders(),
     },
     "Error al obtener categorías"
   );

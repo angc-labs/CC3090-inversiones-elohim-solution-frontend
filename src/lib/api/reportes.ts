@@ -170,3 +170,25 @@ export async function obtenerReporteMetodosPago(
     "No se pudo cargar el reporte de métodos de pago"
   );
 }
+
+export type TSqlExecutionResult = {
+  rows: Array<Record<string, any>>;
+};
+
+export async function ejecutarRawReporte(
+  token: string,
+  querySql: string
+): Promise<TSqlExecutionResult> {
+  return apiRequest<TSqlExecutionResult>(
+    "/api/v1/reportes/ejecutar-raw",
+    {
+      method: "POST",
+      headers: {
+        ...buildAuthHeaders(token),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ querySql }),
+    },
+    "No se pudo ejecutar la consulta SQL"
+  );
+}

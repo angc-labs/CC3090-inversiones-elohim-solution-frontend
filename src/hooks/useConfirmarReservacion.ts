@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { crearReservacion } from "@/lib/api/reservacion";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { useClientAuthStore } from "@/stores/useClientAuthStore";
 import { TReservacion } from "@/types";
 
 export function useConfirmarReservacion() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reservacion, setReservacion] = useState<TReservacion | null>(null);
-  const token = useAuthStore((state) => state.token);
+  const token = useClientAuthStore((state) => state.token);
 
   const confirmar = async (metodoPagoId: string) => {
     if (!token) {

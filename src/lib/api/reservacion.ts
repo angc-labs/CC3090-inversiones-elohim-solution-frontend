@@ -37,3 +37,31 @@ export async function obtenerReservacionPorId(
     "Error al obtener la reservación"
   );
 }
+
+export type TReservacionV1 = {
+  id: string;
+  tiendaId: string;
+  sucursalId: string;
+  usuarioId: string;
+  montoTotal: number;
+  estadoPago: string;
+  estadoDespacho: string;
+  stripeIntentId: string | null;
+  fechaReserva: string;
+  detalles: any[];
+};
+
+export async function crearReservacionV1(
+  token: string,
+  payload: { sucursalId: string; stripeIntentId?: string | null }
+): Promise<TReservacionV1> {
+  return apiRequest<TReservacionV1>(
+    "/api/v1/reservaciones",
+    {
+      method: "POST",
+      headers: buildAuthHeaders(token),
+      body: JSON.stringify(payload),
+    },
+    "Error al crear la reservación"
+  );
+}

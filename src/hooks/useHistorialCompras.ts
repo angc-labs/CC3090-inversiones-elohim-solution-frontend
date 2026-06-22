@@ -1,10 +1,10 @@
 import useSWR from "swr";
 import { obtenerReservaciones } from "@/lib/api/reservacion";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { useClientAuthStore } from "@/stores/useClientAuthStore";
 import type { TReservacionListado } from "@/types";
 
 export function useHistorialCompras() {
-  const token = useAuthStore((s) => s.token);
+  const token = useClientAuthStore((s) => s.token);
 
   const { data, error, isLoading, mutate } = useSWR<TReservacionListado[]>(
     token ? ["historial-compras", token] : null,
