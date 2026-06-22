@@ -920,6 +920,7 @@ export default function LivePreviewPage() {
                         borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0"
                       }}
                       className="rounded-xl border p-4 flex gap-4 hover:shadow-xl transition-all group cursor-pointer"
+                      onClick={() => router.push(`/preview/${storeId}/producto/${p.id || p.productoId}`)}
                     >
                       <div className="h-24 w-24 sm:h-32 sm:w-32 bg-slate-100 rounded-lg overflow-hidden relative flex-shrink-0 flex items-center justify-center">
                         <img 
@@ -981,6 +982,7 @@ export default function LivePreviewPage() {
                         borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0"
                       }}
                       className="rounded-xl border p-4 flex flex-col gap-3.5 hover:shadow-xl transition-all group cursor-pointer"
+                      onClick={() => router.push(`/preview/${storeId}/producto/${p.id || p.productoId}`)}
                     >
                       <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden relative flex items-center justify-center">
                         <img 
