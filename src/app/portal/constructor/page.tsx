@@ -419,7 +419,9 @@ export default function ConstructorPage() {
   const handlePropertyChange = (property: string, value: any) => {
     if (!storeConfig) return;
     setStoreConfig((prev: any) => {
-      const isSharedSection = ["announcement", "header", "footer"].includes(selectedSectionId);
+      const currentPage = prev.pages.find((p: any) => p.id === activePageId) || prev.pages[0];
+      const section = currentPage.sections.find((s: any) => s.id === selectedSectionId);
+      const isSharedSection = ["header", "footer"].includes(selectedSectionId) || section?.type === "announcement" || selectedSectionId === "announcement";
 
       const updatedPages = prev.pages.map((page: any) => {
         if (isSharedSection || page.id === activePageId) {
@@ -452,7 +454,7 @@ export default function ConstructorPage() {
 
   // Drag & Drop handlers
   const handleDragStart = (e: React.DragEvent, id: string) => {
-    if (["announcement", "header", "footer"].includes(id)) {
+    if (["header", "footer"].includes(id)) {
       e.preventDefault();
       return;
     }
@@ -461,13 +463,13 @@ export default function ConstructorPage() {
   };
 
   const handleDragOver = (e: React.DragEvent, id: string) => {
-    if (["announcement", "header", "footer"].includes(id)) return;
+    if (["header", "footer"].includes(id)) return;
     e.preventDefault();
   };
 
   const handleDrop = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
-    if (!draggedSectionId || draggedSectionId === targetId || ["announcement", "header", "footer"].includes(targetId)) return;
+    if (!draggedSectionId || draggedSectionId === targetId || ["header", "footer"].includes(targetId)) return;
 
     setStoreConfig((prev: any) => {
       const currentPage = prev.pages.find((p: any) => p.id === activePageId) || prev.pages[0];
@@ -674,8 +676,8 @@ export default function ConstructorPage() {
   };
 
   const handleDeleteSection = () => {
-    if (["announcement", "header", "footer"].includes(selectedSectionId)) {
-      toast.error("No se puede eliminar una sección compartida obligatoria (Header, Footer, Announcement)");
+    if (["header", "footer"].includes(selectedSectionId)) {
+      toast.error("No se puede eliminar una sección compartida obligatoria (Header, Footer)");
       return;
     }
 
@@ -1131,7 +1133,7 @@ export default function ConstructorPage() {
                           const currentPage = storeConfig.pages.find((p: any) => p.id === activePageId) || storeConfig.pages[0];
                           return currentPage.sections.map((section: any) => {
                             const isSelected = selectedSectionId === section.id;
-                            const isShared = ["announcement", "header", "footer"].includes(section.id);
+                            const isShared = ["header", "footer"].includes(section.id);
                             return (
                               <div
                                 key={section.id}
@@ -3073,9 +3075,9 @@ export default function ConstructorPage() {
                         
                         <button
                           onClick={handleDeleteSection}
-                          disabled={["announcement", "header", "footer"].includes(selectedSectionId)}
+                          disabled={["header", "footer"].includes(selectedSectionId)}
                           className={`w-full mt-4 h-10 border text-[10px] font-black tracking-wider uppercase rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-                            ["announcement", "header", "footer"].includes(selectedSectionId)
+                            ["header", "footer"].includes(selectedSectionId)
                               ? "bg-slate-900/30 border-slate-900/50 text-slate-500 cursor-not-allowed opacity-50"
                               : "bg-rose-500/10 hover:bg-rose-500/15 border-rose-500/30 hover:border-rose-500/60 text-rose-400 cursor-pointer"
                           }`}
@@ -3230,6 +3232,7 @@ export default function ConstructorPage() {
                   className="h-10 rounded-xl border border-slate-800 bg-slate-900/60 px-3.5 text-xs text-slate-100 outline-none focus:border-[#22D3A6]"
                 >
                   <option value="custom">Sección Personalizada (Árbol)</option>
+                  <option value="announcement">Barra de Anuncios</option>
                   <option value="hero">Sección Hero</option>
                   <option value="products">Grilla de Productos</option>
                   <option value="richtext">Bloque Rich Text / Contenido</option>
