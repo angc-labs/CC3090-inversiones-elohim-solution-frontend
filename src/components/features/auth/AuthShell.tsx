@@ -14,7 +14,7 @@ export function AuthShell({
   children,
   title,
   description,
-  eyebrow = "ESMIRA TIENDA ONLINE",
+  eyebrow = "DM HUB ONLINE",
   footerLeft,
   footerRight,
   topRight,
@@ -26,14 +26,7 @@ export function AuthShell({
       <div className="relative! flex! min-h-screen! flex-col!">
         <header className="flex! items-center! justify-between! border-b! border-slate-200/80! bg-white/85! px-4! py-3! backdrop-blur-sm! sm:px-6! lg:px-8!">
           <div className="flex! items-center! gap-3!">
-            <div className="flex! h-9! w-9! items-center! justify-center! rounded-full! bg-blue-600! text-white! shadow-sm! shadow-blue-600/20!">
-              <span className="text-sm! leading-none!">🛍</span>
-            </div>
-            <div>
-              <p className="text-xs! font-black! uppercase! tracking-[0.28em]! text-blue-700!">
-                {eyebrow}
-              </p>
-            </div>
+            <img src="/logo.png" alt="DM Hub Logo" className="h-7! w-auto! object-contain!" />
           </div>
           {topRight ? <div className="hidden! sm:block!">{topRight}</div> : null}
         </header>

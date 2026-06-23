@@ -3583,7 +3583,7 @@ export default function PortalPage() {
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nombre de la Tienda</label>
                 <input
                   type="text"
-                  placeholder="Ej. Distribuidora Elohim Alimentos"
+                  placeholder="Ej. Distribuidora DM Hub Alimentos"
                   required
                   value={newStoreName}
                   onChange={(e) => setNewStoreName(e.target.value)}
@@ -3595,7 +3595,7 @@ export default function PortalPage() {
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Slug de Acceso (URL)</label>
                 <input
                   type="text"
-                  placeholder="ej-distribuidora-elohim"
+                  placeholder="ej-distribuidora-dmhub"
                   required
                   value={newStoreSlug}
                   onChange={(e) => setNewStoreSlug(e.target.value)}
@@ -3728,7 +3728,7 @@ export default function PortalPage() {
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Contraseña Inicial (Opcional)</label>
                 <input
                   type="password"
-                  placeholder="Por defecto: Elohim123*"
+                  placeholder="Por defecto: DMHub123*"
                   value={inviteForm.contrasena}
                   onChange={(e) => setInviteForm({ ...inviteForm, contrasena: e.target.value })}
                   className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 text-sm text-slate-100 outline-none focus:border-[#38BDF8] focus:ring-1"

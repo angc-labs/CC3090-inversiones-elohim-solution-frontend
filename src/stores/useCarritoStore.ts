@@ -61,6 +61,6 @@ export const useCarritoStore = create<TCarritoStore>()(
 
       totalPrecio: () => get().items.reduce((acc, i) => acc + i.precio * i.cantidad, 0),
     }),
-    { name: "elohim-carrito" }
+    { name: "dmhub-carrito" }
   )
 );

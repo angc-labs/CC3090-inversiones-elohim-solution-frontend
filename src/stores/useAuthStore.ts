@@ -49,6 +49,6 @@ export const useAuthStore = create<TAuthStore>()(
         return Date.now() > state.expiraEn;
       },
     }),
-    { name: "elohim-auth" }
+    { name: "dmhub-auth" }
   )
 );

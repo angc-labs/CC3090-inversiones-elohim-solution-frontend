@@ -29,7 +29,7 @@ export function middleware(request: NextRequest) {
     }
   } else {
     // Soporte para dominio de producción dinámico
-    const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN; // ej. elohimshop.com
+    const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN; // ej. dmhub.com
     if (mainDomain && hostname.includes(mainDomain)) {
       const parts = hostname.split(`.${mainDomain}`);
       if (parts.length > 1) {

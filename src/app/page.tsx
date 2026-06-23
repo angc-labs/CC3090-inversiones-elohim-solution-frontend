@@ -148,12 +148,7 @@ export default function LandingPage() {
       <header className="fixed! top-0! z-50! w-full! border-b! border-slate-800/50! bg-[#060d14]/80! backdrop-blur-md!">
         <div className="mx-auto! flex! h-16! max-w-7xl! items-center! justify-between! px-4! sm:px-6! lg:px-8!">
           <div className="flex! items-center! gap-2.5!">
-            <div className="flex! h-9! w-9! items-center! justify-center! rounded-xl! bg-gradient-to-tr! from-[#22D3A6]! to-[#818CF8]! font-black! text-sm! text-slate-900! shadow-[0_0_20px_rgba(34,211,166,0.3)]!">
-              <FaStore />
-            </div>
-            <span className="text-lg! font-bold! tracking-tight! bg-clip-text! text-transparent! bg-gradient-to-r! from-white! to-slate-300!">
-              Elohim Shop
-            </span>
+            <img src="/logo.png" alt="DM Hub Logo" className="h-8! w-auto! object-contain!" />
           </div>
 
           <nav className="hidden! md:flex! items-center! gap-8! text-sm! font-medium! text-slate-400!">
@@ -253,7 +248,7 @@ export default function LandingPage() {
               <span className="h-3! w-3! rounded-full! bg-emerald-500/80!" />
             </div>
             <div className="text-xs! text-slate-500! font-mono! bg-slate-900! px-4! py-1! rounded-lg! border! border-slate-800!">
-              elohim.shop/portal/constructor
+              dmhub.com/portal/constructor
             </div>
             <div className="w-12!" />
           </div>
@@ -291,7 +286,7 @@ export default function LandingPage() {
                 🚀 ENVÍO GRATIS EN PEDIDOS SUPERIORES A Q500
               </div>
               <div className="h-8! bg-slate-900! border-b! border-slate-800! flex! items-center! px-3! justify-between!">
-                <span className="text-[9px]! font-black! text-white!">✦ Esmira</span>
+                <span className="text-[9px]! font-black! text-white!">✦ DM Hub</span>
                 <div className="flex! gap-3! text-[8px]! text-slate-400!">
                   <span>Inicio</span><span>Catálogo</span><span>Contacto</span>
                 </div>
@@ -409,7 +404,7 @@ export default function LandingPage() {
               {
                 step: "01",
                 title: "Configura tu tienda",
-                desc: "Ingresa el nombre, slug, logo y colores base. Tu tienda tendrá una URL propia como matiendita.elohim.shop.",
+                desc: "Ingresa el nombre, slug, logo y colores base. Tu tienda tendrá una URL propia como matiendita.dmhub.com.",
                 color: "#22D3A6",
               },
               {
@@ -561,12 +556,9 @@ export default function LandingPage() {
       <footer className="border-t! border-slate-800/60! bg-slate-950! py-10! px-4! text-slate-500! text-xs!">
         <div className="max-w-7xl! mx-auto! flex! flex-col! sm:flex-row! items-center! justify-between! gap-6!">
           <div className="flex! items-center! gap-2.5!">
-            <div className="h-7! w-7! rounded-lg! bg-gradient-to-tr! from-[#22D3A6]! to-[#818CF8]! flex! items-center! justify-center! text-slate-900! font-black! text-sm!">
-              <FaStore />
-            </div>
-            <span className="font-bold! text-slate-300!">Elohim Shop</span>
+            <img src="/logo.png" alt="DM Hub Logo" className="h-7! w-auto! object-contain!" />
           </div>
-          <div>© 2026 Inversiones Elohim S.A. Todos los derechos reservados.</div>
+          <div>© 2026 Distributors Marketplace Hub. Todos los derechos reservados.</div>
           <div className="flex! gap-6!">
             <a href="#" className="hover:text-slate-300! transition-colors!">Términos</a>
             <a href="#" className="hover:text-slate-300! transition-colors!">Privacidad</a>

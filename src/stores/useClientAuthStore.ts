@@ -104,7 +104,7 @@ export const useClientAuthStore = create<TClientAuthStore>()(
       },
     }),
     {
-      name: "elohim-client-auth",
+      name: "dmhub-client-auth",
       onRehydrateStorage: () => (state) => {
         if (state) {
           if (typeof window !== "undefined") {

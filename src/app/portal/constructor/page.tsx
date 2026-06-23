@@ -186,7 +186,7 @@ export default function ConstructorPage() {
 
   // Hydration safety check
   useEffect(() => {
-    const hasAuthData = typeof window !== "undefined" && window.localStorage.getItem("elohim-auth");
+    const hasAuthData = typeof window !== "undefined" && window.localStorage.getItem("dmhub-auth");
     if (!hasAuthData) {
       router.push("/login");
       return;
@@ -3116,7 +3116,7 @@ export default function ConstructorPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Ej. Elohim Central"
+                  placeholder="Ej. DM Hub Central"
                   value={newStoreName}
                   onChange={(e) => {
                     setNewStoreName(e.target.value);
@@ -3135,7 +3135,7 @@ export default function ConstructorPage() {
                 <input
                   type="text"
                   required
-                  placeholder="ej-elohim-central"
+                  placeholder="ej-dmhub-central"
                   value={newStoreSlug}
                   onChange={(e) => setNewStoreSlug(e.target.value)}
                   className="h-10 rounded-xl border border-slate-800 bg-slate-900/60 px-3.5 text-xs text-slate-100 outline-none focus:border-[#22D3A6]"

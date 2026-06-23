@@ -4,8 +4,8 @@ import { SessionExpirationWarning } from "@/components/features/auth/SessionExpi
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "Esmira - Tienda en línea",
-  description: "Tienda en línea de Esmira",
+  title: "DM Hub - Tienda en línea",
+  description: "Tienda en línea de DM Hub",
 };
 
 export default function RootLayout({

@@ -10,7 +10,7 @@ export default function RecuperarPage() {
   const router = useRouter();
 
   useEffect(() => {
-    document.title = "Recuperar Contraseña | Elohim Consola";
+    document.title = "Recuperar Contraseña | DM Hub Consola";
   }, []);
 
   // Wizard Steps: 1 = Email, 2 = Recovery Code, 3 = New Password, 4 = Success
