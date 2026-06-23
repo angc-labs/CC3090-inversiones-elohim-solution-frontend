@@ -119,9 +119,7 @@ export default function RegisterPage() {
       {/* Registration Card */}
       <div className="w-full! max-w-lg! rounded-2xl! border! border-slate-800/80! bg-slate-950/80! p-8! shadow-2xl! shadow-black/80! backdrop-blur-md!">
         <div className="flex! items-center! justify-center! mb-6!">
-          <div className="flex! h-11! w-11! items-center! justify-center! rounded-xl! bg-gradient-to-tr! from-brand-primary! to-brand-secondary! text-slate-900! font-black! shadow-[0_0_20px_rgba(34,211,166,0.3)]!">
-            DH
-          </div>
+          <img src="/logo.png" alt="DM Hub Logo" className="h-10! w-auto! object-contain!" />
         </div>
 
         <h3 className="text-center! text-2xl! font-black! tracking-tight! text-white! mb-2!">Crear cuenta</h3>

@@ -1559,12 +1559,9 @@ export default function PortalPage() {
         <div className="flex flex-col gap-8">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-[#22D3A6] to-[#38BDF8] text-slate-900 font-black shadow-[0_0_15px_rgba(34,211,166,0.2)]">
-              DH
-            </div>
+            <img src="/logo.png" alt="DM Hub Logo" className="h-8 w-auto object-contain" />
             <div>
               <h1 className="text-lg font-black tracking-tight text-white leading-none">DM Hub</h1>
-              <span className="text-[10px] font-bold text-[#22D3A6] uppercase tracking-widest leading-none">Centro de Control</span>
             </div>
             {isMobile && (
               <button
@@ -1868,9 +1865,6 @@ export default function PortalPage() {
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-bold text-white leading-none">{usuario.nombre}</p>
-                <span className="text-[9px] font-semibold text-[#22D3A6] uppercase tracking-wider leading-none">
-                  {formatRole(usuario.rol)}
-                </span>
               </div>
               <div className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 flex items-center justify-center overflow-hidden shrink-0">
                 <span className="text-xs font-black text-[#38BDF8]">
