@@ -90,7 +90,7 @@ export default function LoginPage() {
               {error}
             </div>
           )}
-          
+
           {success && (
             <div className="mb-6! p-3.5! rounded-xl! border! border-emerald-900/50! bg-emerald-950/30! text-xs! font-mono! text-emerald-400! leading-relaxed!">
               {success}
@@ -172,13 +172,6 @@ export default function LoginPage() {
           >
             Regístrate
           </button>
-        </p>
-
-        <p className="mt-3! text-center! text-xs! text-slate-500!">
-          ¿Ya tienes enlace de recuperación?{" "}
-          <Link href="/new-password" className="font-bold! text-brand-primary! hover:text-[#1ebda1]! transition-colors!">
-            Cambiar contraseña
-          </Link>
         </p>
       </div>
     </div>

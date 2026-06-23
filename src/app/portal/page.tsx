@@ -1702,7 +1702,7 @@ export default function PortalPage() {
   return (
     <div className="flex min-h-screen bg-[#081018] text-slate-100 font-sans antialiased">
       {/* Sidebar de Escritorio */}
-      <aside className="w-64 border-r border-slate-900 bg-slate-955/40 p-6 flex-col justify-between shrink-0 view-transition-sidebar hidden lg:flex h-[100dvh] max-h-[100dvh] sticky top-0 overflow-y-auto">
+      <aside className="w-64 border-r border-slate-900 bg-slate-955/40 p-6 flex-col justify-between shrink-0 view-transition-sidebar hidden lg:flex h-[100dvh] max-h-[100dvh] fixed top-0 left-0 z-20 overflow-y-auto">
         {renderSidebar(false)}
       </aside>
 
@@ -1725,7 +1725,7 @@ export default function PortalPage() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 lg:ml-64">
         {/* Top Navbar */}
         <header className="h-16 border-b border-slate-900 bg-slate-950/20 px-4 sm:px-8 flex items-center justify-between shrink-0 gap-4 relative z-45 view-transition-header">
           {/* Hamburger Menu Toggle on Mobile/Tablet */}

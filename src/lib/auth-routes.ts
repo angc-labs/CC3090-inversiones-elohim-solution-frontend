@@ -8,16 +8,8 @@ export const ADMIN_ONLY_PATHS = ["/admin/usuarios", "/admin/productos"] as const
 
 /** Rutas de tienda para clientes autenticados. */
 export const CLIENT_PROTECTED_PREFIXES = [
-  "/home",
   "/portal",
-  "/catalogo",
-  "/carrito",
-  "/perfil",
   "/reservas",
-  "/metodoPago",
-  "/resumenCompra",
-  "/transferencia_bancaria",
-  "/cambiar-contrase",
 ] as const;
 
 export function getPostLoginPath(rol: TRol): string {
