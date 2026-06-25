@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getPostLoginPath } from "@/lib/auth-routes";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   FaArrowRight,
   FaCheck,
@@ -18,6 +19,12 @@ import {
   FaStore,
   FaRocket,
   FaGithub,
+  FaUserShield,
+  FaUserTag,
+  FaUser,
+  FaColumns,
+  FaDownload,
+  FaUpload
 } from "react-icons/fa";
 import gsap from "gsap";
 
@@ -154,7 +161,9 @@ export default function LandingPage() {
           <nav className="hidden! md:flex! items-center! gap-8! text-sm! font-medium! text-slate-400!">
             <a href="#caracteristicas" className="hover:text-[#22D3A6]! transition-colors!">Características</a>
             <a href="#constructor" className="hover:text-[#22D3A6]! transition-colors!">Constructor</a>
-            <a href="#precios" className="hover:text-[#22D3A6]! transition-colors!">Cómo funciona</a>
+            <a href="#roles" className="hover:text-[#22D3A6]! transition-colors!">Roles</a>
+            <a href="#ventas" className="hover:text-[#22D3A6]! transition-colors!">Administración</a>
+            <a href="#precios" className="hover:text-[#22D3A6]! transition-colors!">Empezar</a>
           </nav>
 
           <div className="flex! items-center! gap-3!">
@@ -236,12 +245,10 @@ export default function LandingPage() {
         {/* Dashboard Preview */}
         <div
           ref={visualRef}
-          className="relative! mt-16! w-full! max-w-5xl! rounded-2xl! border! border-slate-800! bg-slate-950/80! p-3! shadow-2xl! shadow-black/80! backdrop-blur-sm!"
+          className="relative! mt-16! w-full! max-w-5xl! rounded-2xl! border! border-slate-800/80! bg-slate-955/80! p-3! shadow-2xl! shadow-black/80! backdrop-blur-sm!"
         >
-          <div className="absolute! inset-0! bg-gradient-to-t! from-[#060d14]! via-transparent! to-transparent! pointer-events-none! rounded-2xl! z-10!" />
-
           {/* Browser chrome */}
-          <div className="flex! items-center! justify-between! border-b! border-slate-800/80! px-4! pb-3! pt-1!">
+          <div className="flex! items-center! justify-between! border-b! border-slate-800/80! px-4! pb-3! pt-1! mb-3!">
             <div className="flex! items-center! gap-1.5!">
               <span className="h-3! w-3! rounded-full! bg-rose-500/80!" />
               <span className="h-3! w-3! rounded-full! bg-amber-500/80!" />
@@ -253,90 +260,12 @@ export default function LandingPage() {
             <div className="w-12!" />
           </div>
 
-          {/* Storefront builder mockup */}
-          <div className="grid! grid-cols-12! gap-0! text-left! min-h-[320px]!">
-            {/* Section list sidebar */}
-            <div className="col-span-3! border-r! border-slate-800/60! p-3! space-y-1.5! hidden! md:block!">
-              <p className="text-[9px]! font-black! text-slate-500! uppercase! tracking-wider! px-2! pb-1!">Secciones</p>
-              {SECTIONS_DEMO.map((s, i) => (
-                <div
-                  key={s.type}
-                  className={`flex! items-center! gap-2! px-2! py-1.5! rounded-lg! text-[10px]! font-semibold! transition-all! cursor-pointer! ${
-                    activeSection === i
-                      ? "bg-slate-800! text-white!"
-                      : "text-slate-500! hover:bg-slate-900!"
-                  }`}
-                >
-                  <span
-                    className="h-1.5! w-1.5! rounded-full! flex-shrink-0!"
-                    style={{ backgroundColor: activeSection === i ? s.color : "#475569" }}
-                  />
-                  {s.label}
-                </div>
-              ))}
-            </div>
-
-            {/* Live preview area */}
-            <div className="col-span-12! md:col-span-6! border-r! border-slate-800/60! overflow-hidden!">
-              {/* Simulated storefront sections */}
-              <div
-                className="h-6! flex! items-center! justify-center! text-[9px]! font-bold! transition-all! duration-500!"
-                style={{ backgroundColor: "#22D3A6", color: "#0F172A" }}
-              >
-                🚀 ENVÍO GRATIS EN PEDIDOS SUPERIORES A Q500
-              </div>
-              <div className="h-8! bg-slate-900! border-b! border-slate-800! flex! items-center! px-3! justify-between!">
-                <span className="text-[9px]! font-black! text-white!">✦ DM Hub</span>
-                <div className="flex! gap-3! text-[8px]! text-slate-400!">
-                  <span>Inicio</span><span>Catálogo</span><span>Contacto</span>
-                </div>
-                <span className="text-[9px]! text-slate-400!">🛒</span>
-              </div>
-              <div
-                className="h-28! flex! flex-col! items-center! justify-center! text-center! px-4! transition-all! duration-700! relative! overflow-hidden!"
-                style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)" }}
-              >
-                <div className="text-[11px]! font-black! text-white! leading-tight! mb-1!">Moda que te define</div>
-                <div className="text-[8px]! text-slate-400! mb-3!">Descubre nuestra nueva colección</div>
-                <div className="flex! gap-2!">
-                  <span className="px-2.5! py-1! rounded-md! text-[8px]! font-bold! text-slate-900!" style={{ backgroundColor: "#22D3A6" }}>Ver colección</span>
-                  <span className="px-2.5! py-1! rounded-md! text-[8px]! font-bold! border! border-slate-600! text-slate-400!">Ofertas</span>
-                </div>
-              </div>
-              <div className="grid! grid-cols-3! gap-1.5! p-2!">
-                {[
-                  { name: "Reloj Elite", price: "Q249", color: "#22D3A6" },
-                  { name: "Audio Pro", price: "Q599", color: "#818CF8" },
-                  { name: "Tenis X1", price: "Q849", color: "#F59E0B" },
-                ].map((p, i) => (
-                  <div key={i} className="bg-slate-900! rounded-lg! p-1.5! border! border-slate-800!">
-                    <div className="aspect-square! rounded! mb-1! flex! items-center! justify-center!" style={{ backgroundColor: `${p.color}18` }}>
-                      <span className="text-lg!" style={{ color: p.color }}>📦</span>
-                    </div>
-                    <div className="text-[8px]! font-bold! text-white! truncate!">{p.name}</div>
-                    <div className="text-[8px]! font-black!" style={{ color: p.color }}>{p.price}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Properties panel */}
-            <div className="hidden! md:block! col-span-3! p-3! space-y-3!">
-              <p className="text-[9px]! font-black! text-slate-500! uppercase! tracking-wider! px-1!">Propiedades</p>
-              <div className="space-y-2!">
-                {[
-                  { label: "Color de fondo", value: "#0F172A", type: "color" },
-                  { label: "Color de texto", value: "#FFFFFF", type: "color" },
-                  { label: "Glassmorphism", value: "off", type: "toggle" },
-                  { label: "Opacidad", value: "100%", type: "range" },
-                ].map((p) => (
-                  <div key={p.label} className="flex! items-center! justify-between! px-2! py-1.5! bg-slate-900/60! rounded-lg!">
-                    <span className="text-[8px]! text-slate-400! font-medium!">{p.label}</span>
-                    <span className="text-[8px]! font-bold! text-[#22D3A6]!">{p.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="overflow-hidden! rounded-xl! border! border-slate-850!">
+            <img
+              src="/constructor.gif"
+              alt="Constructor Visual de Tiendas"
+              className="w-full! h-auto! object-cover!"
+            />
           </div>
         </div>
       </section>
@@ -378,128 +307,210 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
-
-      {/* ─── How it works / Constructor Demo ─── */}
       <section
         id="constructor"
         ref={demoRef}
         className="py-24! px-4! max-w-7xl! mx-auto! border-t! border-slate-800/40!"
       >
-        <div className="grid! grid-cols-1! lg:grid-cols-2! gap-16! items-center!">
-          {/* Steps */}
-          <div className="space-y-8!">
-            <div>
-              <div className="inline-flex! items-center! gap-2! rounded-full! bg-[#818CF8]/10! border! border-[#818CF8]/20! px-3! py-1! text-xs! font-bold! text-[#818CF8]! mb-4!">
-                <FaRocket /> Proceso Simple
-              </div>
-              <h2 className="text-3xl! sm:text-4xl! lg:text-5xl! font-black! text-white! leading-tight!">
-                Configura, diseña y publica
-              </h2>
-              <p className="text-slate-400! text-sm! sm:text-base! leading-relaxed! mt-4!">
-                Nuestro constructor de secciones te da control total sobre cada elemento visual de tu tienda.
-              </p>
-            </div>
-
-            {[
-              {
-                step: "01",
-                title: "Configura tu tienda",
-                desc: "Ingresa el nombre, slug, logo y colores base. Tu tienda tendrá una URL propia como matiendita.dmhub.com.",
-                color: "#22D3A6",
-              },
-              {
-                step: "02",
-                title: "Diseña con el constructor",
-                desc: "Agrega y ordena secciones: Hero, Productos, Texto, Carrito, Footer. Personaliza colores, imágenes y efectos de cada una.",
-                color: "#818CF8",
-              },
-              {
-                step: "03",
-                title: "Agrega productos y publica",
-                desc: "Sube tus productos con imagen vía Cloudinary, fija precios, activa Stripe para cobros y dale \"Publicar\" a tu tienda.",
-                color: "#F59E0B",
-              },
-            ].map((s) => (
-              <div key={s.step} className="flex! gap-4! items-start!">
-                <div
-                  className="flex-shrink-0! h-10! w-10! rounded-xl! flex! items-center! justify-center! text-xs! font-black!"
-                  style={{ backgroundColor: `${s.color}15`, color: s.color, border: `1px solid ${s.color}30` }}
-                >
-                  {s.step}
-                </div>
-                <div>
-                  <h4 className="text-sm! font-bold! text-white! mb-1!">{s.title}</h4>
-                  <p className="text-xs! text-slate-400! leading-relaxed!">{s.desc}</p>
-                </div>
-              </div>
-            ))}
+        <div className="text-center! max-w-3xl! mx-auto! mb-16!">
+          <div className="inline-flex! items-center! gap-2! rounded-full! bg-[#818CF8]/10! border! border-[#818CF8]/20! px-3! py-1! text-xs! font-bold! text-[#818CF8]! mb-4!">
+            <FaRocket /> Proceso Simple
           </div>
+          <h2 className="text-3xl! sm:text-5xl! font-black! text-white! leading-tight!">
+            Configura, diseña y publica
+          </h2>
+          <p className="text-slate-400! text-base! sm:text-lg! leading-relaxed! mt-4!">
+            Nuestro constructor visual te da control absoluto sobre tu storefront en tres pasos sencillos.
+          </p>
+        </div>
 
-          {/* Animated section editor mockup */}
-          <div className="bg-slate-900/60! border! border-slate-800! rounded-2xl! overflow-hidden! shadow-2xl! shadow-black/60!">
-            <div className="bg-slate-950! border-b! border-slate-800! px-4! py-3! flex! items-center! justify-between!">
-              <span className="text-xs! font-bold! text-slate-300!">Constructor de Tienda</span>
-              <span
-                className="text-[10px]! px-2.5! py-0.5! rounded-full! font-bold!"
-                style={{ backgroundColor: "#22D3A620", color: "#22D3A6" }}
-              >
-                Vista Previa en Vivo
-              </span>
-            </div>
-
-            <div className="p-4! space-y-2!">
-              <p className="text-[9px]! font-black! text-slate-500! uppercase! tracking-wider! mb-3!">
-                Secciones de la página
-              </p>
-              {SECTIONS_DEMO.map((s, i) => (
-                <div
-                  key={s.type}
-                  className="flex! items-center! justify-between! px-3! py-2.5! rounded-xl! border! transition-all! duration-500! cursor-pointer!"
-                  style={{
-                    backgroundColor: activeSection === i ? `${s.color}10` : "rgba(15,23,42,0.3)",
-                    borderColor: activeSection === i ? `${s.color}40` : "rgba(51,65,85,0.5)",
-                    transform: activeSection === i ? "scale(1.02)" : "scale(1)",
-                  }}
-                  onClick={() => setActiveSection(i)}
-                >
-                  <div className="flex! items-center! gap-2.5!">
-                    <div
-                      className="h-2! w-2! rounded-full! transition-colors! duration-300!"
-                      style={{ backgroundColor: activeSection === i ? s.color : "#475569" }}
-                    />
-                    <span
-                      className="text-xs! font-semibold! transition-colors! duration-300!"
-                      style={{ color: activeSection === i ? s.color : "#94A3B8" }}
-                    >
-                      {s.label}
-                    </span>
+        <div className="grid! grid-cols-1! md:grid-cols-3! gap-8!">
+          {[
+            {
+              step: "01",
+              title: "Configura tu tienda",
+              desc: "Ingresa el nombre, slug y colores base. Tu tienda tendrá una URL propia e independiente.",
+              icon: <FaStore className="text-[#22D3A6]!" />,
+              color: "#22D3A6",
+            },
+            {
+              step: "02",
+              title: "Diseña con el Constructor",
+              desc: "Ordena secciones como banners, headers, grids y footers. Configura tipografías, fondos, glassmorphism y exporta/importa el diseño en formato JSON para respaldos o clonación.",
+              icon: <FaPalette className="text-[#818CF8]!" />,
+              color: "#818CF8",
+              hasJsonBadges: true,
+            },
+            {
+              step: "03",
+              title: "Agrega productos y vende",
+              desc: "Carga catálogo por sucursales, fija precios mayoristas o al detalle, activa cobros con Stripe y publica tu tienda live.",
+              icon: <FaRocket className="text-[#F59E0B]!" />,
+              color: "#F59E0B",
+            },
+          ].map((s) => (
+            <div
+              key={s.step}
+              className="bg-slate-900/40! border! border-slate-800! p-6! rounded-2xl! relative! overflow-hidden! flex! flex-col! justify-between!"
+            >
+              <div>
+                <div className="flex! items-center! justify-between! mb-6!">
+                  <div
+                    className="h-10! w-10! rounded-xl! flex! items-center! justify-center! text-lg!"
+                    style={{ backgroundColor: `${s.color}15` }}
+                  >
+                    {s.icon}
                   </div>
-                  {activeSection === i && (
-                    <span
-                      className="text-[9px]! font-black! px-2! py-0.5! rounded-md!"
-                      style={{ backgroundColor: `${s.color}20`, color: s.color }}
-                    >
-                      Editando
-                    </span>
-                  )}
+                  <span className="text-xs! font-bold! opacity-50!">PASO {s.step}</span>
                 </div>
-              ))}
+                <h4 className="text-base! font-bold! text-white! mb-2!">{s.title}</h4>
+                <p className="text-xs! text-slate-400! leading-relaxed!">{s.desc}</p>
+              </div>
 
-              <div className="pt-3! border-t! border-slate-800! mt-3!">
-                <div className="flex! items-center! justify-between! text-[10px]! font-bold! text-slate-400! px-1!">
-                  <span>Configuración activa</span>
-                  <span style={{ color: SECTIONS_DEMO[activeSection].color }}>
-                    {SECTIONS_DEMO[activeSection].type}
+              {s.hasJsonBadges && (
+                <div className="mt-6! pt-4! border-t! border-slate-800/80! flex! flex-wrap! gap-2!">
+                  <span className="inline-flex! items-center! gap-1! rounded-lg! bg-slate-950! border! border-slate-800! px-2! py-1! text-[9px]! font-bold! text-slate-400!">
+                    <FaDownload className="text-[#22D3A6]!" /> Exportar JSON
+                  </span>
+                  <span className="inline-flex! items-center! gap-1! rounded-lg! bg-slate-950! border! border-slate-800! px-2! py-1! text-[9px]! font-bold! text-slate-400!">
+                    <FaUpload className="text-[#818CF8]!" /> Importar JSON
                   </span>
                 </div>
-                <div className="mt-2! grid! grid-cols-2! gap-2!">
-                  {["Color de fondo", "Texto", "Glassmorphism", "Opacidad"].map((prop) => (
-                    <div key={prop} className="bg-slate-950! rounded-lg! px-2.5! py-1.5! text-[8px]! text-slate-500! font-medium!">
-                      {prop}
-                    </div>
-                  ))}
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── Roles Section ─── */}
+      <section
+        id="roles"
+        className="py-24! px-4! max-w-7xl! mx-auto! border-t! border-slate-800/40!"
+      >
+        <div className="text-center! max-w-3xl! mx-auto! mb-16!">
+          <div className="inline-flex! items-center! gap-2! rounded-full! bg-[#38BDF8]/10! border! border-[#38BDF8]/20! px-3! py-1! text-xs! font-bold! text-[#38BDF8]! mb-4!">
+            <FaUserShield /> Control de Roles y Acceso
+          </div>
+          <h2 className="text-3xl! sm:text-5xl! font-black! text-white!">
+            Perfiles de Usuario Definidos
+          </h2>
+          <p className="mt-4! text-slate-400! text-base! sm:text-lg!">
+            Nuestra plataforma cuenta con control de accesos por roles (RBAC) para delegar tareas con total seguridad.
+          </p>
+        </div>
+
+        <div className="grid! grid-cols-1! md:grid-cols-3! gap-8!">
+          {[
+            {
+              title: "Administrador / Super Admin",
+              desc: "Control absoluto de la tienda y sucursales. Configura los parámetros visuales en el editor, administra integraciones (Stripe, Cloudinary, SMTP), gestiona colaboradores y visualiza reportes analíticos avanzados.",
+              icon: <FaUserShield className="text-[#38BDF8]!" />,
+              color: "border-[#38BDF8]/25 bg-[#38BDF8]/5",
+              features: ["Constructor visual de tiendas", "Reportes SQL personalizados", "Cuentas y sucursales"]
+            },
+            {
+              title: "Cajero / Personal de Staff",
+              desc: "Encargado de la operación diaria. Tiene acceso en tiempo real al Tablero Kanban de ventas, verifica pagos en efectivo/caja y procesa los despachos de las reservaciones locales asignadas.",
+              icon: <FaUserTag className="text-[#22D3A6]!" />,
+              color: "border-[#22D3A6]/25 bg-[#22D3A6]/5",
+              features: ["Tablero Kanban en tiempo real", "Control de pagos en caja", "Cambios de estado de despacho"]
+            },
+            {
+              title: "Cliente de Tienda",
+              desc: "Usuario final. Puede explorar productos en el storefront público, agregar artículos a su carrito con precios diferenciados (detallista/mayorista), reservar pedidos y consultar su historial de compras.",
+              icon: <FaUser className="text-[#818CF8]!" />,
+              color: "border-[#818CF8]/25 bg-[#818CF8]/5",
+              features: ["Storefront responsivo interactivo", "Pagos seguros con tarjeta", "Mis compras / historial"]
+            }
+          ].map((r, i) => (
+            <div
+              key={i}
+              className={cn(
+                "p-8! rounded-2xl! border! transition-all! duration-300! flex! flex-col! justify-between!",
+                r.color
+              )}
+            >
+              <div>
+                <div className="flex! items-center! gap-3! mb-5!">
+                  <div className="text-2xl!">{r.icon}</div>
+                  <h4 className="text-base! font-bold! text-white!">{r.title}</h4>
                 </div>
+                <p className="text-xs! text-slate-400! leading-relaxed! mb-6!">{r.desc}</p>
               </div>
+
+              <div className="space-y-2! border-t! border-slate-800/80! pt-4!">
+                <p className="text-[10px]! font-bold! text-slate-500! uppercase! tracking-widest!">Permisos Clave</p>
+                {r.features.map((f, idx) => (
+                  <div key={idx} className="flex! items-center! gap-2! text-[11px]! text-slate-350!">
+                    <FaCheck className="text-[#22D3A6]! text-[9px]!" />
+                    <span>{f}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── Ventas Section ─── */}
+      <section
+        id="ventas"
+        className="py-24! px-4! max-w-7xl! mx-auto! border-t! border-slate-800/40!"
+      >
+        <div className="grid! grid-cols-1! lg:grid-cols-2! gap-16! items-center!">
+          {/* Text descriptions */}
+          <div className="space-y-6!">
+            <div className="inline-flex! items-center! gap-2! rounded-full! bg-[#22D3A6]/10! border! border-[#22D3A6]/20! px-3! py-1! text-xs! font-bold! text-[#22D3A6]! mb-2!">
+              <FaCreditCard /> Consola de Ventas
+            </div>
+            <h2 className="text-3xl! sm:text-4xl! lg:text-5xl! font-black! text-white! leading-tight!">
+              Administración de Ventas y Flujo de Caja
+            </h2>
+            <p className="text-slate-400! text-sm! sm:text-base! leading-relaxed!">
+              Optimiza tus operaciones comerciales mediante una interfaz fluida e integrada. Controla cada transacción y despacho en segundos.
+            </p>
+
+            <div className="space-y-4! pt-4!">
+              {[
+                {
+                  title: "Sincronización en Tiempo Real",
+                  desc: "El Tablero Kanban y las reservaciones se actualizan automáticamente en segundo plano cada 6 segundos, alertando con chimes y notificaciones ante nuevas órdenes."
+                },
+                {
+                  title: "Control de Pagos con Tarjeta y Efectivo",
+                  desc: "Verifica los intents de Stripe procesados en la pestaña de Pagos, o cambia manualmente el estado de pago del pedido en el Kanban a 'Pago Verificado'."
+                },
+                {
+                  title: "Listado Maestro de Reservaciones",
+                  desc: "Un registro centralizado con la información de facturación del cliente, detalles de artículos de la reservación, cantidad, subtotal e importes netos."
+                },
+                {
+                  title: "Tablero Kanban de Flujo de Trabajo",
+                  desc: "Permite a los cajeros arrastrar tarjetas a lo largo de tres fases: Pendiente de Pago, Pago Verificado y Despachado, asegurando el orden en la preparación y entrega."
+                }
+              ].map((item, idx) => (
+                <div key={idx} className="flex! gap-3! items-start!">
+                  <div className="mt-1! flex-shrink-0! h-2! w-2! rounded-full! bg-[#22D3A6]!" />
+                  <div>
+                    <h5 className="text-xs! font-bold! text-white! mb-0.5!">{item.title}</h5>
+                    <p className="text-[11px]! text-slate-400! leading-relaxed!">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Kanban GIF or Mockup container */}
+          <div className="bg-slate-900/60! border! border-slate-800! rounded-2xl! overflow-hidden! shadow-2xl! shadow-black/80! p-3! relative!">
+            <p className="text-[9px]! font-black! text-slate-500! uppercase! tracking-wider! mb-2.5! px-1!">
+              Tablero Kanban Operativo
+            </p>
+            <div className="overflow-hidden! rounded-xl! border! border-slate-850! bg-[#081018]! aspect-[16/10]! flex! items-center! justify-center! relative!">
+              <img
+                src="/kanban.gif"
+                alt="Tablero Kanban de Ventas"
+                className="w-full! h-full! object-cover! rounded-lg!"
+              />
             </div>
           </div>
         </div>
@@ -559,11 +570,6 @@ export default function LandingPage() {
             <img src="/logo.png" alt="DM Hub Logo" className="h-7! w-auto! object-contain!" />
           </div>
           <div>© 2026 Distributors Marketplace Hub. Todos los derechos reservados.</div>
-          <div className="flex! gap-6!">
-            <a href="#" className="hover:text-slate-300! transition-colors!">Términos</a>
-            <a href="#" className="hover:text-slate-300! transition-colors!">Privacidad</a>
-            <a href="#" className="hover:text-slate-300! transition-colors!">Soporte</a>
-          </div>
         </div>
       </footer>
     </div>
