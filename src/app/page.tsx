@@ -163,6 +163,7 @@ export default function LandingPage() {
             <a href="#constructor" className="hover:text-[#22D3A6]! transition-colors!">Constructor</a>
             <a href="#roles" className="hover:text-[#22D3A6]! transition-colors!">Roles</a>
             <a href="#ventas" className="hover:text-[#22D3A6]! transition-colors!">Administración</a>
+            <a href="http://localhost:3001" target="_blank" rel="noopener noreferrer" className="hover:text-[#22D3A6]! transition-colors!">Documentación</a>
             <a href="#precios" className="hover:text-[#22D3A6]! transition-colors!">Empezar</a>
           </nav>
 
