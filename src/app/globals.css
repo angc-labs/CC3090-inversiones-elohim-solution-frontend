@@ -248,3 +248,38 @@ html {
   animation: 200ms cubic-bezier(0, 0, 0.2, 1) both fade-in,
              200ms cubic-bezier(0, 0, 0.2, 1) both slide-from-right;
 }
+
+/* Premium styling for native select dropdowns to avoid white-on-white text on option popovers */
+select {
+  color-scheme: dark;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+select option {
+  background-color: #0b1329 !important; /* Dark Slate background */
+  color: #f8fafc !important; /* Light Slate text */
+  padding: 8px !important;
+}
+
+/* Light storefront exceptions: override back to light if the select is explicitly light-themed */
+select.bg-white,
+select[style*="background-color: #FFFFFF"],
+select[style*="background-color: rgb(255, 255, 255)"],
+select[style*="background-color:white"],
+select[class*="bg-white"],
+.bg-white select,
+.bg-slate-50 select,
+.bg-slate-100 select {
+  color-scheme: light !important;
+}
+
+select.bg-white option,
+select[class*="bg-white"] option,
+select[style*="background-color: #FFFFFF"] option,
+select[style*="background-color: rgb(255, 255, 255)"] option,
+.bg-white select option,
+.bg-slate-50 select option,
+.bg-slate-100 select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
