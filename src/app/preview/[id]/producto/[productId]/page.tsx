@@ -141,10 +141,6 @@ export default function ClientProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (!product) return;
-    if (productId.startsWith("mock-")) {
-      toast.info("Este es un producto de demostración.");
-      return;
-    }
     if (!isClientAuthenticated) {
       setAuthModalTab("login");
       setIsAuthModalOpen(true);

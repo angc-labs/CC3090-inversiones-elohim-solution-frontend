@@ -506,13 +506,7 @@ export default function LivePreviewPage() {
 
   // Get all filtered products (without slicing yet)
   const filteredProducts = useMemo(() => {
-    let list: any[] = products.length > 0 
-      ? products 
-      : [
-          { id: "mock-1", nombre: "Reloj de Precisión", precio: 249.00, imagenUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80", descripcion: "Reloj inteligente de alta precisión y durabilidad." },
-          { id: "mock-2", nombre: "Audio Hub Pro", precio: 599.00, imagenUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&q=80", descripcion: "Concentrador de audio profesional para estudio y directos." },
-          { id: "mock-3", nombre: "Tenis Velocity X1", precio: 849.00, imagenUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&q=80", descripcion: "Tenis de correr con máxima amortiguación y retorno de energía." }
-        ];
+    let list: any[] = products;
 
     list = list.map(p => ({
       ...p,
@@ -595,10 +589,6 @@ export default function LivePreviewPage() {
 
   const handleAddToCart = async (productoId: string) => {
     if (!productoId) return;
-    if (productoId.startsWith("mock-")) {
-      toast.info("Este es un producto de demostración.");
-      return;
-    }
     if (!isClientAuthenticated) {
       setAuthModalTab("login");
       setIsAuthModalOpen(true);
