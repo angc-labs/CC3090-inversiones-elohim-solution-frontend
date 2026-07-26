@@ -137,25 +137,6 @@ A continuación, se detalla el esquema JSON por defecto utilizado por la platafo
 
 ## 3. Arquitectura del Constructor de Tienda en el Frontend
 
-La interfaz de usuario del constructor visual implementada en [page.tsx](file:///home/angc/Dev/CC3090-inversiones-elohim-solution/frontend/src/app/portal/page.tsx) se organiza en un diseño premium de tres paneles principales:
-
-```
-+-------------------------------------------------------------------------+
-|                               Top Navbar                                |
-+------------------+----------------------------------+-------------------+
-|  1. ESTRUCTURA   |  2. VISTA PREVIA (Responsive)     |  3. PROPIEDADES   |
-|                  |  +-----------------------------+ |  (Dinámicas       |
-|  [Announcement]  |  |  ( ) Desktop  ( ) Mobile     | |   según la       |
-|  [Header]        |  +-----------------------------+ |   sección         |
-|  [Hero]          |  |                             | |   seleccionada)   |
-|  [Product Grid]  |  |      Previsualización       | |                   |
-|  [Footer]        |  |          en vivo            | |  [ Text Input  ]  |
-|                  |  |                             | |  [ Color Picker]  |
-|  + Añadir        |  |                             | |  [ Slider      ]  |
-|    Sección       |  +-----------------------------+ |                   |
-+------------------+----------------------------------+-------------------+
-```
-
 ### Detalles de Componentes de la Interfaz:
 
 1. **Panel Izquierdo (Structure Tree):**
