@@ -55,6 +55,7 @@ export function ProductosTab({
     precioMayoreo: 0,
     precioDetalle: 0,
     categoriaId: "",
+    categoriaBuscada: "",
     sku: "",
     descripcion: "",
     imagenUrl: "",
@@ -63,6 +64,7 @@ export function ProductosTab({
   });
 
   const [stockSucursalesMap, setStockSucursalesMap] = useState<Record<string, number>>({});
+  const [mostrarDropdownCategorias, setMostrarDropdownCategorias] = useState(false);
 
   const handleOpenProductoModal = (prod: PlatformProductoDto | null = null) => {
     if (prod) {
@@ -72,6 +74,7 @@ export function ProductosTab({
         precioMayoreo: prod.precioMayoreo,
         precioDetalle: prod.precioDetalle,
         categoriaId: prod.categoriaId ?? "",
+        categoriaBuscada: categorias.find(c => c.id === prod.categoriaId)?.nombreCategoria ?? prod.categoriaId ?? "",
         sku: prod.sku ?? "",
         descripcion: prod.descripcion ?? "",
         imagenUrl: prod.imagenUrl ?? "",
@@ -90,6 +93,7 @@ export function ProductosTab({
         precioMayoreo: 0,
         precioDetalle: 0,
         categoriaId: "",
+        categoriaBuscada: "",
         sku: "",
         descripcion: "",
         imagenUrl: "",
@@ -516,22 +520,51 @@ export function ProductosTab({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 relative">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     Categoría
                   </label>
-                  <select
-                    value={productoForm.categoriaId}
-                    onChange={(e) => setProductoForm({ ...productoForm, categoriaId: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
-                  >
-                    <option value="">Sin Categoría</option>
-                    {categorias.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.nombreCategoria}
-                      </option>
-                    ))}
-                  </select>
+                  <input
+                    type="text"
+                    placeholder="Selecciona o escribe una categoría..."
+                    value={productoForm.categoriaBuscada}
+                    onChange={(e) => {
+                      setProductoForm({ ...productoForm, categoriaBuscada: e.target.value });
+                      setMostrarDropdownCategorias(true);
+                    }}
+                    onFocus={() => setMostrarDropdownCategorias(true)}
+                    onBlur={() => {
+                      setTimeout(() => setMostrarDropdownCategorias(false), 200);
+                    }}
+                    className="h-10 w-full rounded-lg border border-slate-800 bg-slate-900/60 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
+                  />
+                  {mostrarDropdownCategorias && productoForm.categoriaBuscada && categorias.filter(cat => cat.nombreCategoria.toLowerCase().includes(productoForm.categoriaBuscada.toLowerCase())).length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-slate-900 border border-slate-800 rounded-lg z-50 max-h-40 overflow-y-auto shadow-lg">
+                      {categorias
+                        .filter(cat => cat.nombreCategoria.toLowerCase().includes(productoForm.categoriaBuscada.toLowerCase()))
+                        .map(cat => (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setProductoForm({
+                                ...productoForm,
+                                categoriaBuscada: cat.nombreCategoria,
+                                categoriaId: cat.id,
+                              });
+                              setMostrarDropdownCategorias(false);
+                            }}
+                            className="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 transition-all border-none bg-transparent cursor-pointer"
+                          >
+                            {cat.nombreCategoria}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                  {productoForm.categoriaBuscada && !categorias.some(c => c.nombreCategoria.toLowerCase() === productoForm.categoriaBuscada.toLowerCase()) && (
+                    <p className="text-[10px] text-slate-400 mt-1">💡 Se guardará como categoría personalizada</p>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-1.5">
