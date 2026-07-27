@@ -23,13 +23,11 @@ describe('useSessionExpiration', () => {
     ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
 
     const futureTime = Date.now() + 3600000
-    ;(useAuthStore as unknown as jest.Mock).mockImplementation((selector) => {
-      if (typeof selector === 'function') {
-        return selector({
-          isSessionExpired: () => false,
-          logout: jest.fn(),
-        })
-      }
+    ;(useAuthStore as unknown as jest.Mock).mockReturnValue({
+      expiraEn: futureTime,
+      isAuthenticated: true,
+      logout: jest.fn(),
+      isSessionExpired: () => false,
     })
 
     renderHook(() => useSessionExpiration())
@@ -44,20 +42,19 @@ describe('useSessionExpiration', () => {
     const mockLogout = jest.fn()
     ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
 
-    ;(useAuthStore as unknown as jest.Mock).mockImplementation((selector) => {
-      if (typeof selector === 'function') {
-        return selector({
-          isSessionExpired: () => true,
-          logout: mockLogout,
-        })
-      }
+    const pastTime = Date.now() - 3600000
+    ;(useAuthStore as unknown as jest.Mock).mockReturnValue({
+      expiraEn: pastTime,
+      isAuthenticated: true,
+      logout: mockLogout,
+      isSessionExpired: () => true,
     })
 
     renderHook(() => useSessionExpiration())
 
     await waitFor(() => {
       expect(mockLogout).toHaveBeenCalled()
-      expect(mockRouter.push).toHaveBeenCalledWith('/(auth)/login')
+      expect(mockRouter.push).toHaveBeenCalledWith('/login')
     })
   })
 })

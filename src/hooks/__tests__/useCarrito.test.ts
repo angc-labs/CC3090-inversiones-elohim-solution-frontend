@@ -1,4 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react'
+import React from 'react'
+import { SWRConfig } from 'swr'
 import { useCarrito } from '../useCarrito'
 import * as carritoApi from '@/lib/api/carrito'
 import * as productosApi from '@/lib/api/productos'
@@ -7,6 +9,14 @@ import { useClientAuthStore } from '@/stores/useClientAuthStore'
 jest.mock('@/lib/api/carrito')
 jest.mock('@/lib/api/productos')
 jest.mock('@/stores/useClientAuthStore')
+
+const wrapper = ({ children }: { children: React.ReactNode }) => {
+  return React.createElement(
+    SWRConfig,
+    { value: { provider: () => new Map(), dedupingInterval: 0 } },
+    children
+  )
+}
 
 describe('useCarrito', () => {
   beforeEach(() => {
@@ -19,7 +29,7 @@ describe('useCarrito', () => {
       items: [],
     })
 
-    const { result } = renderHook(() => useCarrito())
+    const { result } = renderHook(() => useCarrito(), { wrapper })
 
     await waitFor(() => {
       expect(result.current).toBeDefined()
@@ -41,8 +51,11 @@ describe('useCarrito', () => {
     }
 
     ;(carritoApi.obtenerCarrito as jest.Mock).mockResolvedValue(mockCarrito)
+    ;(productosApi.obtenerProductoPorId as jest.Mock).mockResolvedValue({
+      stockActual: 10,
+    })
 
-    const { result } = renderHook(() => useCarrito())
+    const { result } = renderHook(() => useCarrito(), { wrapper })
 
     await waitFor(() => {
       expect(carritoApi.obtenerCarrito).toHaveBeenCalledWith(mockToken)
@@ -70,10 +83,10 @@ describe('useCarrito', () => {
 
     ;(carritoApi.actualizarArticuloCarrito as jest.Mock).mockResolvedValue({})
 
-    const { result } = renderHook(() => useCarrito())
+    const { result } = renderHook(() => useCarrito(), { wrapper })
 
     await waitFor(() => {
-      expect(carritoApi.actualizarArticuloCarrito).toHaveBeenCalled()
+      expect(carritoApi.actualizarArticuloCarrito).toHaveBeenCalledWith(mockToken, '1', 5)
     })
   })
 
@@ -98,7 +111,7 @@ describe('useCarrito', () => {
 
     ;(carritoApi.eliminarArticuloCarrito as jest.Mock).mockResolvedValue({})
 
-    const { result } = renderHook(() => useCarrito())
+    const { result } = renderHook(() => useCarrito(), { wrapper })
 
     await waitFor(() => {
       expect(carritoApi.eliminarArticuloCarrito).toHaveBeenCalledWith(mockToken, '1')
