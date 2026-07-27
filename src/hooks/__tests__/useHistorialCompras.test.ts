@@ -1,59 +1,61 @@
-import { renderHook, waitFor } from '@testing-library/react'
-import { useHistorialCompras } from '../useHistorialCompras'
-import * as api from '@/lib/api'
-import { useClientAuthStore } from '@/stores/useClientAuthStore'
+import { renderHook, waitFor } from "@testing-library/react";
+import { useHistorialCompras } from "../useHistorialCompras";
+import * as reservacionApi from "@/lib/api/reservacion";
+import { useClientAuthStore } from "@/stores/useClientAuthStore";
 
-jest.mock('@/lib/api')
-jest.mock('@/stores/useClientAuthStore')
+jest.mock("@/lib/api/reservacion");
+jest.mock("@/stores/useClientAuthStore");
 
-describe('useHistorialCompras', () => {
+describe("useHistorialCompras", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-  })
+    jest.clearAllMocks();
+  });
 
-  it('debería inicializar sin token', async () => {
-    ;(useClientAuthStore as unknown as jest.Mock).mockReturnValue(null)
+  it("debería inicializar sin token", async () => {
+    (useClientAuthStore as unknown as jest.Mock).mockReturnValue(null);
 
-    const { result } = renderHook(() => useHistorialCompras())
-
-    await waitFor(() => {
-      expect(result.current).toBeDefined()
-    })
-  })
-
-  it('debería obtener el historial de compras cuando hay token', async () => {
-    const mockToken = 'test-token'
-    ;(useClientAuthStore as unknown as jest.Mock).mockReturnValue(mockToken)
-
-    const mockHistorial = {
-      compras: [
-        {
-          id: '1',
-          fecha: '2026-01-15',
-          total: 100,
-        },
-      ],
-    }
-
-    ;(api as any).obtenerHistorialCompras = jest.fn().mockResolvedValue(mockHistorial)
-
-    const { result } = renderHook(() => useHistorialCompras())
+    const { result } = renderHook(() => useHistorialCompras());
 
     await waitFor(() => {
-      expect(result.current).toBeDefined()
-    })
-  })
+      expect(result.current.reservaciones).toEqual([]);
+      expect(result.current.isError).toBe(false);
+    });
+  });
 
-  it('debería manejar errores al obtener el historial', async () => {
-    const mockToken = 'test-token'
-    ;(useClientAuthStore as unknown as jest.Mock).mockReturnValue(mockToken)
+  it("debería obtener reservaciones cuando hay token", async () => {
+    (useClientAuthStore as unknown as jest.Mock).mockReturnValue("test-token");
 
-    ;(api as any).obtenerHistorialCompras = jest.fn().mockRejectedValue(new Error('Network error'))
+    const mockReservaciones = [
+      {
+        id: "1",
+        fechaReserva: "2026-01-15",
+      },
+    ];
 
-    const { result } = renderHook(() => useHistorialCompras())
+    (reservacionApi.obtenerReservaciones as jest.Mock).mockResolvedValue(
+      mockReservaciones
+    );
+
+    const { result } = renderHook(() => useHistorialCompras());
 
     await waitFor(() => {
-      expect(result.current).toBeDefined()
-    })
-  })
-})
+      expect(reservacionApi.obtenerReservaciones).toHaveBeenCalledWith(
+        "test-token"
+      );
+    });
+  });
+
+ it("debería renderizar aunque falle la petición", async () => {
+  (useClientAuthStore as unknown as jest.Mock).mockReturnValue("test-token");
+
+  (reservacionApi.obtenerReservaciones as jest.Mock).mockRejectedValue(
+    new Error("Network error")
+  );
+
+  const { result } = renderHook(() => useHistorialCompras());
+
+  await waitFor(() => {
+    expect(result.current).toBeDefined();
+  });
+});
+});

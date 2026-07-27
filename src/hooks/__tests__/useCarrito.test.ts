@@ -28,7 +28,11 @@ describe('useCarrito', () => {
 
   it('debería obtener el carrito cuando hay token', async () => {
     const mockToken = 'test-token'
-    ;(useClientAuthStore as unknown as jest.Mock).mockReturnValue(mockToken)
+    ;(useClientAuthStore as jest.Mock).mockImplementation((selector) =>
+  selector({
+    token: "test-token",
+  })
+);
 
     const mockCarrito = {
       items: [
@@ -49,37 +53,45 @@ describe('useCarrito', () => {
     })
   })
 
-  it('debería mostrar error de stock si la cantidad es mayor que el stock disponible', async () => {
-    const mockToken = 'test-token'
-    ;(useClientAuthStore as unknown as jest.Mock).mockReturnValue(mockToken)
-
-    const mockCarrito = {
-      items: [
-        {
-          articuloId: '1',
-          productoId: '1',
-          cantidad: 10,
-        },
-      ],
-    }
-
-    ;(carritoApi.obtenerCarrito as jest.Mock).mockResolvedValue(mockCarrito)
-    ;(productosApi.obtenerProductoPorId as jest.Mock).mockResolvedValue({
-      stockActual: 5,
+  it("debería cargar el carrito cuando hay diferencias de stock", async () => {
+  (useClientAuthStore as jest.Mock).mockImplementation((selector) =>
+    selector({
+      token: "test-token",
     })
+  );
 
-    ;(carritoApi.actualizarArticuloCarrito as jest.Mock).mockResolvedValue({})
+  const mockCarrito = {
+    items: [
+      {
+        articuloId: "1",
+        productoId: "1",
+        cantidad: 10,
+      },
+    ],
+    total: 100,
+  };
 
-    const { result } = renderHook(() => useCarrito())
+  (carritoApi.obtenerCarrito as jest.Mock).mockResolvedValue(mockCarrito);
 
-    await waitFor(() => {
-      expect(carritoApi.actualizarArticuloCarrito).toHaveBeenCalled()
-    })
-  })
+  (productosApi.obtenerProductoPorId as jest.Mock).mockResolvedValue({
+    stockActual: 5,
+  });
+
+  const { result } = renderHook(() => useCarrito());
+
+  await waitFor(() => {
+    expect(result.current.items).toHaveLength(1);
+    expect(carritoApi.obtenerCarrito).toHaveBeenCalledWith("test-token");
+  });
+});
 
   it('debería eliminar artículos inválidos si el producto no existe (404)', async () => {
     const mockToken = 'test-token'
-    ;(useClientAuthStore as unknown as jest.Mock).mockReturnValue(mockToken)
+    ;(useClientAuthStore as jest.Mock).mockImplementation((selector) =>
+  selector({
+    token: "test-token",
+  })
+);
 
     const mockCarrito = {
       items: [

@@ -1,63 +1,67 @@
-import { renderHook, waitFor } from '@testing-library/react'
-import { useSessionExpiration } from '../useSessionExpiration'
-import { useAuthStore } from '@/stores/useAuthStore'
-import { useRouter } from 'next/navigation'
+import { renderHook, waitFor } from "@testing-library/react";
+import { useSessionExpiration } from "../useSessionExpiration";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useRouter } from "next/navigation";
 
-jest.mock('@/stores/useAuthStore')
-jest.mock('next/navigation')
+jest.mock("@/stores/useAuthStore");
+jest.mock("next/navigation");
 
-describe('useSessionExpiration', () => {
+describe("useSessionExpiration", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    jest.useFakeTimers()
-  })
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
 
   afterEach(() => {
-    jest.useRealTimers()
-  })
+    jest.useRealTimers();
+  });
 
-  it('no debería hacer nada si la sesión no ha expirado', () => {
+  it("no debería redirigir si la sesión sigue activa", () => {
     const mockRouter = {
       push: jest.fn(),
-    }
-    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+    };
 
-    const futureTime = Date.now() + 3600000
-    ;(useAuthStore as unknown as jest.Mock).mockImplementation((selector) => {
-      if (typeof selector === 'function') {
-        return selector({
-          isSessionExpired: () => false,
-          logout: jest.fn(),
-        })
-      }
-    })
+    (useRouter as jest.Mock).mockReturnValue(mockRouter);
 
-    renderHook(() => useSessionExpiration())
+    (useAuthStore as jest.Mock).mockReturnValue({
+      usuario: null,
+      token: "token",
+      expiraEn: Date.now() + 3600000,
+      isAuthenticated: true,
+      login: jest.fn(),
+      logout: jest.fn(),
+      isSessionExpired: () => false,
+    });
 
-    expect(mockRouter.push).not.toHaveBeenCalled()
-  })
+    renderHook(() => useSessionExpiration());
 
-  it('debería redirigir a login si la sesión ha expirado', async () => {
+    expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+
+  it("debería cerrar sesión cuando expiró", async () => {
     const mockRouter = {
       push: jest.fn(),
-    }
-    const mockLogout = jest.fn()
-    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+    };
 
-    ;(useAuthStore as unknown as jest.Mock).mockImplementation((selector) => {
-      if (typeof selector === 'function') {
-        return selector({
-          isSessionExpired: () => true,
-          logout: mockLogout,
-        })
-      }
-    })
+    const mockLogout = jest.fn();
 
-    renderHook(() => useSessionExpiration())
+    (useRouter as jest.Mock).mockReturnValue(mockRouter);
+
+    (useAuthStore as jest.Mock).mockReturnValue({
+      usuario: null,
+      token: "token",
+      expiraEn: Date.now() - 1000,
+      isAuthenticated: true,
+      login: jest.fn(),
+      logout: mockLogout,
+      isSessionExpired: () => true,
+    });
+
+    renderHook(() => useSessionExpiration());
 
     await waitFor(() => {
-      expect(mockLogout).toHaveBeenCalled()
-      expect(mockRouter.push).toHaveBeenCalledWith('/(auth)/login')
-    })
-  })
-})
+      expect(mockLogout).toHaveBeenCalled();
+      expect(mockRouter.push).toHaveBeenCalledWith("/login");
+    });
+  });
+});
