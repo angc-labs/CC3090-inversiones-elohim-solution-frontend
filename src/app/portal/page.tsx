@@ -740,7 +740,7 @@ export default function PortalPage() {
           </button>
 
           {/* Live Search */}
-          <div ref={searchContainerRef} className="w-full max-w-md relative hidden md:block">
+          <div ref={searchContainerRef} className="relative z-[60] hidden w-full max-w-md md:block">
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
               <input
@@ -763,7 +763,7 @@ export default function PortalPage() {
 
             {/* Live Search Popup */}
             {isSearchFocused && searchQuery && (
-              <div className="absolute top-12 left-0 w-full rounded-xl border border-slate-800 bg-slate-955 p-4 shadow-2xl shadow-black max-h-[360px] overflow-y-auto z-50 animate-fade-in">
+              <div className="absolute left-0 top-12 z-[70] max-h-[360px] w-full isolate overflow-y-auto rounded-xl border border-slate-800 bg-[#081018] p-4 shadow-2xl shadow-black ring-1 ring-black/60 animate-fade-in">
                 {searchResults.length === 0 ? (
                   <p className="text-xs text-slate-500 text-center py-4">Sin resultados para "{searchQuery}"</p>
                 ) : (
