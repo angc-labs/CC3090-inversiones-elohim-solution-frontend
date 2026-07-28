@@ -15,14 +15,12 @@ La navegación y el acceso a páginas del frontend en Next.js se rigen por un es
   * **Propósito**: Permite previsualizar en vivo los cambios realizados en el constructor de tiendas antes de que el administrador decida publicarlos de forma definitiva.
 
 ### Rutas de Autenticación de Staff (`(auth)`)
-Protegidas por [GuestAuthGate.tsx](file:///home/angc_/Dev/CC3090-inversiones-elohim-solution/frontend/src/components/features/auth/GuestAuthGate.tsx). Redirigen a `/portal` si ya existe una sesión activa y válida.
 * **`/login`**: Inicio de sesión para administradores, cajeros y personal de la tienda.
 * **`/register`**: Creación de cuentas y registro para dueños de nuevas tiendas.
 * **`/recuperar`**: Solicitud de código OTP de recuperación.
 * **`/new-password`**: Definición de nueva contraseña tras verificar la clave OTP.
 
 ### Rutas Protegidas del Cliente Final
-Protegidas por [ClientProtectedRoute.tsx](file:///home/angc_/Dev/CC3090-inversiones-elohim-solution/frontend/src/components/features/auth/ClientProtectedRoute.tsx).
 * **`/portal`** (Perfil del Cliente):
   * **Propósito**: Panel donde los clientes autenticados visualizan su historial de reservaciones y configuran sus métodos de pago guardados.
 * **`/reservas`**:
@@ -36,8 +34,6 @@ Integrado dentro del contenedor del Portal para administradores y cajeros:
 ---
 
 ## 2. Mecanismos de Control de Acceso
-
-La lógica de protección de rutas y permisos se centraliza en [auth-routes.ts](file:///home/angc_/Dev/CC3090-inversiones-elohim-solution/frontend/src/lib/auth-routes.ts):
 
 * **`ADMIN_PANEL_PREFIX`** (`/admin`):
   Filtra que el rol del usuario sea del personal de la tienda (`admin` o `cajero`).

@@ -31,11 +31,18 @@ El sistema implementa una arquitectura de sesión unificada basada en la estruct
 
 ## 2. Diferencias entre Cliente y Staff/Administrador
 
-| Característica | Clientes (`cliente`) | Staff / Administrador (`staff`) |
-| :--- | :--- | :--- |
-| **Almacén Frontend** | `useClientAuthStore` | `useAuthStore` |
-| **Ámbito (Scope)** | Vinculado exclusivamente a la tienda (`tienda_id`) donde se registró. | Global (con privilegios regulados según sucursal y rol de staff). |
-| **Roles Soportados** | `cliente` | `cajero`, `administrador`, `superadmin`. |
-| **Permisos de Escritura** | Solo lectura del catálogo, creación de reservaciones y gestión de métodos de pago propios. | Gestión de productos, control de stock, ver y despachar reservaciones, modificar visuales. |
-| **Resolución en Login** | Se busca primero el perfil de staff de manera global. Si no existe, se busca el cliente filtrado por el tenant activo. | Se busca globalmente y se mapea a su tienda de origen. |
-| **Redirección Post-Login** | `/portal` (acceso a sus reservas y estado). | Redirige al panel `/admin` (dashboard, ventas, productos). |
+### Clientes (`cliente`)
+- **Almacén Frontend**: `useClientAuthStore`
+- **Ámbito (Scope)**: Vinculado exclusivamente a la tienda (`tienda_id`) donde se registró.
+- **Roles Soportados**: `cliente`
+- **Permisos de Escritura**: Solo lectura del catálogo, creación de reservaciones y gestión de métodos de pago propios.
+- **Resolución en Login**: Se busca primero el perfil de staff de manera global. Si no existe, se busca el cliente filtrado por el tenant activo.
+- **Redirección Post-Login**: `/portal` (acceso a sus reservas y estado).
+
+### Staff / Administrador (`staff`)
+- **Almacén Frontend**: `useAuthStore`
+- **Ámbito (Scope)**: Global (con privilegios regulados según sucursal y rol de staff).
+- **Roles Soportados**: `cajero`, `administrador`, `superadmin`
+- **Permisos de Escritura**: Gestión de productos, control de stock, ver y despachar reservaciones, modificar visuales.
+- **Resolución en Login**: Se busca globalmente y se mapea a su tienda de origen.
+- **Redirección Post-Login**: Redirige al panel `/admin` (dashboard, ventas, productos).
