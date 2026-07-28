@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, Upload, Plus, Loader2, Package, Eye, EyeOff, Edit, Trash2, X, Download, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { PortalModal } from "@/components/ui/PortalModal";
 import * as XLSX from "xlsx";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import {
@@ -439,7 +440,7 @@ export function ProductosTab({
 
       {/* PRODUCT FORM MODAL */}
       {isProductoModalOpen && (
-        <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-55 backdrop-blur-sm overflow-y-auto">
+        <PortalModal onClose={() => setIsProductoModalOpen(false)} ariaLabel={selectedProducto ? "Editar producto" : "Crear producto"}>
           <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-5 my-8 relative animate-fade-in">
             <button
               onClick={() => setIsProductoModalOpen(false)}
@@ -653,12 +654,18 @@ export function ProductosTab({
               </button>
             </form>
           </div>
-        </div>
+        </PortalModal>
       )}
 
       {/* BULK PRODUCT IMPORT MODAL */}
       {isImportModalOpen && (
-        <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-55 backdrop-blur-sm overflow-y-auto">
+        <PortalModal
+          onClose={() => {
+            setIsImportModalOpen(false);
+            setParsedProducts([]);
+          }}
+          ariaLabel="Importar productos"
+        >
           <div className="w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-5 my-8 relative">
             <button
               onClick={() => {
@@ -790,7 +797,7 @@ export function ProductosTab({
               </div>
             )}
           </div>
-        </div>
+        </PortalModal>
       )}
     </div>
   );

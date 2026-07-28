@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { cambiarEstadoReservacion, type ReservacionDto, type PlatformUsuarioDto, type SucursalDto } from "@/lib/api/admin";
 import { cn } from "@/lib/utils";
+import { PortalModal } from "@/components/ui/PortalModal";
 
 interface KanbanTabProps {
   token: string;
@@ -647,7 +648,7 @@ export function KanbanTab({
 
       {/* MOBILE/TABLET QUICK DETAIL & STATE CONTROLLER MODAL */}
       {selectedCardDetail && (
-        <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-55 backdrop-blur-md animate-fade-in">
+        <PortalModal onClose={() => setSelectedCardDetail(null)} ariaLabel="Detalle de reservación">
           <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-955 p-6 shadow-2xl space-y-6 relative text-xs">
             {/* Close Button */}
             <button
@@ -770,7 +771,7 @@ export function KanbanTab({
               </div>
             </div>
           </div>
-        </div>
+        </PortalModal>
       )}
     </div>
   );

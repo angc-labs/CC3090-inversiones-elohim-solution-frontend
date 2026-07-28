@@ -13,6 +13,7 @@ import {
   Download
 } from "lucide-react";
 import { toast } from "sonner";
+import { PortalModal } from "@/components/ui/PortalModal";
 
 interface ConstructorLeftPanelProps {
   storeConfig: any;
@@ -401,7 +402,7 @@ export function ConstructorLeftPanel({
 
       {/* CREATE PAGE MODAL */}
       {isCreatePageModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-55 backdrop-blur-sm">
+        <PortalModal onClose={() => setIsCreatePageModalOpen(false)} ariaLabel="Agregar página">
           <div className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-6 relative">
             <button
               onClick={() => setIsCreatePageModalOpen(false)}
@@ -436,12 +437,12 @@ export function ConstructorLeftPanel({
               </button>
             </form>
           </div>
-        </div>
+        </PortalModal>
       )}
 
       {/* ADD SECTION MODAL */}
       {isAddSectionModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-55 backdrop-blur-sm">
+        <PortalModal onClose={() => setIsAddSectionModalOpen(false)} ariaLabel="Agregar sección">
           <div className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-6 relative animate-fade-in">
             <button
               onClick={() => setIsAddSectionModalOpen(false)}
@@ -492,7 +493,7 @@ export function ConstructorLeftPanel({
               </button>
             </form>
           </div>
-        </div>
+        </PortalModal>
       )}
     </>
   );

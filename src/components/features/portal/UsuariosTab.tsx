@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Loader2, Mail, Users, X, AlertTriangle, Check, Download } from "lucide-react";
 import { toast } from "sonner";
+import { PortalModal } from "@/components/ui/PortalModal";
 import {
   invitarPlatformUsuario,
   cambiarRolPlatformUsuario,
@@ -339,7 +340,7 @@ export function UsuariosTab({
 
       {/* INVITE USER MODAL */}
       {isInviteModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-55 backdrop-blur-sm">
+        <PortalModal onClose={() => setIsInviteModalOpen(false)} ariaLabel="Agregar o invitar usuario">
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-6 relative">
             <button
               onClick={() => setIsInviteModalOpen(false)}
@@ -454,12 +455,12 @@ export function UsuariosTab({
               </button>
             </form>
           </div>
-        </div>
+        </PortalModal>
       )}
 
       {/* CHANGE ROLE MODAL */}
       {isChangeRolModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-55 backdrop-blur-sm">
+        <PortalModal onClose={() => setIsChangeRolModalOpen(false)} ariaLabel="Cambiar rol de usuario">
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-6 relative">
             <button
               onClick={() => setIsChangeRolModalOpen(false)}
@@ -533,12 +534,12 @@ export function UsuariosTab({
               </button>
             </form>
           </div>
-        </div>
+        </PortalModal>
       )}
 
       {/* REESTABLECER CONTRASEÑA MODAL */}
       {isResetPasswordModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-55 backdrop-blur-sm animate-fade-in">
+        <PortalModal onClose={() => setIsResetPasswordModalOpen(false)} ariaLabel="Restablecer contraseña">
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-6 relative">
             <button
               onClick={() => setIsResetPasswordModalOpen(false)}
@@ -637,7 +638,7 @@ export function UsuariosTab({
               </div>
             )}
           </div>
-        </div>
+        </PortalModal>
       )}
     </div>
   );

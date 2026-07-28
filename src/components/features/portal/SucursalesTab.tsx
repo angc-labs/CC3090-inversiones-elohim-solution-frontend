@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GitBranch, Plus, Loader2, Edit, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
+import { PortalModal } from "@/components/ui/PortalModal";
 import {
   crearSucursal,
   actualizarSucursal,
@@ -176,7 +177,7 @@ export function SucursalesTab({
 
       {/* SUCURSAL ADD/EDIT MODAL */}
       {isSucursalModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-55 backdrop-blur-sm">
+        <PortalModal onClose={() => setIsSucursalModalOpen(false)} ariaLabel={selectedSucursal ? "Editar sucursal" : "Agregar sucursal"}>
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-6 relative">
             <button
               onClick={() => setIsSucursalModalOpen(false)}
@@ -240,12 +241,12 @@ export function SucursalesTab({
               </button>
             </form>
           </div>
-        </div>
+        </PortalModal>
       )}
 
       {/* SUCURSAL DETAIL MODAL */}
       {selectedSucursalDetail && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-55 backdrop-blur-sm">
+        <PortalModal onClose={() => setSelectedSucursalDetail(null)} ariaLabel="Detalle de sucursal">
           <div className="w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-955 p-6 shadow-2xl space-y-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedSucursalDetail(null)}
@@ -346,7 +347,7 @@ export function SucursalesTab({
               })()}
             </div>
           </div>
-        </div>
+        </PortalModal>
       )}
     </div>
   );

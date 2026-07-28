@@ -57,6 +57,7 @@ import { PagosTab } from "@/components/features/portal/PagosTab";
 import { ReportesTab } from "@/components/features/portal/ReportesTab";
 import { SettingsTab } from "@/components/features/portal/SettingsTab";
 import { KanbanTab } from "@/components/features/portal/KanbanTab";
+import { PortalModal } from "@/components/ui/PortalModal";
 
 const TAB_TITLES: Record<string, string> = {
   tablero: "Tablero",
@@ -1004,7 +1005,7 @@ export default function PortalPage() {
 
       {/* CREATE STORE DIALOG MODAL */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-55 backdrop-blur-sm">
+        <PortalModal onClose={() => setIsCreateModalOpen(false)} ariaLabel="Crear nueva tienda">
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-6 relative">
             <button
               onClick={() => setIsCreateModalOpen(false)}
@@ -1059,12 +1060,12 @@ export default function PortalPage() {
               </button>
             </form>
           </div>
-        </div>
+        </PortalModal>
       )}
 
       {/* CRM CLIENTS CHANGE ROLE MODAL */}
       {isChangeRolModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-55 backdrop-blur-sm">
+        <PortalModal onClose={() => setIsChangeRolModalOpen(false)} ariaLabel="Cambiar tipo y rol">
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-955 p-6 shadow-2xl space-y-6 relative">
             <button
               onClick={() => setIsChangeRolModalOpen(false)}
@@ -1130,7 +1131,7 @@ export default function PortalPage() {
               </button>
             </form>
           </div>
-        </div>
+        </PortalModal>
       )}
     </div>
   );
