@@ -37,6 +37,23 @@ export function SettingsTab({
   setStoreConfig,
   setTiendas
 }: SettingsTabProps) {
+  const mainDomain = (process.env.NEXT_PUBLIC_MAIN_DOMAIN || "")
+    .trim()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "");
+  const storeSlug = activeStore?.slug || "";
+  const isDevelopment = process.env.NODE_ENV === "development";
+  const storePublicUrl = mainDomain
+    ? `//${storeSlug}.${mainDomain}/`
+    : isDevelopment
+      ? `http://${storeSlug}.lvh.me:3000/`
+      : `/preview/${storeSlug}`;
+  const storePublicLabel = mainDomain
+    ? `${storeSlug}.${mainDomain}`
+    : isDevelopment
+      ? `${storeSlug}.lvh.me:3000`
+      : `/preview/${storeSlug}`;
+
   const [settingsForm, setSettingsForm] = useState({
     stripePublicKey: "",
     stripeSecretKey: "",
@@ -305,14 +322,14 @@ export function SettingsTab({
           </div>
           
           <div className="flex flex-col gap-1.5 md:col-span-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dominio de Pruebas</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">URL pública de la tienda</span>
             <a
-              href={`http://${activeStore?.slug}.lvh.me:3000/`}
+              href={storePublicUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sky-400 hover:text-sky-300 hover:underline bg-slate-900/60 px-3 py-2 rounded-lg truncate w-fit font-mono"
             >
-              {activeStore?.slug}.lvh.me:3000
+              {storePublicLabel}
             </a>
           </div>
         </div>
