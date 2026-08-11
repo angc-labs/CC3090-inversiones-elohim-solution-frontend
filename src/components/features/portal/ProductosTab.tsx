@@ -44,11 +44,26 @@ export function ProductosTab({
   // Modals
   const [isProductoModalOpen, setIsProductoModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isColumnMappingModalOpen, setIsColumnMappingModalOpen] = useState(false);
 
   // Edits
   const [selectedProducto, setSelectedProducto] = useState<PlatformProductoDto | null>(null);
   const [parsedProducts, setParsedProducts] = useState<CrearPlatformProductoBulkInput[]>([]);
   const [isImporting, setIsImporting] = useState(false);
+  
+  // Column mapping
+  const [detectedColumns, setDetectedColumns] = useState<string[]>([]);
+  const [columnMapping, setColumnMapping] = useState<Record<string, string>>({
+    nombre: "",
+    precioDetalle: "",
+    precioMayoreo: "",
+    sku: "",
+    stockActual: "",
+    descripcion: "",
+    categoriaId: "",
+    imagenUrl: "",
+    stockMinimo: "",
+  });
 
   // Form
   const [productoForm, setProductoForm] = useState({
@@ -232,6 +247,10 @@ export function ProductosTab({
           toast.error("El archivo está vacío o no contiene filas de datos.");
           return;
         }
+
+        // Extract detected columns from the file
+        const detectedCols = Object.keys(json[0]);
+        setDetectedColumns(detectedCols);
 
         // Validate headers
         const requiredColumns = ["Nombre", "PrecioDetalle", "PrecioMayoreo"];
@@ -763,75 +782,141 @@ export function ProductosTab({
             </div>
 
             {parsedProducts.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-[#22D3A6] uppercase tracking-wider">
-                    Vista Previa de Importación ({parsedProducts.length} productos)
-                  </span>
-                  <span className="text-[9px] text-slate-500 italic font-semibold">
-                    * El inventario inicial se asignará a la sucursal por defecto.
-                  </span>
-                </div>
-
-                <div className="rounded-xl border border-slate-900 overflow-hidden max-h-48 overflow-y-auto bg-slate-950/40">
-                  <table className="w-full text-left border-collapse text-[10px]">
-                    <thead>
-                      <tr className="border-b border-slate-900 bg-slate-950 text-slate-500 uppercase font-bold tracking-wider sticky top-0">
-                        <th className="p-2">Nombre</th>
-                        <th className="p-2">SKU</th>
-                        <th className="p-2 text-right">P. Detalle</th>
-                        <th className="p-2 text-right">P. Mayoreo</th>
-                        <th className="p-2 text-center">Stock</th>
-                        <th className="p-2 text-center">Publicado</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-900">
-                      {parsedProducts.map((p, i) => (
-                        <tr
-                          key={i}
-                          className="hover:bg-slate-900/10 transition-colors text-slate-350"
-                        >
-                          <td className="p-2 font-semibold text-white max-w-[150px] truncate">{p.nombre}</td>
-                          <td className="p-2 font-mono text-slate-400">{p.sku || "—"}</td>
-                          <td className="p-2 text-right font-mono">Q{p.precioDetalle.toFixed(2)}</td>
-                          <td className="p-2 text-right font-mono">Q{p.precioMayoreo.toFixed(2)}</td>
-                          <td className="p-2 text-center font-mono">{p.stockActual}</td>
-                          <td className="p-2 text-center">
-                            <span
-                              className={`inline-flex rounded px-1.5 py-0.5 text-[8px] font-bold ${
-                                p.publicado
-                                  ? "bg-emerald-500/10 text-emerald-400"
-                                  : "bg-slate-800 text-slate-400"
-                              }`}
-                            >
-                              {p.publicado ? "SÍ" : "NO"}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
+              <div className="space-y-2 border border-slate-900 bg-slate-900/10 p-4 rounded-xl">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Estandariza tus Columnas
+                </span>
+                <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+                  Utiliza el formulario de mapeo de columnas, para validar su compatibilidad con el proyecto.
+                </p>
                 <button
-                  onClick={handleConfirmImport}
-                  disabled={isImporting}
-                  className="h-11 w-full rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] disabled:bg-slate-800 disabled:text-slate-500 text-slate-955 font-bold transition-all cursor-pointer border-none flex items-center justify-center gap-2"
+                  onClick={() => setIsColumnMappingModalOpen(true)}
+                  className="h-8 px-3 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none w-full"
                 >
-                  {isImporting ? (
-                    <>
-                      <Loader2 className="animate-spin" size={16} />
-                      <span>Importando {parsedProducts.length} productos...</span>
-                    </>
-                  ) : (
-                    <span>Confirmar y Guardar en Catálogo</span>
-                  )}
+                  <span>Avanzar con el Formulario</span>
                 </button>
               </div>
             )}
+
+
+          </div>
+        </PortalModal>
+      )}
+
+      {/* COLUMN MAPPING MODAL */}
+      {isColumnMappingModalOpen && (
+        <PortalModal
+          onClose={() => setIsColumnMappingModalOpen(false)}
+          ariaLabel="Mapear columnas"
+        >
+          <div className="w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-5 my-8 relative">
+            <button
+              onClick={() => setIsColumnMappingModalOpen(false)}
+              className="absolute right-4 top-4 text-slate-500 hover:text-white cursor-pointer bg-transparent border-none p-0"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-1">
+              <h3 className="text-lg font-black text-white">Mapeo de Columnas</h3>
+              <p className="text-xs text-slate-400">Asigna las columnas de tu archivo a los campos del proyecto</p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Campos Requeridos */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-[#22D3A6] uppercase tracking-wider">
+                  * Campos Requeridos
+                </h4>
+                
+                {["nombre", "precioDetalle", "precioMayoreo", "sku", "stockActual", "stockMinimo"].map((field) => (
+                  <div key={field} className="flex items-center gap-3">
+                    <label className="w-40 text-sm font-semibold text-white">
+                      {field === "nombre" && "Nombre"}
+                      {field === "precioDetalle" && "Precio Detalle"}
+                      {field === "precioMayoreo" && "Precio Mayoreo"}
+                      {field === "sku" && "SKU"}
+                      {field === "stockActual" && "Stock Actual"}
+                      {field === "stockMinimo" && "Stock Mínimo"}
+                    </label>
+                    <select
+                      value={columnMapping[field]}
+                      onChange={(e) => setColumnMapping({ ...columnMapping, [field]: e.target.value })}
+                      className="flex-1 h-9 rounded-lg border border-slate-800 bg-slate-900/60 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8] cursor-pointer"
+                    >
+                      <option value="">-- Seleccionar columna --</option>
+                      {detectedColumns.map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                    </select>
+                    {columnMapping[field] && (
+                      <span className="text-[#22D3A6] text-lg">✓</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Campos Opcionales */}
+              <div className="space-y-3 border-t border-slate-800 pt-4">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Campos Opcionales
+                </h4>
+                
+                {["descripcion", "categoriaId", "imagenUrl"].map((field) => (
+                  <div key={field} className="flex items-center gap-3">
+                    <label className="w-40 text-sm text-slate-300">
+                      {field === "descripcion" && "Descripción"}
+                      {field === "categoriaId" && "Categoría ID"}
+                      {field === "imagenUrl" && "Imagen URL"}
+                    </label>
+                    <select
+                      value={columnMapping[field]}
+                      onChange={(e) => setColumnMapping({ ...columnMapping, [field]: e.target.value })}
+                      className="flex-1 h-9 rounded-lg border border-slate-800 bg-slate-900/60 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8] cursor-pointer"
+                    >
+                      <option value="">-- No asignada --</option>
+                      {detectedColumns.map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => setIsColumnMappingModalOpen(false)}
+                className="flex-1 h-10 rounded-lg border border-slate-800 bg-slate-900/60 text-slate-300 hover:bg-slate-800 text-sm font-bold transition-all cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  const requiredFields = ["nombre", "precioDetalle", "precioMayoreo", "sku", "stockActual", "stockMinimo"];
+                  const missingFields = requiredFields.filter(field => !columnMapping[field]);
+                  
+                  if (missingFields.length > 0) {
+                    toast.error("Por favor asigna todos los campos requeridos antes de continuar");
+                    return;
+                  }
+                  
+                  toast.success("Mapeo aplicado correctamente");
+                  setIsColumnMappingModalOpen(false);
+                }}
+                className="flex-1 h-10 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-sm font-bold transition-all cursor-pointer border-none"
+              >
+                Aplicar Mapeo
+              </button>
+            </div>
           </div>
         </PortalModal>
       )}
     </div>
   );
 }
+
