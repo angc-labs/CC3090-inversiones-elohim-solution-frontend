@@ -782,20 +782,88 @@ export function ProductosTab({
             </div>
 
             {parsedProducts.length > 0 && (
-              <div className="space-y-2 border border-slate-900 bg-slate-900/10 p-4 rounded-xl">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Estandariza tus Columnas
-                </span>
-                <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
-                  Utiliza el formulario de mapeo de columnas, para validar su compatibilidad con el proyecto.
-                </p>
-                <button
-                  onClick={() => setIsColumnMappingModalOpen(true)}
-                  className="h-8 px-3 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none w-full"
-                >
-                  <span>Avanzar con el Formulario</span>
-                </button>
-              </div>
+              <>
+                <div className="space-y-2 border border-slate-900 bg-slate-900/10 p-4 rounded-xl">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Estandariza tus Columnas
+                  </span>
+                  <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+                    Utiliza el formulario de mapeo de columnas, para validar su compatibilidad con el proyecto.
+                  </p>
+                  <button
+                    onClick={() => setIsColumnMappingModalOpen(true)}
+                    className="h-8 px-3 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none w-full"
+                  >
+                    <span>Avanzar con el Formulario</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#22D3A6] uppercase tracking-wider">
+                      Vista Previa de Importación ({parsedProducts.length} productos)
+                    </span>
+                    <span className="text-[9px] text-slate-500 italic font-semibold">
+                      * El inventario inicial se asignará a la sucursal por defecto.
+                    </span>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-900 overflow-hidden max-h-48 overflow-y-auto bg-slate-950/40">
+                    <table className="w-full text-left border-collapse text-[10px]">
+                      <thead>
+                        <tr className="border-b border-slate-900 bg-slate-950 text-slate-500 uppercase font-bold tracking-wider sticky top-0">
+                          <th className="p-2">Nombre</th>
+                          <th className="p-2">SKU</th>
+                          <th className="p-2 text-right">P. Detalle</th>
+                          <th className="p-2 text-right">P. Mayoreo</th>
+                          <th className="p-2 text-center">Stock</th>
+                          <th className="p-2 text-center">Publicado</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-900">
+                        {parsedProducts.map((p, i) => (
+                          <tr
+                            key={i}
+                            className="hover:bg-slate-900/10 transition-colors text-slate-350"
+                          >
+                            <td className="p-2 font-semibold text-white max-w-[150px] truncate">{p.nombre}</td>
+                            <td className="p-2 font-mono text-slate-400">{p.sku || "—"}</td>
+                            <td className="p-2 text-right font-mono">Q{p.precioDetalle.toFixed(2)}</td>
+                            <td className="p-2 text-right font-mono">Q{p.precioMayoreo.toFixed(2)}</td>
+                            <td className="p-2 text-center font-mono">{p.stockActual}</td>
+                            <td className="p-2 text-center">
+                              <span
+                                className={`inline-flex rounded px-1.5 py-0.5 text-[8px] font-bold ${
+                                  p.publicado
+                                    ? "bg-emerald-500/10 text-emerald-400"
+                                    : "bg-slate-800 text-slate-400"
+                                }`}
+                              >
+                                {p.publicado ? "SÍ" : "NO"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <button
+                    onClick={handleConfirmImport}
+                    disabled={isImporting}
+                    className="h-11 w-full rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] disabled:bg-slate-800 disabled:text-slate-500 text-slate-955 font-bold transition-all cursor-pointer border-none flex items-center justify-center gap-2"
+                  >
+                    {isImporting ? (
+                      <>
+                        <Loader2 className="animate-spin" size={16} />
+                        <span>Importando {parsedProducts.length} productos...</span>
+                      </>
+                    ) : (
+                      <span>Confirmar y Guardar en Catálogo</span>
+                    )}
+                  </button>
+                </div>
+              </>
             )}
 
 
@@ -916,6 +984,8 @@ export function ProductosTab({
           </div>
         </PortalModal>
       )}
+
+
     </div>
   );
 }
