@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Download, FileText, Loader2, AlertTriangle, Sliders, Play } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -59,12 +59,52 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
   });
 
   // Custom SQL Console states
-  const [customQuery, setCustomQuery] = useState(
-    'SELECT id, nombre, stock_actual, stock_minimo FROM public."Producto" WHERE tienda_id = @tenant_id AND stock_actual < stock_minimo;'
-  );
+  const defaultSqlQuery = 'SELECT id, nombre, stock_actual, stock_minimo FROM public."Producto" WHERE tienda_id = @tenant_id AND stock_actual < stock_minimo;';
+  const [customQuery, setCustomQuery] = useState(defaultSqlQuery);
   const [customQueryResult, setCustomQueryResult] = useState<Array<Record<string, any>> | null>(null);
   const [customQueryError, setCustomQueryError] = useState<string | null>(null);
   const [customQueryLoading, setCustomQueryLoading] = useState(false);
+  const [isQueryFocused, setIsQueryFocused] = useState(false);
+  const [isFirstQueryFocus, setIsFirstQueryFocus] = useState(true);
+
+  // Calculate autocomplete suggestion
+  const getQuerySuggestion = () => {
+    if (!customQuery || customQuery === defaultSqlQuery) {
+      return defaultSqlQuery;
+    }
+    // If the current query is a prefix of the default, suggest the rest
+    if (defaultSqlQuery.startsWith(customQuery)) {
+      return defaultSqlQuery.slice(customQuery.length);
+    }
+    return '';
+  };
+
+  const queryAutocomplete = getQuerySuggestion();
+
+  const handleQueryKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Accept autocomplete with Tab or Enter when there's a suggestion
+    if ((e.key === 'Tab' || (e.key === 'Enter' && e.ctrlKey)) && queryAutocomplete) {
+      e.preventDefault();
+      setCustomQuery(defaultSqlQuery);
+    }
+  };
+
+  const handleQueryFocus = () => {
+    // Only clear on FIRST focus if it contains the default query
+    if (isFirstQueryFocus && customQuery === defaultSqlQuery) {
+      setCustomQuery('');
+      setIsFirstQueryFocus(false);
+    }
+    setIsQueryFocused(true);
+  };
+
+  const handleQueryBlur = () => {
+    // If empty when blur, restore the default query
+    if (customQuery.trim() === '') {
+      setCustomQuery(defaultSqlQuery);
+    }
+    setIsQueryFocused(false);
+  };
 
   // Fetch Reports Data
   useEffect(() => {
@@ -902,12 +942,29 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <textarea
-                    value={customQuery}
-                    onChange={(e) => setCustomQuery(e.target.value)}
-                    placeholder="Escribe tu consulta SQL SELECT..."
-                    className="w-full h-32 p-4 rounded-xl border border-slate-800 bg-slate-950 text-slate-200 font-mono text-xs focus:border-[#22D3A6] focus:ring-1 focus:ring-[#22D3A6] outline-none resize-y"
-                  />
+                  <div className="relative">
+                    <textarea
+                      value={customQuery}
+                      onChange={(e) => setCustomQuery(e.target.value)}
+                      onKeyDown={handleQueryKeyDown}
+                      onFocus={handleQueryFocus}
+                      onBlur={handleQueryBlur}
+                      placeholder="Escribe tu consulta SQL SELECT... (Presiona Tab para autocompletar)"
+                      className="w-full h-32 p-4 rounded-xl border border-slate-800 bg-slate-950 text-slate-200 font-mono text-xs focus:border-[#22D3A6] focus:ring-1 focus:ring-[#22D3A6] outline-none resize-y relative z-10 bg-opacity-90"
+                    />
+                    {/* Autocomplete suggestion overlay */}
+                    {queryAutocomplete && (
+                      <div className="absolute top-4 left-4 pointer-events-none h-32 max-h-32 overflow-hidden">
+                        <div className="text-slate-600 font-mono text-xs leading-relaxed">
+                          {customQuery}
+                          <span className="text-slate-500 opacity-60">{queryAutocomplete}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-500 leading-normal">
+                    💡 Tip: Presiona <code className="text-[#22D3A6] font-mono bg-slate-900 px-1.5 py-0.5 rounded">Tab</code> o <code className="text-[#22D3A6] font-mono bg-slate-900 px-1.5 py-0.5 rounded">Ctrl+Enter</code> para aceptar la sugerencia de autocomplete.
+                  </p>
                   <p className="text-[10px] text-slate-500 leading-normal">
                     * Por razones de seguridad y aislamiento de datos, toda consulta SQL debe incluir un filtro
                     explícito en la columna <code className="text-[#38BDF8] font-mono">tienda_id</code> utilizando
