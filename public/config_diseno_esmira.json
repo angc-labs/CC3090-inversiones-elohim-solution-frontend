@@ -1,0 +1,204 @@
+{
+  "pages": [
+    {
+      "id": "home",
+      "name": "Inicio",
+      "isHome": true,
+      "sections": [
+        {
+          "id": "announcement",
+          "name": "Announcement Bar",
+          "type": "announcement",
+          "properties": {
+            "linkUrl": "https://store.com/promo",
+            "textColor": "#FFFFFF",
+            "bannerText": "ENVÍO GRATIS EN PEDIDOS SUPERIORES A Q500 • USA EL CÓDIGO LOGISTIC10",
+            "fontWeight": "Bold",
+            "linkAction": "Open Link",
+            "stickyBanner": true,
+            "backgroundColor": "#1AB38C",
+            "verticalPadding": 8
+          }
+        },
+        {
+          "id": "header",
+          "name": "Header",
+          "type": "header",
+          "properties": {
+            "logoUrl": "",
+            "menuItems": [
+              "Inicio",
+              "Descuentos"
+            ],
+            "storeName": "Tienda de admin1"
+          }
+        },
+        {
+          "id": "hero",
+          "name": "Hero Section",
+          "type": "hero",
+          "properties": {
+            "title": "Master Your Distribution Strategy",
+            "subtitle": "Commercial grade inventory systems designed for the modern logistics operator. Precision meets performance.",
+            "textColor": "#FFFFFF",
+            "backgroundColor": "#0F172A",
+            "backgroundImage": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1200",
+            "useGlassmorphism": false,
+            "primaryButtonText": "Shop Collection",
+            "secondaryButtonText": "View Catalog"
+          }
+        },
+        {
+          "id": "products",
+          "name": "Product Grid",
+          "type": "products",
+          "properties": {
+            "title": "Featured Essentials",
+            "columns": 3,
+            "layoutType": "grid",
+            "showSearch": false,
+            "productsCount": 3
+          }
+        },
+        {
+          "id": "section-1785206268849",
+          "name": "nueva seccion",
+          "type": "hero",
+          "properties": {
+            "title": "Nuevo Título Hero",
+            "subtitle": "Subtítulo descriptivo de tu sección...",
+            "textColor": "#FFFFFF",
+            "backgroundColor": "#0F172A",
+            "primaryButtonText": "Botón"
+          }
+        },
+        {
+          "id": "footer",
+          "name": "Footer",
+          "type": "footer",
+          "properties": {
+            "textColor": "#94A3B8",
+            "copyrightText": "© 2026 Tienda de admin1. All rights reserved.",
+            "backgroundColor": "#0F172A"
+          }
+        }
+      ]
+    },
+    {
+      "id": "descuentos",
+      "name": "Descuentos",
+      "isHome": false,
+      "sections": [
+        {
+          "id": "announcement",
+          "name": "Announcement Bar",
+          "type": "announcement",
+          "properties": {
+            "linkUrl": "https://store.com/promo",
+            "textColor": "#FFFFFF",
+            "bannerText": "ENVÍO GRATIS EN PEDIDOS SUPERIORES A Q500 • USA EL CÓDIGO LOGISTIC10",
+            "fontWeight": "Bold",
+            "linkAction": "Open Link",
+            "stickyBanner": true,
+            "backgroundColor": "#1AB38C",
+            "verticalPadding": 8
+          }
+        },
+        {
+          "id": "header",
+          "name": "Header",
+          "type": "header",
+          "properties": {
+            "logoUrl": "",
+            "menuItems": [
+              "Inicio",
+              "Descuentos"
+            ],
+            "storeName": "Tienda de admin1"
+          }
+        },
+        {
+          "id": "richtext_1785206292853",
+          "name": "Contenido de Página",
+          "type": "richtext",
+          "properties": {
+            "title": "Descuentos",
+            "content": "Esta es una página en blanco. Haz clic aquí para editar el contenido.",
+            "textColor": "#0F172A",
+            "backgroundColor": "#FFFFFF",
+            "paddingVertical": 48
+          }
+        },
+        {
+          "id": "footer",
+          "name": "Footer",
+          "type": "footer",
+          "properties": {
+            "textColor": "#94A3B8",
+            "copyrightText": "© 2026 Tienda de admin1. All rights reserved.",
+            "backgroundColor": "#0F172A"
+          }
+        }
+      ]
+    }
+  ],
+  "theme": {
+    "accentColor": "#c13e3e",
+    "useGradient": false,
+    "backgroundColor": "#0d78e3",
+    "backgroundGradient": "linear-gradient(135deg, #1e3a8a 0%, #0d9488 100%)"
+  },
+  "sections": [
+    {
+      "id": "announcement",
+      "name": "Announcement Bar",
+      "type": "announcement",
+      "properties": {
+        "linkUrl": "https://store.com/promo",
+        "textColor": "#FFFFFF",
+        "bannerText": "ENVÍO GRATIS EN PEDIDOS SUPERIORES A Q500 • USA EL CÓDIGO LOGISTIC10",
+        "fontWeight": "Bold",
+        "linkAction": "Open Link",
+        "stickyBanner": true,
+        "backgroundColor": "#1AB38C",
+        "verticalPadding": 8
+      }
+    },
+    {
+      "id": "header",
+      "name": "Header",
+      "type": "header",
+      "properties": {
+        "logoUrl": "",
+        "menuItems": [
+          "Inicio",
+          "Descuentos"
+        ],
+        "storeName": "Tienda de admin1"
+      }
+    },
+    {
+      "id": "richtext_1785206292853",
+      "name": "Contenido de Página",
+      "type": "richtext",
+      "properties": {
+        "title": "Descuentos",
+        "content": "Esta es una página en blanco. Haz clic aquí para editar el contenido.",
+        "textColor": "#0F172A",
+        "backgroundColor": "#FFFFFF",
+        "paddingVertical": 48
+      }
+    },
+    {
+      "id": "footer",
+      "name": "Footer",
+      "type": "footer",
+      "properties": {
+        "textColor": "#94A3B8",
+        "copyrightText": "© 2026 Tienda de admin1. All rights reserved.",
+        "backgroundColor": "#0F172A"
+      }
+    }
+  ],
+  "currentPageId": "home"
+}

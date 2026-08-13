@@ -885,14 +885,14 @@ export default function ConstructorPage() {
                   </div>
 
                   <a
-                    href={`/preview/${activeStore?.id}`}
+                    href={activeStore?.slug ? `https://${activeStore.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || "dmhub.fun"}` : `/preview/${activeStore?.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="h-10 px-4 rounded-xl bg-slate-900 hover:bg-slate-855 border border-slate-800 text-slate-350 hover:text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer no-underline"
-                    title="Ver Vista Previa Completa en Vivo"
+                    title="Ver Tienda Completa en Vivo (Subdominio)"
                   >
                     <Eye size={14} className="text-[#38BDF8]" />
-                    <span>Preview Live</span>
+                    <span>Ver Tienda (Live)</span>
                   </a>
 
                   <button

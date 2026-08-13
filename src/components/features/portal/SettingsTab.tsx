@@ -8,7 +8,8 @@ import {
   Loader2,
   CreditCard,
   Package,
-  Mail
+  Mail,
+  ExternalLink
 } from "lucide-react";
 import {
   getIntegraciones,
@@ -322,15 +323,20 @@ export function SettingsTab({
           </div>
           
           <div className="flex flex-col gap-1.5 md:col-span-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">URL pública de la tienda</span>
-            <a
-              href={storePublicUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sky-400 hover:text-sky-300 hover:underline bg-slate-900/60 px-3 py-2 rounded-lg truncate w-fit font-mono"
-            >
-              {storePublicLabel}
-            </a>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Link de la Tienda (Subdominio)</span>
+            {activeStore?.slug ? (
+              <a
+                href={`https://${activeStore.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || "dmhub.fun"}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#22D3A6] hover:text-[#1ebda1] hover:underline bg-slate-900/60 px-3 py-2 rounded-lg truncate w-fit font-mono text-xs flex items-center gap-2 border border-slate-800"
+              >
+                <span>{`https://${activeStore.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || "dmhub.fun"}`}</span>
+                <ExternalLink size={13} />
+              </a>
+            ) : (
+              <span className="text-slate-500 italic text-xs">Sin subdominio configurado</span>
+            )}
           </div>
         </div>
 

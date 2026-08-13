@@ -40,7 +40,6 @@ export function useCarrito() {
             }
             inFlightAdjustments.current.delete(item.articuloId);
           } catch (err) {
-            console.error(`Error obteniendo stock para ${item.productoId}:`, err);
             // Si el producto no se encuentra (404), eliminamos el artículo inválido del carrito automáticamente
             if (err && typeof err === "object" && "status" in err && err.status === 404) {
               try {

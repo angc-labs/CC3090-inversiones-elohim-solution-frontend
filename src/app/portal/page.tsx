@@ -824,11 +824,11 @@ export default function PortalPage() {
                           {activeStore?.id === t.id && <span className="h-1.5 w-1.5 rounded-full bg-[#22D3A6] shrink-0 ml-2" />}
                         </button>
                         <a
-                          href={`/preview/${t.id}`}
+                          href={t.slug ? `https://${t.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || "dmhub.fun"}` : `/preview/${t.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-1.5 rounded-lg text-slate-500 hover:text-[#38BDF8] hover:bg-slate-900 transition-all cursor-pointer mr-1 flex items-center justify-center"
-                          title={`Ver Preview Live de ${t.nombre}`}
+                          title={`Ver Tienda Live de ${t.nombre}`}
                         >
                           <Eye size={12} />
                         </a>

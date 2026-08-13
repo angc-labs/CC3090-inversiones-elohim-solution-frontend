@@ -16,6 +16,7 @@ export function middleware(request: NextRequest) {
 
   // Extraer el subdominio
   let subdomain = "";
+  const hostWithoutPort = hostname.split(":")[0];
 
   if (hostname.includes("localhost:3000")) {
     const parts = hostname.split(".localhost:3000");
@@ -28,21 +29,20 @@ export function middleware(request: NextRequest) {
       subdomain = parts[0];
     }
   } else {
-    // Soporte para dominio de producción dinámico
-    const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN; // ej. dmhub.com
-    if (mainDomain && hostname.includes(mainDomain)) {
-      const parts = hostname.split(`.${mainDomain}`);
-      if (parts.length > 1) {
-        subdomain = parts[0];
+    // Soporte para dominio de producción dinámico (por defecto dmhub.fun)
+    const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN || "dmhub.fun";
+    if (mainDomain && hostWithoutPort.endsWith(mainDomain)) {
+      const prefix = hostWithoutPort.slice(0, hostWithoutPort.length - mainDomain.length);
+      if (prefix.endsWith(".")) {
+        subdomain = prefix.slice(0, -1);
       }
     }
   }
 
   // Si hay un subdominio de tienda activo (ignorando 'www' y 'admin')
   if (subdomain && subdomain !== "www" && subdomain !== "admin") {
-    // Si el usuario entra a la raíz de la tienda, reescribir internamente a la página del constructor (preview)
-    if (url.pathname === "/") {
-      url.pathname = `/preview/${subdomain.toLowerCase()}`;
+    if (!url.pathname.startsWith("/preview/")) {
+      url.pathname = `/preview/${subdomain.toLowerCase()}${url.pathname === "/" ? "" : url.pathname}`;
       return NextResponse.rewrite(url);
     }
   }

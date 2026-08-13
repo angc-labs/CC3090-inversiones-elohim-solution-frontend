@@ -1,0 +1,3 @@
+﻿Nombre,Descripcion,Sku,PrecioDetalle,PrecioMayoreo,StockActual,StockMinimo,CategoriaId,Publicado,ImagenUrl
+Producto Ejemplo 1,Descripción detallada del producto ejemplo 1,SKU-EJEMPLO-01,120.5,95,50,5,,TRUE,https://ejemplo.com/imagen.jpg
+Producto Ejemplo 2,Descripción detallada del producto ejemplo 2,SKU-EJEMPLO-02,45,35,100,10,,FALSE,
