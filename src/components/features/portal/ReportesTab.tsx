@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Download, FileText, Loader2, AlertTriangle, Sliders, Play } from "lucide-react";
+import {
+  Download,
+  FileText,
+  Loader2,
+  AlertTriangle,
+  Sliders,
+  Play,
+  Info,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import {
@@ -66,6 +76,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
   const [customQueryLoading, setCustomQueryLoading] = useState(false);
   const [isQueryFocused, setIsQueryFocused] = useState(false);
   const [isFirstQueryFocus, setIsFirstQueryFocus] = useState(true);
+  const [showSqlHelp, setShowSqlHelp] = useState(false);
 
   // Calculate autocomplete suggestion
   const getQuerySuggestion = () => {
@@ -940,6 +951,118 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                     READ-ONLY ACTIVE
                   </span>
                 </div>
+                {/* Ayuda para consultas SQL */}
+<div className="rounded-lg border border-slate-900 bg-slate-950/30 overflow-hidden">
+  <button
+    type="button"
+    onClick={() => setShowSqlHelp((prev) => !prev)}
+    className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-transparent border-none cursor-pointer text-left hover:bg-slate-900/30 transition-colors"
+    aria-expanded={showSqlHelp}
+  >
+    <div className="flex items-center gap-2">
+      <Info size={14} className="text-[#22D3A6] shrink-0" />
+
+      <span className="text-[11px] font-semibold text-slate-300">
+        ¿Necesitas ayuda para crear tu consulta?
+      </span>
+    </div>
+
+    <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#22D3A6]">
+      {showSqlHelp ? "Ocultar" : "Más información"}
+
+      {showSqlHelp ? (
+        <ChevronUp size={13} />
+      ) : (
+        <ChevronDown size={13} />
+      )}
+    </span>
+  </button>
+
+  {showSqlHelp && (
+    <div className="border-t border-slate-900 px-4 py-4 space-y-4">
+      {/* Instrucciones */}
+      <div>
+        <h4 className="text-[11px] font-bold text-white mb-2">
+          Cómo realizar una consulta
+        </h4>
+
+        <ul className="space-y-1 text-[10px] text-slate-400 list-disc pl-4">
+          <li>
+            Utiliza únicamente comandos de lectura{" "}
+            <code className="text-[#38BDF8] font-mono">SELECT</code> o{" "}
+            <code className="text-[#38BDF8] font-mono">WITH</code>.
+          </li>
+
+          <li>
+            Todas las consultas deben incluir el filtro{" "}
+            <code className="text-[#22D3A6] font-mono">
+              tienda_id = @tenant_id
+            </code>.
+          </li>
+
+          <li>
+            Escribe tu consulta y presiona{" "}
+            <span className="text-slate-200 font-semibold">
+              Ejecutar Query
+            </span>{" "}
+            para obtener los resultados.
+          </li>
+        </ul>
+      </div>
+
+      {/* Tablas disponibles */}
+      <div>
+        <h4 className="text-[11px] font-bold text-white mb-2">
+          Tablas disponibles
+        </h4>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="rounded-lg border border-slate-900 bg-slate-950/50 p-3">
+            <p className="text-[10px] font-bold text-[#22D3A6] font-mono">
+              Producto
+            </p>
+
+            <p className="text-[10px] text-slate-500 mt-1">
+              Información de los productos de la tienda.
+            </p>
+
+            <p className="text-[9px] text-slate-600 mt-2 font-mono">
+              id · nombre · stock_actual · stock_minimo · tienda_id
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-slate-900 bg-slate-950/50 p-3">
+            <p className="text-[10px] font-bold text-[#22D3A6] font-mono">
+              Empleados
+            </p>
+
+            <p className="text-[10px] text-slate-500 mt-1">
+              Información relacionada con los empleados.
+            </p>
+
+            <p className="text-[9px] text-slate-600 mt-2 font-mono">
+              Campos por confirmar
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-slate-900 bg-slate-950/50 p-3">
+            <p className="text-[10px] font-bold text-[#22D3A6] font-mono">
+              Métodos de pago
+            </p>
+
+            <p className="text-[10px] text-slate-500 mt-1">
+              Información relacionada con los métodos de pago.
+            </p>
+
+            <p className="text-[9px] text-slate-600 mt-2 font-mono">
+              Campos por confirmar
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
 
                 <div className="space-y-2">
                   <div className="relative">
