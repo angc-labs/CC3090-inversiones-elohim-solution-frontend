@@ -951,12 +951,13 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                     READ-ONLY ACTIVE
                   </span>
                 </div>
-                {/* Ayuda para consultas SQL */}
+{/* Ayuda para consultas SQL */}
 <div className="rounded-lg border border-slate-900 bg-slate-950/30 overflow-hidden">
+  {/* Botón para mostrar/ocultar la documentación */}
   <button
     type="button"
     onClick={() => setShowSqlHelp((prev) => !prev)}
-    className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-transparent border-none cursor-pointer text-left hover:bg-slate-900/30 transition-colors"
+    className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-900/40 transition-colors"
     aria-expanded={showSqlHelp}
   >
     <div className="flex items-center gap-2">
@@ -967,7 +968,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
       </span>
     </div>
 
-    <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#22D3A6]">
+    <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#22D3A6] whitespace-nowrap">
       {showSqlHelp ? "Ocultar" : "Más información"}
 
       {showSqlHelp ? (
@@ -978,86 +979,253 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
     </span>
   </button>
 
+  {/* Contenido desplegable */}
   {showSqlHelp && (
-    <div className="border-t border-slate-900 px-4 py-4 space-y-4">
+    <div className="border-t border-slate-900 px-4 py-4 space-y-5">
+
       {/* Instrucciones */}
       <div>
         <h4 className="text-[11px] font-bold text-white mb-2">
-          Cómo realizar una consulta
+          Cómo crear una consulta
         </h4>
 
-        <ul className="space-y-1 text-[10px] text-slate-400 list-disc pl-4">
+        <ul className="space-y-1.5 text-[10px] text-slate-400 list-disc pl-4">
           <li>
-            Utiliza únicamente comandos de lectura{" "}
-            <code className="text-[#38BDF8] font-mono">SELECT</code> o{" "}
-            <code className="text-[#38BDF8] font-mono">WITH</code>.
+            Utiliza consultas{" "}
+            <code className="text-[#38BDF8] font-mono">SELECT</code>{" "}
+            para obtener información de las tablas disponibles.
           </li>
 
           <li>
-            Todas las consultas deben incluir el filtro{" "}
-            <code className="text-[#22D3A6] font-mono">
-              tienda_id = @tenant_id
-            </code>.
+            Especifica los campos que deseas consultar y la tabla de donde
+            provienen.
           </li>
 
           <li>
-            Escribe tu consulta y presiona{" "}
-            <span className="text-slate-200 font-semibold">
+            Puedes utilizar cláusulas SQL como{" "}
+            <code className="text-[#38BDF8] font-mono">WHERE</code>,{" "}
+            <code className="text-[#38BDF8] font-mono">ORDER BY</code> y{" "}
+            <code className="text-[#38BDF8] font-mono">GROUP BY</code>{" "}
+            para organizar o filtrar los resultados.
+          </li>
+
+          <li>
+            Presiona{" "}
+            <span className="font-semibold text-slate-200">
               Ejecutar Query
             </span>{" "}
             para obtener los resultados.
           </li>
         </ul>
+
+        {/* Ejemplo */}
+        <div className="mt-3 rounded-md border border-slate-800 bg-slate-950 px-3 py-2">
+          <p className="text-[9px] uppercase tracking-wider text-slate-600 font-bold mb-1">
+            Ejemplo
+          </p>
+
+          <code className="text-[10px] text-[#22D3A6] font-mono">
+            SELECT nombre_producto, precio, stock_actual FROM Producto;
+          </code>
+        </div>
       </div>
 
-      {/* Tablas disponibles */}
+      {/* Tablas */}
       <div>
-        <h4 className="text-[11px] font-bold text-white mb-2">
-          Tablas disponibles
-        </h4>
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-[11px] font-bold text-white">
+            Tablas disponibles
+          </h4>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-          <div className="rounded-lg border border-slate-900 bg-slate-950/50 p-3">
-            <p className="text-[10px] font-bold text-[#22D3A6] font-mono">
-              Producto
+          <span className="text-[9px] text-slate-600">
+            Campos disponibles para consultas
+          </span>
+        </div>
+
+        <div className="space-y-2">
+
+          {/* Producto */}
+          <div className="rounded-md border border-slate-900 bg-slate-950/50 p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-[#22D3A6] font-mono">
+                Producto
+              </span>
+
+              <span className="text-[9px] text-slate-600">
+                Catálogo e inventario
+              </span>
+            </div>
+
+            <p className="text-[9px] text-slate-500 font-mono leading-relaxed">
+              id_producto · codigo_producto · nombre_producto · descripcion ·
+              precio · stock_actual · id_marca · categoria_id ·
+              fecha_vencimiento · imagen_principal · fecha_creacion ·
+              fecha_actualizacion
             </p>
+          </div>
 
-            <p className="text-[10px] text-slate-500 mt-1">
-              Información de los productos de la tienda.
-            </p>
+          {/* Usuario */}
+          <div className="rounded-md border border-slate-900 bg-slate-950/50 p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-[#22D3A6] font-mono">
+                Usuario
+              </span>
 
-            <p className="text-[9px] text-slate-600 mt-2 font-mono">
-              id · nombre · stock_actual · stock_minimo · tienda_id
+              <span className="text-[9px] text-slate-600">
+                Usuarios registrados
+              </span>
+            </div>
+
+            <p className="text-[9px] text-slate-500 font-mono leading-relaxed">
+              id · correo · nombre · apellido · telefono · tipo_usuario ·
+              estado · fecha_creacion
             </p>
           </div>
 
-          <div className="rounded-lg border border-slate-900 bg-slate-950/50 p-3">
-            <p className="text-[10px] font-bold text-[#22D3A6] font-mono">
-              Empleados
-            </p>
+          {/* Reservacion */}
+          <div className="rounded-md border border-slate-900 bg-slate-950/50 p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-[#22D3A6] font-mono">
+                Reservacion
+              </span>
 
-            <p className="text-[10px] text-slate-500 mt-1">
-              Información relacionada con los empleados.
-            </p>
+              <span className="text-[9px] text-slate-600">
+                Reservaciones de clientes
+              </span>
+            </div>
 
-            <p className="text-[9px] text-slate-600 mt-2 font-mono">
-              Campos por confirmar
+            <p className="text-[9px] text-slate-500 font-mono leading-relaxed">
+              id_reservacion · codigo_reservacion · cliente_id ·
+              fecha_renovacion · estado_renovacion · total_renovacion ·
+              metodo_pago_id · pagado · observaciones · fecha_limite_retiro
             </p>
           </div>
 
-          <div className="rounded-lg border border-slate-900 bg-slate-950/50 p-3">
-            <p className="text-[10px] font-bold text-[#22D3A6] font-mono">
-              Métodos de pago
-            </p>
+          {/* DetalleReservacion */}
+          <div className="rounded-md border border-slate-900 bg-slate-950/50 p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-[#22D3A6] font-mono">
+                DetalleReservacion
+              </span>
 
-            <p className="text-[10px] text-slate-500 mt-1">
-              Información relacionada con los métodos de pago.
-            </p>
+              <span className="text-[9px] text-slate-600">
+                Productos de cada reservación
+              </span>
+            </div>
 
-            <p className="text-[9px] text-slate-600 mt-2 font-mono">
-              Campos por confirmar
+            <p className="text-[9px] text-slate-500 font-mono leading-relaxed">
+              id_details · reservacion_id · producto_id · nombre_producto ·
+              cantidad · precio_unitario · subtotal
             </p>
           </div>
+
+          {/* Venta */}
+          <div className="rounded-md border border-slate-900 bg-slate-950/50 p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-[#22D3A6] font-mono">
+                Venta
+              </span>
+
+              <span className="text-[9px] text-slate-600">
+                Ventas realizadas
+              </span>
+            </div>
+
+            <p className="text-[9px] text-slate-500 font-mono leading-relaxed">
+              id_venta · reservacion_id · monto_total · usuario_cajero_id ·
+              fecha_venta · tipo_comprobante · estado_venta
+            </p>
+          </div>
+
+          {/* Categoria */}
+          <div className="rounded-md border border-slate-900 bg-slate-950/50 p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-[#22D3A6] font-mono">
+                Categoria
+              </span>
+
+              <span className="text-[9px] text-slate-600">
+                Categorías de productos
+              </span>
+            </div>
+
+            <p className="text-[9px] text-slate-500 font-mono leading-relaxed">
+              id · nombre_categoria · descripcion · fecha_creacion
+            </p>
+          </div>
+
+          {/* Marca */}
+          <div className="rounded-md border border-slate-900 bg-slate-950/50 p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-[#22D3A6] font-mono">
+                Marca
+              </span>
+
+              <span className="text-[9px] text-slate-600">
+                Marcas de productos
+              </span>
+            </div>
+
+            <p className="text-[9px] text-slate-500 font-mono leading-relaxed">
+              id · nombre_marca · descripcion
+            </p>
+          </div>
+
+          {/* MetodoPago */}
+          <div className="rounded-md border border-slate-900 bg-slate-950/50 p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-[#22D3A6] font-mono">
+                MetodoPago
+              </span>
+
+              <span className="text-[9px] text-slate-600">
+                Métodos de pago
+              </span>
+            </div>
+
+            <p className="text-[9px] text-slate-500 font-mono leading-relaxed">
+              id_metodo_pago · usuario_id · nombre_metodo · descripcion ·
+              alias_tarjeta · marca_tarjeta · ultimos_digitos · expira_mes ·
+              expira_anio · activo
+            </p>
+          </div>
+
+          {/* Carrito */}
+          <div className="rounded-md border border-slate-900 bg-slate-950/50 p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-[#22D3A6] font-mono">
+                Carrito
+              </span>
+
+              <span className="text-[9px] text-slate-600">
+                Carritos de clientes
+              </span>
+            </div>
+
+            <p className="text-[9px] text-slate-500 font-mono leading-relaxed">
+              id_carrito · cliente_id · activo · fecha_creacion ·
+              fecha_actualizacion
+            </p>
+          </div>
+
+          {/* ArticuloCarrito */}
+          <div className="rounded-md border border-slate-900 bg-slate-950/50 p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-[#22D3A6] font-mono">
+                ArticuloCarrito
+              </span>
+
+              <span className="text-[9px] text-slate-600">
+                Productos agregados al carrito
+              </span>
+            </div>
+
+            <p className="text-[9px] text-slate-500 font-mono leading-relaxed">
+              id_articulo · carrito_id · producto_id · nombre_producto ·
+              cantidad · precio_unitario · subtotal
+            </p>
+          </div>
+
         </div>
       </div>
     </div>
