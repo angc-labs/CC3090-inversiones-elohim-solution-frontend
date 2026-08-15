@@ -26,7 +26,8 @@ import {
   Mail,
   Sparkles,
   Menu,
-  Kanban
+  Kanban,
+  BookOpen,
 } from "lucide-react";
 import {
   getTiendas,
@@ -67,6 +68,24 @@ import {
   type ThemeMode,
 } from "@/lib/theme-language";
 import { MoonStar, SunMedium, Globe } from "lucide-react";
+
+const getDocsUrl = () => {
+  if (process.env.NEXT_PUBLIC_DOCS_URL) {
+    return process.env.NEXT_PUBLIC_DOCS_URL;
+  }
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    if (
+      hostname === "localhost" ||
+      hostname.endsWith(".localhost") ||
+      hostname.endsWith(".lvh.me") ||
+      hostname === "127.0.0.1"
+    ) {
+      return "http://localhost:3001/docs/intro";
+    }
+  }
+  return "/docs/intro";
+};
 
 const TAB_TITLES: Record<string, string> = {
   tablero: "Tablero",
@@ -385,8 +404,8 @@ export default function PortalPage() {
       setUsuarios(usrList);
       setSucursales(sucList);
     })
-    .catch(() => toast.error("Error al cargar colaboradores y sucursales"))
-    .finally(() => setLoadingUsuarios(false));
+      .catch(() => toast.error("Error al cargar colaboradores y sucursales"))
+      .finally(() => setLoadingUsuarios(false));
   };
 
   const refreshProductos = () => {
@@ -609,36 +628,32 @@ export default function PortalPage() {
           <nav className="flex flex-col gap-1">
             <button
               onClick={() => handleLinkClick("tablero")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${
-                activeTab === "tablero" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "tablero" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                }`}
             >
               <LayoutDashboard size={18} />
               <span>Dashboard</span>
             </button>
             <button
               onClick={() => handleLinkClick("sucursales")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${
-                activeTab === "sucursales" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "sucursales" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                }`}
             >
               <GitBranch size={18} />
               <span>Sucursales</span>
             </button>
             <button
               onClick={() => handleLinkClick("reservaciones")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${
-                activeTab === "reservaciones" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "reservaciones" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                }`}
             >
               <Calendar size={18} />
               <span>Reservaciones</span>
             </button>
             <button
               onClick={() => handleLinkClick("pagos")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${
-                activeTab === "pagos" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "pagos" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                }`}
             >
               <CreditCard size={18} />
               <span>Pagos</span>
@@ -646,9 +661,8 @@ export default function PortalPage() {
             {esStaff && (
               <button
                 onClick={() => handleLinkClick("kanban")}
-                className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${
-                  activeTab === "kanban" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                }`}
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "kanban" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                  }`}
               >
                 <Kanban size={18} />
                 <span>Tablero Kanban</span>
@@ -656,39 +670,45 @@ export default function PortalPage() {
             )}
             <button
               onClick={() => handleLinkClick("clientes")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${
-                activeTab === "clientes" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "clientes" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                }`}
             >
               <Users size={18} />
               <span>Clientes</span>
             </button>
             <button
               onClick={() => handleLinkClick("productos")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${
-                activeTab === "productos" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "productos" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                }`}
             >
               <Package size={18} />
               <span>Productos</span>
             </button>
             <button
               onClick={() => handleLinkClick("reportes")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${
-                activeTab === "reportes" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "reportes" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                }`}
             >
               <BarChart3 size={18} />
               <span>Reportes</span>
             </button>
             <button
               onClick={() => handleLinkClick("usuarios")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${
-                activeTab === "usuarios" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "usuarios" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                }`}
             >
               <User size={18} />
               <span>Usuarios</span>
+            </button>
+            <button
+              onClick={() => window.open(getDocsUrl(), "_blank", "noopener,noreferrer")}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "manual"
+                ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]"
+                : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                }`}
+            >
+              <BookOpen size={18} />
+              <span>Manual de Usuario</span>
             </button>
             {esAdmin && (
               <>
@@ -704,9 +724,8 @@ export default function PortalPage() {
                 </button>
                 <button
                   onClick={() => handleLinkClick("settings")}
-                  className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${
-                    activeTab === "settings" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                  }`}
+                  className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "settings" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                    }`}
                 >
                   <Settings size={18} />
                   <span>Configuración</span>
@@ -878,9 +897,8 @@ export default function PortalPage() {
                       <div key={t.id} className="flex items-center justify-between px-1 rounded-lg hover:bg-slate-900/40 group transition-all">
                         <button
                           onClick={() => handleSelectStore(t)}
-                          className={`flex-1 flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-all text-left border-none cursor-pointer bg-transparent ${
-                            activeStore?.id === t.id ? "text-[#22D3A6]" : "text-slate-400 hover:text-white"
-                          }`}
+                          className={`flex-1 flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-all text-left border-none cursor-pointer bg-transparent ${activeStore?.id === t.id ? "text-[#22D3A6]" : "text-slate-400 hover:text-white"
+                            }`}
                         >
                           <span className="truncate">{t.nombre}</span>
                           {activeStore?.id === t.id && <span className="h-1.5 w-1.5 rounded-full bg-[#22D3A6] shrink-0 ml-2" />}
@@ -917,11 +935,10 @@ export default function PortalPage() {
             {esAdmin && (
               <button
                 onClick={() => handleTabChange("settings")}
-                className={`h-10 w-10 rounded-xl border flex items-center justify-center cursor-pointer transition-all hover:text-white ${
-                  activeTab === "settings"
-                    ? "border-[#22D3A6] bg-[#22D3A6]/10 text-[#22D3A6]"
-                    : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-                }`}
+                className={`h-10 w-10 rounded-xl border flex items-center justify-center cursor-pointer transition-all hover:text-white ${activeTab === "settings"
+                  ? "border-[#22D3A6] bg-[#22D3A6]/10 text-[#22D3A6]"
+                  : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
+                  }`}
                 title="Configuración del Sistema"
               >
                 <Settings size={16} />
