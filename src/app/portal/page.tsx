@@ -61,14 +61,7 @@ import { ReportesTab } from "@/components/features/portal/ReportesTab";
 import { SettingsTab } from "@/components/features/portal/SettingsTab";
 import { KanbanTab } from "@/components/features/portal/KanbanTab";
 import { PortalModal } from "@/components/ui/PortalModal";
-import {
-  getCurrentLanguage,
-  getUpdatedUrlWithLanguage,
-  normalizeLanguage,
-  syncDocumentTheme,
-  type SupportedLanguage,
-  type ThemeMode,
-} from "@/lib/theme-language";
+import { useTheme, useLanguage } from "@/contexts/ThemeLanguageContext";
 import { MoonStar, SunMedium, Globe } from "lucide-react";
 
 const getDocsUrl = () => {
@@ -86,20 +79,7 @@ const getDocsUrl = () => {
       return "http://localhost:3001/docs/intro";
     }
   }
-  return "/docs/intro";
-};
-
-const TAB_TITLES: Record<string, string> = {
-  tablero: "Tablero",
-  sucursales: "Sucursales",
-  clientes: "Clientes",
-  usuarios: "Usuarios",
-  productos: "Productos",
-  reservaciones: "Reservaciones",
-  pagos: "Pagos",
-  reportes: "Reportes",
-  settings: "Configuración",
-  kanban: "Tablero Kanban"
+  return "https://docs.dmhub.fun/docs/intro";
 };
 
 export default function PortalPage() {
@@ -109,9 +89,26 @@ export default function PortalPage() {
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
 
+  // Theme and Language from global context
+  const { theme, toggleTheme, isDark } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
+
   // Active Tab
   const [activeTab, setActiveTab] = useState<string>("tablero");
   const [menuAbierto, setMenuAbierto] = useState(false);
+
+  const tabTitles: Record<string, string> = {
+    tablero: t("portal.tablero"),
+    sucursales: t("portal.sucursales"),
+    clientes: t("portal.clientes"),
+    usuarios: t("portal.usuarios"),
+    productos: t("portal.productos"),
+    reservaciones: t("portal.reservaciones"),
+    pagos: t("portal.pagos"),
+    reportes: t("portal.reportes"),
+    settings: t("portal.configuracion"),
+    kanban: t("portal.kanban"),
+  };
 
   // Shared platform master data
   const [tiendas, setTiendas] = useState<TiendaDto[]>([]);
@@ -155,38 +152,10 @@ export default function PortalPage() {
   // Search states
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
-  const [language, setLanguage] = useState<SupportedLanguage>("es");
 
   const esSuperAdmin = usuario?.esSuperAdmin || usuario?.rol === "superadmin";
   const esAdmin = esSuperAdmin || usuario?.rol === "admin";
   const esStaff = esAdmin || usuario?.rol === "cajero";
-
-  useEffect(() => {
-    const currentLanguage = normalizeLanguage(new URLSearchParams(window.location.search).get("lang") ?? getCurrentLanguage());
-    const currentTheme = document.documentElement.dataset.theme === "light" ? "light" : "dark";
-
-    setLanguage(currentLanguage);
-    setThemeMode(currentTheme);
-    syncDocumentTheme(currentTheme);
-  }, []);
-
-  useEffect(() => {
-    syncDocumentTheme(themeMode);
-  }, [themeMode]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const nextUrl = getUpdatedUrlWithLanguage(window.location.href, language);
-    const currentUrl = `${window.location.pathname}${window.location.search}`;
-
-    if (nextUrl !== currentUrl) {
-      const url = new URL(window.location.href);
-      url.searchParams.set("lang", language);
-      window.history.replaceState({}, "", `${url.pathname}${url.search}`);
-    }
-  }, [language]);
 
   // Route protection
   useEffect(() => {
@@ -304,8 +273,8 @@ export default function PortalPage() {
   // Update dynamic document title
   useEffect(() => {
     const storeName = activeStore?.nombre ? ` – ${activeStore.nombre}` : "";
-    document.title = `${TAB_TITLES[activeTab] ?? activeTab}${storeName} | Portal Admin`;
-  }, [activeTab, activeStore]);
+    document.title = `${tabTitles[activeTab] ?? activeTab}${storeName} | Portal Admin`;
+  }, [activeTab, activeStore, language, tabTitles]);
 
   // Load stores list
   useEffect(() => {
@@ -611,6 +580,16 @@ export default function PortalPage() {
       if (isMobile) setMenuAbierto(false);
     };
 
+    const navItemClass = (tab: string) => {
+      const isActive = activeTab === tab;
+      if (isActive) {
+        return "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]";
+      }
+      return isDark
+        ? "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 bg-transparent";
+    };
+
     return (
       <>
         <div className="flex flex-col gap-8">
@@ -618,12 +597,16 @@ export default function PortalPage() {
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="DM Hub Logo" className="h-8 w-auto object-contain" />
             <div>
-              <h1 className="text-lg font-black tracking-tight text-white leading-none">DM Hub</h1>
+              <h1 className={`text-lg font-black tracking-tight leading-none ${isDark ? "text-white" : "text-slate-900"}`}>
+                DM Hub
+              </h1>
             </div>
             {isMobile && (
               <button
                 onClick={() => setMenuAbierto(false)}
-                className="ml-auto text-slate-400 hover:text-white bg-transparent border-none cursor-pointer p-1"
+                className={`ml-auto bg-transparent border-none cursor-pointer p-1 ${
+                  isDark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-900"
+                }`}
                 aria-label="Cerrar menú lateral"
               >
                 <X size={18} />
@@ -635,87 +618,95 @@ export default function PortalPage() {
           <nav className="flex flex-col gap-1">
             <button
               onClick={() => handleLinkClick("tablero")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "tablero" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                "tablero"
+              )}`}
             >
               <LayoutDashboard size={18} />
-              <span>Dashboard</span>
+              <span>{t("portal.tablero")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("sucursales")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "sucursales" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                "sucursales"
+              )}`}
             >
               <GitBranch size={18} />
-              <span>Sucursales</span>
+              <span>{t("portal.sucursales")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("reservaciones")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "reservaciones" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                "reservaciones"
+              )}`}
             >
               <Calendar size={18} />
-              <span>Reservaciones</span>
+              <span>{t("portal.reservaciones")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("pagos")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "pagos" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                "pagos"
+              )}`}
             >
               <CreditCard size={18} />
-              <span>Pagos</span>
+              <span>{t("portal.pagos")}</span>
             </button>
             {esStaff && (
               <button
                 onClick={() => handleLinkClick("kanban")}
-                className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "kanban" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                  }`}
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                  "kanban"
+                )}`}
               >
                 <Kanban size={18} />
-                <span>Tablero Kanban</span>
+                <span>{t("portal.kanban")}</span>
               </button>
             )}
             <button
               onClick={() => handleLinkClick("clientes")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "clientes" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                "clientes"
+              )}`}
             >
               <Users size={18} />
-              <span>Clientes</span>
+              <span>{t("portal.clientes")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("productos")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "productos" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                "productos"
+              )}`}
             >
               <Package size={18} />
-              <span>Productos</span>
+              <span>{t("portal.productos")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("reportes")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "reportes" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                "reportes"
+              )}`}
             >
               <BarChart3 size={18} />
-              <span>Reportes</span>
+              <span>{t("portal.reportes")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("usuarios")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "usuarios" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                "usuarios"
+              )}`}
             >
               <User size={18} />
-              <span>Usuarios</span>
+              <span>{t("portal.usuarios")}</span>
             </button>
             <button
               onClick={() => window.open(getDocsUrl(), "_blank", "noopener,noreferrer")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "manual"
-                ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]"
-                : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                "manual"
+              )}`}
             >
               <BookOpen size={18} />
-              <span>Manual de Usuario</span>
+              <span>{t("portal.docs")}</span>
             </button>
             {esAdmin && (
               <>
@@ -724,18 +715,21 @@ export default function PortalPage() {
                     navigateWithTransition("/portal/constructor");
                     if (isMobile) setMenuAbierto(false);
                   }}
-                  className="flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
+                  className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                    "constructor"
+                  )}`}
                 >
                   <Sparkles size={18} />
-                  <span>Constructor Tienda</span>
+                  <span>{t("portal.constructor")}</span>
                 </button>
                 <button
                   onClick={() => handleLinkClick("settings")}
-                  className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${activeTab === "settings" ? "bg-[#22D3A6] text-slate-955 shadow-[0_4px_12px_rgba(34,211,166,0.15)]" : "text-slate-400 hover:bg-slate-900/40 hover:text-white bg-transparent"
-                    }`}
+                  className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
+                    "settings"
+                  )}`}
                 >
                   <Settings size={18} />
-                  <span>Configuración</span>
+                  <span>{t("portal.configuracion")}</span>
                 </button>
               </>
             )}
@@ -743,17 +737,17 @@ export default function PortalPage() {
         </div>
 
         {/* Footer Logout */}
-        <div className="pt-6 border-t border-slate-900/80">
+        <div className={`pt-6 border-t ${isDark ? "border-slate-900/80" : "border-slate-200"}`}>
           <button
             onClick={() => {
               logout();
               router.push("/login");
-              toast.success("Sesión cerrada correctamente");
+              toast.success(language === "es" ? "Sesión cerrada correctamente" : "Logged out successfully");
             }}
-            className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 hover:text-rose-400 rounded-xl transition-all text-left cursor-pointer border-none bg-transparent w-full"
+            className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 hover:text-rose-500 rounded-xl transition-all text-left cursor-pointer border-none bg-transparent w-full"
           >
             <LogOut size={18} />
-            <span>Cerrar Sesión</span>
+            <span>{t("portal.logout")}</span>
           </button>
         </div>
       </>
@@ -765,9 +759,13 @@ export default function PortalPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#081018] text-slate-100 font-sans antialiased">
+    <div className={`flex min-h-screen font-sans antialiased transition-colors duration-200 ${
+      isDark ? "bg-[#081018] text-slate-100" : "bg-slate-100 text-slate-900 portal-bg-base"
+    }`}>
       {/* Desktop Sidebar */}
-      <aside className="w-64 border-r border-slate-900 bg-slate-955/40 p-6 flex-col justify-between shrink-0 hidden lg:flex h-[100dvh] max-h-[100dvh] fixed top-0 left-0 z-20 overflow-y-auto sidebar-scrollbar">
+      <aside className={`w-64 border-r p-6 flex-col justify-between shrink-0 hidden lg:flex h-[100dvh] max-h-[100dvh] fixed top-0 left-0 z-20 overflow-y-auto sidebar-scrollbar transition-colors duration-200 ${
+        isDark ? "border-slate-900 bg-slate-955/40" : "border-slate-200 bg-white/95 shadow-sm portal-sidebar-base"
+      }`}>
         {renderSidebar(false)}
       </aside>
 
@@ -782,7 +780,8 @@ export default function PortalPage() {
       {/* Mobile Sidebar Drawer */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col justify-between border-r border-slate-900 bg-slate-955 p-6 transition-transform duration-200 lg:hidden h-[100dvh] max-h-[100dvh] overflow-y-auto sidebar-scrollbar",
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col justify-between border-r p-6 transition-transform duration-200 lg:hidden h-[100dvh] max-h-[100dvh] overflow-y-auto sidebar-scrollbar",
+          isDark ? "border-slate-900 bg-slate-955" : "border-slate-200 bg-white shadow-2xl portal-sidebar-base",
           menuAbierto ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -792,11 +791,15 @@ export default function PortalPage() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 lg:ml-64">
         {/* Top Navbar */}
-        <header className="h-16 border-b border-slate-900 bg-slate-950/20 px-4 sm:px-8 flex items-center justify-between shrink-0 gap-4 relative z-45">
+        <header className={`h-16 border-b px-4 sm:px-8 flex items-center justify-between shrink-0 gap-4 relative z-45 transition-colors duration-200 ${
+          isDark ? "border-slate-900 bg-slate-950/20" : "border-slate-200 bg-white/95 shadow-xs portal-header-base"
+        }`}>
           {/* Hamburger Menu Toggle on Mobile/Tablet */}
           <button
             onClick={() => setMenuAbierto(true)}
-            className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900/60 border-none bg-transparent cursor-pointer flex items-center justify-center"
+            className={`lg:hidden p-2 rounded-xl border-none bg-transparent cursor-pointer flex items-center justify-center ${
+              isDark ? "text-slate-400 hover:text-white hover:bg-slate-900/60" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            }`}
             aria-label="Abrir menú lateral"
           >
             <Menu size={20} />
@@ -805,19 +808,25 @@ export default function PortalPage() {
           {/* Live Search */}
           <div ref={searchContainerRef} className="relative z-[60] hidden w-full max-w-md md:block">
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+              <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? "text-slate-500" : "text-slate-400"}`} size={16} />
               <input
                 type="text"
-                placeholder="Buscar por sucursal, productos y colaboradores..."
+                placeholder={t("portal.search_placeholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
-                className="h-10 w-full pl-10 pr-4 rounded-xl border border-slate-800 bg-slate-900/40 text-sm placeholder:text-slate-500 text-slate-100 outline-none transition-all focus:border-[#22D3A6]/50 focus:ring-1 focus:ring-[#22D3A6]/20"
+                className={`h-10 w-full pl-10 pr-4 rounded-xl text-sm outline-none transition-all ${
+                  isDark
+                    ? "border border-slate-800 bg-slate-900/40 text-slate-100 placeholder:text-slate-500 focus:border-[#22D3A6]/50 focus:ring-1 focus:ring-[#22D3A6]/20"
+                    : "border border-slate-300 bg-slate-100 text-slate-900 placeholder:text-slate-400 focus:border-[#22D3A6] focus:bg-white focus:ring-1 focus:ring-[#22D3A6]/20 portal-input-base"
+                }`}
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white cursor-pointer bg-transparent border-none p-0"
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer bg-transparent border-none p-0 ${
+                    isDark ? "text-slate-500 hover:text-white" : "text-slate-400 hover:text-slate-900"
+                  }`}
                 >
                   <X size={14} />
                 </button>
@@ -826,9 +835,13 @@ export default function PortalPage() {
 
             {/* Live Search Popup */}
             {isSearchFocused && searchQuery && (
-              <div className="absolute left-0 top-12 z-[70] max-h-[360px] w-full isolate overflow-y-auto rounded-xl border border-slate-800 bg-[#081018] p-4 shadow-2xl shadow-black ring-1 ring-black/60 animate-fade-in">
+              <div className={`absolute left-0 top-12 z-[70] max-h-[360px] w-full isolate overflow-y-auto rounded-xl border p-4 shadow-2xl animate-fade-in ${
+                isDark
+                  ? "border border-slate-800 bg-[#081018] shadow-black ring-1 ring-black/60 text-slate-100"
+                  : "border border-slate-200 bg-white shadow-slate-300/50 ring-1 ring-black/5 text-slate-900 portal-card-base"
+              }`}>
                 {searchResults.length === 0 ? (
-                  <p className="text-xs text-slate-500 text-center py-4">Sin resultados para "{searchQuery}"</p>
+                  <p className="text-xs text-slate-500 text-center py-4">{t("common.no_results")} "{searchQuery}"</p>
                 ) : (
                   <div className="space-y-4">
                     {Object.entries(groupedSearchResults).map(([cat, items]) => (
@@ -842,7 +855,9 @@ export default function PortalPage() {
                                 item.onClick();
                                 setIsSearchFocused(false);
                               }}
-                              className="text-xs text-left text-slate-300 px-2 py-2 rounded-lg hover:bg-slate-900/60 hover:text-white transition-all border-none bg-transparent cursor-pointer block w-full text-ellipsis overflow-hidden whitespace-nowrap"
+                              className={`text-xs text-left px-2 py-2 rounded-lg transition-all border-none bg-transparent cursor-pointer block w-full text-ellipsis overflow-hidden whitespace-nowrap ${
+                                isDark ? "text-slate-300 hover:bg-slate-900/60 hover:text-white" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                              }`}
                             >
                               {item.nombre}
                             </button>
@@ -858,25 +873,35 @@ export default function PortalPage() {
 
           {/* Dropdown Stores, Profile */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/40 p-1">
+            <div className={`flex items-center gap-2 rounded-xl border p-1 transition-colors ${
+              isDark ? "border-slate-800 bg-slate-900/40" : "border-slate-200 bg-slate-100"
+            }`}>
               <button
                 type="button"
-                onClick={() => setThemeMode((prev) => (prev === "dark" ? "light" : "dark"))}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-transparent bg-transparent text-slate-300 transition hover:border-slate-700 hover:text-white"
-                aria-label="Cambiar tema"
-                title="Cambiar tema"
+                onClick={toggleTheme}
+                className={`flex h-8 w-8 items-center justify-center rounded-lg border transition cursor-pointer ${
+                  isDark
+                    ? "border-transparent bg-transparent text-slate-300 hover:border-slate-700 hover:text-white"
+                    : "border-transparent bg-transparent text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                }`}
+                aria-label={t("portal.toggle_theme")}
+                title={isDark ? t("portal.light_mode") : t("portal.dark_mode")}
               >
-                {themeMode === "dark" ? <SunMedium size={16} /> : <MoonStar size={16} />}
+                {isDark ? <SunMedium size={16} /> : <MoonStar size={16} />}
               </button>
 
-              <div className="h-5 w-px bg-slate-700" />
+              <div className={`h-5 w-px ${isDark ? "bg-slate-700" : "bg-slate-300"}`} />
 
               <button
                 type="button"
-                onClick={() => setLanguage((prev) => (prev === "es" ? "en" : "es"))}
-                className="flex items-center gap-1 rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide text-slate-300 transition hover:border-slate-700 hover:text-white"
-                aria-label="Cambiar idioma"
-                title="Cambiar idioma"
+                onClick={toggleLanguage}
+                className={`flex items-center gap-1 rounded-lg border transition px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide cursor-pointer ${
+                  isDark
+                    ? "border-transparent bg-transparent text-slate-300 hover:border-slate-700 hover:text-white"
+                    : "border-transparent bg-transparent text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                }`}
+                aria-label={t("portal.toggle_lang")}
+                title={language === "es" ? "Switch to English" : "Cambiar a Español"}
               >
                 <Globe size={14} />
                 {language === "es" ? "ES" : "EN"}
@@ -887,25 +912,42 @@ export default function PortalPage() {
             <div ref={dropdownRef} className="relative">
               <button
                 onClick={() => setIsStoreDropdownOpen(!isStoreDropdownOpen)}
-                className="h-10 px-4 rounded-xl border border-slate-800 bg-slate-900/40 text-xs font-semibold text-slate-200 flex items-center gap-2.5 cursor-pointer hover:border-slate-700 hover:text-white transition-all"
+                className={`h-10 px-4 rounded-xl border text-xs font-semibold flex items-center gap-2.5 cursor-pointer transition-all ${
+                  isDark
+                    ? "border-slate-800 bg-slate-900/40 text-slate-200 hover:border-slate-700 hover:text-white"
+                    : "border-slate-200 bg-slate-100 text-slate-800 hover:border-slate-300 hover:bg-slate-200"
+                }`}
               >
                 <Store size={14} className="text-[#38BDF8]" />
-                <span className="max-w-[150px] truncate">{activeStore?.nombre ?? "Seleccionar Tienda"}</span>
-                <ChevronDown size={14} className="text-slate-500" />
+                <span className="max-w-[150px] truncate">{activeStore?.nombre ?? t("portal.select_store")}</span>
+                <ChevronDown size={14} className={isDark ? "text-slate-500" : "text-slate-400"} />
               </button>
 
               {isStoreDropdownOpen && (
-                <div className="absolute right-0 top-12 w-64 rounded-xl border border-slate-800 bg-slate-955 p-2 shadow-2xl shadow-black z-50">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 py-1.5 border-b border-slate-900">
-                    Cambiar Instancia
+                <div className={`absolute right-0 top-12 w-64 rounded-xl border p-2 shadow-2xl z-50 ${
+                  isDark
+                    ? "border-slate-800 bg-slate-955 shadow-black text-slate-100"
+                    : "border-slate-200 bg-white shadow-slate-300/50 text-slate-900 portal-card-base"
+                }`}>
+                  <div className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 border-b ${
+                    isDark ? "text-slate-500 border-slate-900" : "text-slate-400 border-slate-100"
+                  }`}>
+                    {t("portal.switch_instance")}
                   </div>
                   <div className="max-h-48 overflow-y-auto py-1 flex flex-col gap-0.5">
                     {tiendas.map((t) => (
-                      <div key={t.id} className="flex items-center justify-between px-1 rounded-lg hover:bg-slate-900/40 group transition-all">
+                      <div key={t.id} className={`flex items-center justify-between px-1 rounded-lg group transition-all ${
+                        isDark ? "hover:bg-slate-900/40" : "hover:bg-slate-100"
+                      }`}>
                         <button
                           onClick={() => handleSelectStore(t)}
-                          className={`flex-1 flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-all text-left border-none cursor-pointer bg-transparent ${activeStore?.id === t.id ? "text-[#22D3A6]" : "text-slate-400 hover:text-white"
-                            }`}
+                          className={`flex-1 flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-all text-left border-none cursor-pointer bg-transparent ${
+                            activeStore?.id === t.id
+                              ? "text-[#22D3A6]"
+                              : isDark
+                              ? "text-slate-400 hover:text-white"
+                              : "text-slate-600 hover:text-slate-900"
+                          }`}
                         >
                           <span className="truncate">{t.nombre}</span>
                           {activeStore?.id === t.id && <span className="h-1.5 w-1.5 rounded-full bg-[#22D3A6] shrink-0 ml-2" />}
@@ -914,7 +956,9 @@ export default function PortalPage() {
                           href={t.slug ? `https://${t.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || "dmhub.fun"}` : `/preview/${t.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-[#38BDF8] hover:bg-slate-900 transition-all cursor-pointer mr-1 flex items-center justify-center"
+                          className={`p-1.5 rounded-lg transition-all cursor-pointer mr-1 flex items-center justify-center ${
+                            isDark ? "text-slate-500 hover:text-[#38BDF8] hover:bg-slate-900" : "text-slate-400 hover:text-[#38BDF8] hover:bg-slate-100"
+                          }`}
                           title={`Ver Tienda Live de ${t.nombre}`}
                         >
                           <Eye size={12} />
@@ -922,16 +966,18 @@ export default function PortalPage() {
                       </div>
                     ))}
                   </div>
-                  <div className="border-t border-slate-900 mt-1 pt-1">
+                  <div className={`border-t mt-1 pt-1 ${isDark ? "border-slate-900" : "border-slate-100"}`}>
                     <button
                       onClick={() => {
                         setIsStoreDropdownOpen(false);
                         setIsCreateModalOpen(true);
                       }}
-                      className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#38BDF8] hover:text-[#22D3A6] rounded-lg hover:bg-slate-900/40 transition-all text-left border-none cursor-pointer bg-transparent w-full"
+                      className={`flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#38BDF8] hover:text-[#22D3A6] rounded-lg transition-all text-left border-none cursor-pointer bg-transparent w-full ${
+                        isDark ? "hover:bg-slate-900/40" : "hover:bg-slate-100"
+                      }`}
                     >
                       <Plus size={14} />
-                      <span>Crear nueva tienda</span>
+                      <span>{t("common.create")} {language === "es" ? "nueva tienda" : "new store"}</span>
                     </button>
                   </div>
                 </div>
@@ -942,11 +988,14 @@ export default function PortalPage() {
             {esAdmin && (
               <button
                 onClick={() => handleTabChange("settings")}
-                className={`h-10 w-10 rounded-xl border flex items-center justify-center cursor-pointer transition-all hover:text-white ${activeTab === "settings"
-                  ? "border-[#22D3A6] bg-[#22D3A6]/10 text-[#22D3A6]"
-                  : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-                  }`}
-                title="Configuración del Sistema"
+                className={`h-10 w-10 rounded-xl border flex items-center justify-center cursor-pointer transition-all ${
+                  activeTab === "settings"
+                    ? "border-[#22D3A6] bg-[#22D3A6]/10 text-[#22D3A6]"
+                    : isDark
+                    ? "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700 hover:text-white"
+                    : "border-slate-200 bg-slate-100 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                }`}
+                title={t("portal.configuracion")}
               >
                 <Settings size={16} />
               </button>
@@ -955,10 +1004,16 @@ export default function PortalPage() {
             {/* Profile Avatar */}
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-bold text-white leading-none">{usuario.nombre}</p>
-                <p className="text-[9px] text-slate-500 font-semibold mt-0.5">{formatRole(usuario.rol)}</p>
+                <p className={`text-xs font-bold leading-none ${isDark ? "text-white" : "text-slate-900"}`}>
+                  {usuario.nombre}
+                </p>
+                <p className={`text-[9px] font-semibold mt-0.5 ${isDark ? "text-slate-500" : "text-slate-500"}`}>
+                  {formatRole(usuario.rol)}
+                </p>
               </div>
-              <div className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 flex items-center justify-center overflow-hidden shrink-0">
+              <div className={`h-9 w-9 rounded-xl border flex items-center justify-center overflow-hidden shrink-0 ${
+                isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-slate-100"
+              }`}>
                 <span className="text-xs font-black text-[#38BDF8]">
                   {usuario.nombre.substring(0, 2).toUpperCase()}
                 </span>
