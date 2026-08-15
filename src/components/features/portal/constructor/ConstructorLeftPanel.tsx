@@ -157,7 +157,7 @@ export function ConstructorLeftPanel({
         <div className="fixed inset-0 z-35 bg-black/60 backdrop-blur-xs xl:hidden animate-fade-in" onClick={() => setShowLeftPanel(false)} />
       )}
       <div className={`
-        rounded-xl border border-slate-900 bg-slate-955/40 p-4 flex-col gap-4 overflow-y-auto select-none transition-all duration-300
+        rounded-xl border border-slate-900 bg-slate-955/40 p-4 flex-col gap-4 overflow-y-auto sidebar-scrollbar select-none transition-all duration-300
         xl:w-64 xl:static xl:flex xl:h-auto xl:max-h-none
         fixed inset-y-0 left-0 z-40 w-72 bg-slate-950/95 border-r shadow-2xl h-[100dvh] max-h-[100dvh]
         ${showLeftPanel ? "flex translate-x-0" : "hidden xl:flex -translate-x-full xl:translate-x-0"}
