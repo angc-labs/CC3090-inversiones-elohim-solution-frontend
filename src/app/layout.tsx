@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SessionExpirationWarning } from "@/components/features/auth/SessionExpirationWarning";
 import { ThemeLanguageBootstrap } from "@/components/ui/ThemeLanguageBootstrap";
+import { ThemeLanguageProvider } from "@/contexts/ThemeLanguageContext";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
@@ -16,13 +17,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="min-h-screen! bg-[#fafafa]! antialiased! text-gray-900!">
-        <ThemeLanguageBootstrap />
-        {children}
+      <body className="min-h-screen antialiased bg-slate-50 dark:bg-[#081018] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+        <ThemeLanguageProvider>
+          <ThemeLanguageBootstrap />
+          {children}
 
-        <Toaster richColors position="top-right" />
+          <Toaster richColors position="top-right" />
 
-        <SessionExpirationWarning />
+          <SessionExpirationWarning />
+        </ThemeLanguageProvider>
       </body>
     </html>
   );
