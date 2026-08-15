@@ -160,24 +160,24 @@ export function DashboardTab({
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-black text-slate-900 dark:text-white">Dashboard</h2>
-        <p className="text-xs text-slate-600 dark:text-slate-400">Bienvenido al panel de administración</p>
+        <h2 className="text-xl font-black text-white">Dashboard</h2>
+        <p className="text-xs text-slate-400">Bienvenido al panel de administración</p>
       </div>
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Ventas del Día */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-300 dark:hover:border-slate-800 shadow-xs dark:shadow-none transition-all">
-          <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
+        <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-800 transition-all">
+          <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             <span>Ventas del Día</span>
             <ShoppingCart size={14} className="text-[#38BDF8]" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900 dark:text-white">{displayVentasHoy}</span>
+            <span className="text-2xl font-black text-white">{displayVentasHoy}</span>
           </div>
           <div
             className={`text-[10px] font-bold flex items-center gap-1 ${
-              ventasHoyCount > 0 ? "text-emerald-600 dark:text-[#22D3A6]" : "text-slate-500 dark:text-slate-400"
+              ventasHoyCount > 0 ? "text-[#22D3A6]" : "text-slate-400"
             }`}
           >
             <span>{displayVentasHoyChange}</span>
@@ -185,17 +185,17 @@ export function DashboardTab({
         </div>
 
         {/* Card 2: Ingresos Totales */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-300 dark:hover:border-slate-800 shadow-xs dark:shadow-none transition-all">
-          <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
+        <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-800 transition-all">
+          <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             <span>Ingresos Totales</span>
-            <DollarSign size={14} className="text-emerald-600 dark:text-[#22D3A6]" />
+            <DollarSign size={14} className="text-[#22D3A6]" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-xl font-black text-slate-900 dark:text-white">{displayIngresos}</span>
+            <span className="text-xl font-black text-white">{displayIngresos}</span>
           </div>
           <div
             className={`text-[10px] font-bold flex items-center gap-1 ${
-              totalVentas > 0 ? "text-emerald-600 dark:text-[#22D3A6]" : "text-slate-500 dark:text-slate-400"
+              totalVentas > 0 ? "text-[#22D3A6]" : "text-slate-400"
             }`}
           >
             <span>{displayIngresosChange}</span>
@@ -203,29 +203,29 @@ export function DashboardTab({
         </div>
 
         {/* Card 3: Productos Activos */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-300 dark:hover:border-slate-800 shadow-xs dark:shadow-none transition-all">
-          <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
+        <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-800 transition-all">
+          <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             <span>Productos Activos</span>
             <Package size={14} className="text-[#38BDF8]" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900 dark:text-white">{displayProductosActivos}</span>
+            <span className="text-2xl font-black text-white">{displayProductosActivos}</span>
           </div>
-          <div className="text-[10px] font-bold text-slate-600 dark:text-slate-500 flex items-center gap-1">
+          <div className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
             <span>En inventario</span>
           </div>
         </div>
 
         {/* Card 4: Stock Crítico */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-300 dark:hover:border-slate-800 shadow-xs dark:shadow-none transition-all">
-          <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
+        <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-800 transition-all">
+          <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             <span>Stock Crítico</span>
             <AlertTriangle size={14} className="text-amber-500 animate-pulse" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-600 dark:text-amber-500">{displayStockCritico}</span>
+            <span className="text-2xl font-black text-amber-500">{displayStockCritico}</span>
           </div>
-          <div className="text-[10px] font-bold text-amber-700 dark:text-amber-500/80 flex items-center gap-1">
+          <div className="text-[10px] font-bold text-amber-500/80 flex items-center gap-1">
             <span>Requieren atención</span>
           </div>
         </div>
@@ -234,24 +234,24 @@ export function DashboardTab({
       {/* Charts Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Ventas por Hora */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-955/40 p-6 flex flex-col gap-4 shadow-xs dark:shadow-none">
-          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-400 uppercase tracking-wider">Ventas por Hora</h3>
+        <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ventas por Hora</h3>
           <div className="h-64 w-full text-xs">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartDataVentasHora} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid stroke="currentColor" className="text-slate-200 dark:text-[#0e1827]" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={9} tickLine={false} axisLine={false} dy={10} />
-                <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} dx={-10} />
+                <CartesianGrid stroke="#0e1827" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" stroke="#475569" fontSize={9} tickLine={false} axisLine={false} dy={10} />
+                <YAxis stroke="#475569" fontSize={10} tickLine={false} axisLine={false} dx={-10} />
                 <Tooltip
-                  cursor={{ stroke: "rgba(148, 163, 184, 0.3)", strokeWidth: 1 }}
+                  cursor={{ stroke: "rgba(14, 24, 39, 0.4)", strokeWidth: 1 }}
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 shadow-xl dark:shadow-2xl shadow-black/10 space-y-1">
-                          <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none">
+                        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-2xl shadow-black space-y-1">
+                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none">
                             {label}
                           </p>
-                          <p className="font-bold text-sky-600 dark:text-[#38BDF8] text-xs leading-none">
+                          <p className="font-semibold text-[#38BDF8] text-xs leading-none">
                             Ventas: {payload[0].value}
                           </p>
                         </div>
@@ -265,7 +265,7 @@ export function DashboardTab({
                   dataKey="ventas"
                   stroke="#38BDF8"
                   strokeWidth={2.5}
-                  dot={{ fill: "#38BDF8", stroke: "currentColor", className: "text-white dark:text-[#081018]", strokeWidth: 2, r: 4 }}
+                  dot={{ fill: "#38BDF8", stroke: "#081018", strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -274,17 +274,17 @@ export function DashboardTab({
         </div>
 
         {/* Productos Más Vendidos (Top 5) */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-955/40 p-6 flex flex-col gap-4 shadow-xs dark:shadow-none">
-          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-400 uppercase tracking-wider">
+        <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             Productos Más Vendidos (Top 5)
           </h3>
           <div className="h-64 w-full text-xs">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartDataTop5} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid stroke="currentColor" className="text-slate-200 dark:text-[#0e1827]" strokeDasharray="3 3" vertical={false} />
+                <CartesianGrid stroke="#0e1827" strokeDasharray="3 3" vertical={false} />
                 <XAxis
                   dataKey="name"
-                  stroke="#64748b"
+                  stroke="#475569"
                   fontSize={9}
                   tickLine={false}
                   axisLine={false}
@@ -292,17 +292,17 @@ export function DashboardTab({
                   interval={0}
                   tickFormatter={(val) => (val.length > 12 ? `${val.substring(0, 10)}...` : val)}
                 />
-                <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} dx={-10} />
+                <YAxis stroke="#475569" fontSize={10} tickLine={false} axisLine={false} dx={-10} />
                 <Tooltip
-                  cursor={{ fill: "rgba(148, 163, 184, 0.1)" }}
+                  cursor={{ fill: "rgba(14, 24, 39, 0.4)" }}
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 shadow-xl dark:shadow-2xl shadow-black/10 space-y-1">
-                          <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none text-ellipsis overflow-hidden max-w-xs">
+                        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-2xl shadow-black space-y-1">
+                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none text-ellipsis overflow-hidden max-w-xs">
                             {label}
                           </p>
-                          <p className="font-bold text-emerald-600 dark:text-[#22D3A6] text-xs leading-none">
+                          <p className="font-semibold text-[#22D3A6] text-xs leading-none">
                             Ventas: {payload[0].value} uds
                           </p>
                         </div>
@@ -321,12 +321,12 @@ export function DashboardTab({
       {/* Lists Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Alertas de Stock Crítico */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-955/40 p-6 flex flex-col gap-4 shadow-xs dark:shadow-none">
+        <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-400 uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               Alertas de Stock Crítico
             </h3>
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-500 text-[10px] font-bold border border-amber-300/40 dark:border-amber-500/20">
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-bold">
               {displayedCriticalProducts.length} productos
             </span>
           </div>
@@ -334,15 +334,15 @@ export function DashboardTab({
             {displayedCriticalProducts.map((p, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between p-4 rounded-xl border border-amber-300/80 dark:border-amber-500/10 bg-amber-50/90 dark:bg-amber-500/5 transition-all hover:bg-amber-100/90 dark:hover:bg-amber-500/10"
+                className="flex items-center justify-between p-4 rounded-xl border border-amber-500/10 bg-amber-500/5 transition-all hover:bg-amber-500/10"
               >
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">{p.nombre}</h4>
-                  <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-400">Stock mínimo: {p.minimo} unidades</span>
+                  <h4 className="text-xs font-bold text-white">{p.nombre}</h4>
+                  <span className="text-[10px] text-slate-400">Stock mínimo: {p.minimo} unidades</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-sm font-black text-amber-700 dark:text-amber-500">{p.disponibles}</span>
-                  <p className="text-[9px] font-bold text-slate-700 dark:text-slate-400">disponibles</p>
+                  <span className="text-sm font-black text-amber-500">{p.disponibles}</span>
+                  <p className="text-[9px] text-slate-400">disponibles</p>
                 </div>
               </div>
             ))}
@@ -355,23 +355,23 @@ export function DashboardTab({
         </div>
 
         {/* Últimas Ventas */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-955/40 p-6 flex flex-col gap-4 shadow-xs dark:shadow-none">
-          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-400 uppercase tracking-wider">Últimas Ventas</h3>
+        <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Últimas Ventas</h3>
           <div className="space-y-3">
             {displayedSales.map((sale, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-900 bg-slate-50 dark:bg-slate-955/20 hover:border-slate-300 dark:hover:border-slate-800 transition-all shadow-2xs dark:shadow-none"
+                className="flex items-center justify-between p-4 rounded-xl border border-slate-900 bg-slate-955/20 hover:border-slate-800 transition-all"
               >
                 <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">{sale.codigo}</h4>
-                  <p className="text-[10px] font-semibold text-slate-700 dark:text-slate-400">{sale.cliente}</p>
-                  <span className="text-[9px] font-medium text-slate-500 block">{sale.hora}</span>
+                  <h4 className="text-xs font-bold text-white">{sale.codigo}</h4>
+                  <p className="text-[10px] text-slate-400">{sale.cliente}</p>
+                  <span className="text-[9px] text-slate-500 block">{sale.hora}</span>
                 </div>
                 <div className="text-right space-y-1.5">
-                  <span className="text-xs font-black text-slate-900 dark:text-white">{sale.monto}</span>
+                  <span className="text-xs font-black text-white">{sale.monto}</span>
                   <div>
-                    <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-100 dark:bg-slate-900 text-emerald-800 dark:text-[#22D3A6] border border-emerald-300 dark:border-slate-800 uppercase tracking-wider">
+                    <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-slate-900 text-[#22D3A6] border border-slate-800 uppercase tracking-wider">
                       {sale.metodo}
                     </span>
                   </div>
