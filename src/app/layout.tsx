@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { SessionExpirationWarning } from "@/components/features/auth/SessionExpirationWarning";
+import { ThemeLanguageBootstrap } from "@/components/ui/ThemeLanguageBootstrap";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="min-h-screen! bg-[#fafafa]! antialiased! text-gray-900!">
+        <ThemeLanguageBootstrap />
         {children}
 
         <Toaster richColors position="top-right" />

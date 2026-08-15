@@ -58,6 +58,15 @@ import { ReportesTab } from "@/components/features/portal/ReportesTab";
 import { SettingsTab } from "@/components/features/portal/SettingsTab";
 import { KanbanTab } from "@/components/features/portal/KanbanTab";
 import { PortalModal } from "@/components/ui/PortalModal";
+import {
+  getCurrentLanguage,
+  getUpdatedUrlWithLanguage,
+  normalizeLanguage,
+  syncDocumentTheme,
+  type SupportedLanguage,
+  type ThemeMode,
+} from "@/lib/theme-language";
+import { MoonStar, SunMedium, Globe } from "lucide-react";
 
 const TAB_TITLES: Record<string, string> = {
   tablero: "Tablero",
@@ -124,10 +133,38 @@ export default function PortalPage() {
   // Search states
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
+  const [language, setLanguage] = useState<SupportedLanguage>("es");
 
   const esSuperAdmin = usuario?.esSuperAdmin || usuario?.rol === "superadmin";
   const esAdmin = esSuperAdmin || usuario?.rol === "admin";
   const esStaff = esAdmin || usuario?.rol === "cajero";
+
+  useEffect(() => {
+    const currentLanguage = normalizeLanguage(new URLSearchParams(window.location.search).get("lang") ?? getCurrentLanguage());
+    const currentTheme = document.documentElement.dataset.theme === "light" ? "light" : "dark";
+
+    setLanguage(currentLanguage);
+    setThemeMode(currentTheme);
+    syncDocumentTheme(currentTheme);
+  }, []);
+
+  useEffect(() => {
+    syncDocumentTheme(themeMode);
+  }, [themeMode]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const nextUrl = getUpdatedUrlWithLanguage(window.location.href, language);
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+
+    if (nextUrl !== currentUrl) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", language);
+      window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+    }
+  }, [language]);
 
   // Route protection
   useEffect(() => {
@@ -794,7 +831,32 @@ export default function PortalPage() {
           </div>
 
           {/* Dropdown Stores, Profile */}
-          <div className="flex items-center gap-6 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/40 p-1">
+              <button
+                type="button"
+                onClick={() => setThemeMode((prev) => (prev === "dark" ? "light" : "dark"))}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-transparent bg-transparent text-slate-300 transition hover:border-slate-700 hover:text-white"
+                aria-label="Cambiar tema"
+                title="Cambiar tema"
+              >
+                {themeMode === "dark" ? <SunMedium size={16} /> : <MoonStar size={16} />}
+              </button>
+
+              <div className="h-5 w-px bg-slate-700" />
+
+              <button
+                type="button"
+                onClick={() => setLanguage((prev) => (prev === "es" ? "en" : "es"))}
+                className="flex items-center gap-1 rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide text-slate-300 transition hover:border-slate-700 hover:text-white"
+                aria-label="Cambiar idioma"
+                title="Cambiar idioma"
+              >
+                <Globe size={14} />
+                {language === "es" ? "ES" : "EN"}
+              </button>
+            </div>
+
             {/* Store Selector */}
             <div ref={dropdownRef} className="relative">
               <button
