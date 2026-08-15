@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Download, FileText, Loader2, AlertTriangle, Sliders, Play } from "lucide-react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import { Download, FileText, Loader2, AlertTriangle, Sliders, Play, Database, BookOpen, Copy, Check, Search, Clock, Sparkles, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { MonacoSqlEditor, type MonacoSqlEditorHandle } from "./MonacoSqlEditor";
+import { SqlSchemaHelp } from "./SqlSchemaHelp";
 import {
   BarChart,
   Bar,
@@ -59,52 +61,21 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
   });
 
   // Custom SQL Console states
-  const defaultSqlQuery = 'SELECT id, nombre, stock_actual, stock_minimo FROM public."Producto" WHERE tienda_id = @tenant_id AND stock_actual < stock_minimo;';
+  const defaultSqlQuery = 'SELECT id, nombre, stock_actual, stock_minimo FROM public."Producto" WHERE tienda_id = @tenant_id AND stock_actual <= stock_minimo ORDER BY stock_actual ASC;';
   const [customQuery, setCustomQuery] = useState(defaultSqlQuery);
   const [customQueryResult, setCustomQueryResult] = useState<Array<Record<string, any>> | null>(null);
   const [customQueryError, setCustomQueryError] = useState<string | null>(null);
   const [customQueryLoading, setCustomQueryLoading] = useState(false);
-  const [isQueryFocused, setIsQueryFocused] = useState(false);
-  const [isFirstQueryFocus, setIsFirstQueryFocus] = useState(true);
-
-  // Calculate autocomplete suggestion
-  const getQuerySuggestion = () => {
-    if (!customQuery || customQuery === defaultSqlQuery) {
-      return defaultSqlQuery;
-    }
-    // If the current query is a prefix of the default, suggest the rest
-    if (defaultSqlQuery.startsWith(customQuery)) {
-      return defaultSqlQuery.slice(customQuery.length);
-    }
-    return '';
-  };
-
-  const queryAutocomplete = getQuerySuggestion();
-
-  const handleQueryKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Accept autocomplete with Tab or Enter when there's a suggestion
-    if ((e.key === 'Tab' || (e.key === 'Enter' && e.ctrlKey)) && queryAutocomplete) {
-      e.preventDefault();
-      setCustomQuery(defaultSqlQuery);
-    }
-  };
-
-  const handleQueryFocus = () => {
-    // Only clear on FIRST focus if it contains the default query
-    if (isFirstQueryFocus && customQuery === defaultSqlQuery) {
-      setCustomQuery('');
-      setIsFirstQueryFocus(false);
-    }
-    setIsQueryFocused(true);
-  };
-
-  const handleQueryBlur = () => {
-    // If empty when blur, restore the default query
-    if (customQuery.trim() === '') {
-      setCustomQuery(defaultSqlQuery);
-    }
-    setIsQueryFocused(false);
-  };
+  const [customQueryStats, setCustomQueryStats] = useState<{
+    durationMs: number;
+    rowCount: number;
+    executedAt: string;
+    queryExecuted: string;
+  } | null>(null);
+  const [resultSearchFilter, setResultSearchFilter] = useState("");
+  const [copiedResultJson, setCopiedResultJson] = useState(false);
+  const [showSchemaHelp, setShowSchemaHelp] = useState(true);
+  const monacoEditorRef = useRef<MonacoSqlEditorHandle>(null);
 
   // Fetch Reports Data
   useEffect(() => {
@@ -151,14 +122,31 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
   // Execute SQL
   const handleExecuteSql = async () => {
     if (!token) return;
+    
+    // Always obtain the absolute freshest query directly from the Monaco Editor instance
+    const queryToExecute = (monacoEditorRef.current?.getValue() ?? customQuery).trim();
+    if (!queryToExecute) {
+      toast.error("La consulta SQL no puede estar vacía");
+      return;
+    }
+
     setCustomQueryLoading(true);
     setCustomQueryError(null);
     setCustomQueryResult(null);
+    setResultSearchFilter("");
+    const startTime = performance.now();
 
     try {
-      const result = await ejecutarRawReporte(token, customQuery);
+      const result = await ejecutarRawReporte(token, queryToExecute);
+      const durationMs = Math.round(performance.now() - startTime);
       setCustomQueryResult(result.rows);
-      toast.success("Consulta SQL ejecutada con éxito");
+      setCustomQueryStats({
+        durationMs,
+        rowCount: result.rows.length,
+        executedAt: new Date().toLocaleTimeString(),
+        queryExecuted: queryToExecute,
+      });
+      toast.success(`Consulta SQL ejecutada: ${result.rows.length} fila(s) en ${durationMs}ms`);
     } catch (err) {
       setCustomQueryError(err instanceof Error ? err.message : "Error al ejecutar la consulta SQL");
       toast.error("Error al ejecutar la consulta");
@@ -928,43 +916,43 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
           {/* SUBTAB: PERSONALIZADO */}
           {reportSubTab === "personalizado" && (
             <div className="space-y-6">
+              {/* Monaco Editor Card */}
               <div className="rounded-xl border border-slate-900 bg-slate-955 p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-900/60 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-900/60 pb-3 gap-2">
                   <div className="flex items-center gap-2">
                     <Sliders className="text-[#22D3A6]" size={18} />
                     <h3 className="text-sm font-bold text-white uppercase tracking-wider">
                       Consola SQL Custom (Soporta variables: @tenant_id)
                     </h3>
                   </div>
-                  <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full font-bold">
-                    READ-ONLY ACTIVE
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowSchemaHelp((prev) => !prev)}
+                      className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                        showSchemaHelp
+                          ? "bg-[#22D3A6]/10 text-[#22D3A6] border-[#22D3A6]/30"
+                          : "bg-slate-900 text-slate-400 border-slate-800 hover:text-white"
+                      }`}
+                    >
+                      <BookOpen size={13} />
+                      <span>{showSchemaHelp ? "Ocultar Ayuda de Tablas" : "Mostrar Ayuda de Tablas"}</span>
+                    </button>
+                    <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full font-bold">
+                      READ-ONLY ACTIVE
+                    </span>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="relative">
-                    <textarea
-                      value={customQuery}
-                      onChange={(e) => setCustomQuery(e.target.value)}
-                      onKeyDown={handleQueryKeyDown}
-                      onFocus={handleQueryFocus}
-                      onBlur={handleQueryBlur}
-                      placeholder="Escribe tu consulta SQL SELECT... (Presiona Tab para autocompletar)"
-                      className="w-full h-32 p-4 rounded-xl border border-slate-800 bg-slate-950 text-slate-200 font-mono text-xs focus:border-[#22D3A6] focus:ring-1 focus:ring-[#22D3A6] outline-none resize-y relative z-10 bg-opacity-90"
-                    />
-                    {/* Autocomplete suggestion overlay */}
-                    {queryAutocomplete && (
-                      <div className="absolute top-4 left-4 pointer-events-none h-32 max-h-32 overflow-hidden">
-                        <div className="text-slate-600 font-mono text-xs leading-relaxed">
-                          {customQuery}
-                          <span className="text-slate-500 opacity-60">{queryAutocomplete}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-[10px] text-slate-500 leading-normal">
-                    💡 Tip: Presiona <code className="text-[#22D3A6] font-mono bg-slate-900 px-1.5 py-0.5 rounded">Tab</code> o <code className="text-[#22D3A6] font-mono bg-slate-900 px-1.5 py-0.5 rounded">Ctrl+Enter</code> para aceptar la sugerencia de autocomplete.
-                  </p>
+                <div className="space-y-3">
+                  <MonacoSqlEditor
+                    ref={monacoEditorRef}
+                    value={customQuery}
+                    onChange={(val) => setCustomQuery(val)}
+                    onExecute={handleExecuteSql}
+                    onToggleHelp={() => setShowSchemaHelp((prev) => !prev)}
+                    isLoading={customQueryLoading}
+                  />
                   <p className="text-[10px] text-slate-500 leading-normal">
                     * Por razones de seguridad y aislamiento de datos, toda consulta SQL debe incluir un filtro
                     explícito en la columna <code className="text-[#38BDF8] font-mono">tienda_id</code> utilizando
@@ -975,89 +963,251 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
                   <span className="text-[10px] text-slate-400 font-semibold">
-                    Tus consultas se ejecutan con privilegios restringidos de base de datos.
+                    Tus consultas se ejecutan con privilegios restringidos de base de datos PostgreSQL.
                   </span>
-                  <button
-                    onClick={handleExecuteSql}
-                    disabled={customQueryLoading}
-                    className="h-9 px-5 rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 text-xs font-bold cursor-pointer border-none transition-all flex items-center gap-2"
-                  >
-                    {customQueryLoading ? (
-                      <>
-                        <Loader2 className="animate-spin" size={14} />
-                        <span>Ejecutando...</span>
-                      </>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <Play size={10} className="fill-slate-950" /> Ejecutar Query
-                      </span>
-                    )}
-                  </button>
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomQuery(defaultSqlQuery);
+                        monacoEditorRef.current?.setValue(defaultSqlQuery);
+                      }}
+                      className="h-9 px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer border border-slate-800 transition-all"
+                      title="Restaurar consulta de ejemplo inicial"
+                    >
+                      Restaurar Inicial
+                    </button>
+                    <button
+                      onClick={handleExecuteSql}
+                      disabled={customQueryLoading}
+                      className="h-9 px-5 rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 text-xs font-bold cursor-pointer border-none transition-all flex items-center gap-2 shadow-sm"
+                    >
+                      {customQueryLoading ? (
+                        <>
+                          <Loader2 className="animate-spin" size={14} />
+                          <span>Ejecutando...</span>
+                        </>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <Play size={11} className="fill-slate-950" /> Ejecutar Query
+                        </span>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              {/* Schema Helper Component */}
+              {showSchemaHelp && (
+                <SqlSchemaHelp
+                  onInsertSnippet={(snippet) => monacoEditorRef.current?.insertText(snippet)}
+                  onSetQuery={(sql) => {
+                    setCustomQuery(sql);
+                    monacoEditorRef.current?.setValue(sql);
+                  }}
+                />
+              )}
 
               {/* Custom Query Error */}
               {customQueryError && (
                 <div className="rounded-xl border border-rose-900 bg-rose-955 p-5 space-y-2 animate-fade-in">
-                  <div className="flex items-center gap-2 text-rose-400 font-bold text-xs uppercase tracking-wider">
-                    <AlertTriangle size={16} />
-                    <span>Error de Ejecución SQL</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-rose-400 font-bold text-xs uppercase tracking-wider">
+                      <AlertTriangle size={16} />
+                      <span>Error de Ejecución SQL</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCustomQueryError(null)}
+                      className="text-xs text-rose-400 hover:text-rose-200 cursor-pointer bg-transparent border-none"
+                    >
+                      ✕ Cerrar
+                    </button>
                   </div>
                   <p className="text-xs font-mono text-rose-300 bg-rose-950/40 p-3 rounded-lg border border-rose-900/30 overflow-x-auto whitespace-pre-wrap leading-relaxed">
                     {customQueryError}
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    💡 Revisa las tablas y atributos disponibles en el panel de ayuda de arriba para asegurar que los nombres de tablas y columnas sean exactos.
                   </p>
                 </div>
               )}
 
               {/* Custom Query Results */}
               {customQueryResult && (
-                <div className="rounded-xl border border-slate-900 bg-slate-950/40 overflow-hidden animate-fade-in">
-                  <div className="border-b border-slate-900 bg-slate-950/80 px-5 py-4 flex items-center justify-between">
-                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                      Resultado de la Consulta
-                    </h3>
-                    <span className="text-[10px] font-bold text-[#22D3A6] bg-[#22D3A6]/10 px-2 py-0.5 rounded border border-[#22D3A6]/20 uppercase">
-                      {customQueryResult.length} fila(s) encontrada(s)
-                    </span>
+                <div className="rounded-xl border border-slate-900 bg-slate-955/80 overflow-hidden shadow-lg animate-fade-in space-y-0">
+                  {/* Results Header with Live Stats & Actions */}
+                  <div className="border-b border-slate-900 bg-slate-950/90 px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#22D3A6]/10 text-[#22D3A6] border border-[#22D3A6]/20">
+                        <Database size={15} />
+                      </div>
+                      <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <span>Resultado en Tiempo Real</span>
+                      </h3>
+
+                      {/* Live Badges */}
+                      <span className="text-[10px] font-bold text-[#22D3A6] bg-[#22D3A6]/10 px-2.5 py-0.5 rounded-full border border-[#22D3A6]/30 uppercase font-mono">
+                        {customQueryResult.length} fila(s)
+                      </span>
+
+                      {customQueryStats && (
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-400">
+                          <span className="flex items-center gap-1 text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">
+                            <Clock size={11} /> {customQueryStats.durationMs}ms
+                          </span>
+                          <span className="hidden md:inline text-slate-500">
+                            a las {customQueryStats.executedAt}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action buttons & Result Filter */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {/* Search in Result */}
+                      {customQueryResult.length > 0 && (
+                        <div className="relative">
+                          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                          <input
+                            type="text"
+                            placeholder="Filtrar resultados..."
+                            value={resultSearchFilter}
+                            onChange={(e) => setResultSearchFilter(e.target.value)}
+                            className="h-8 w-36 sm:w-44 rounded-lg bg-slate-900/90 pl-8 pr-2 text-[11px] text-slate-200 placeholder:text-slate-500 border border-slate-800 focus:border-[#22D3A6] focus:outline-none transition-colors font-mono"
+                          />
+                          {resultSearchFilter && (
+                            <button
+                              type="button"
+                              onClick={() => setResultSearchFilter("")}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 hover:text-slate-300 cursor-pointer bg-transparent border-none"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Copy JSON */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(JSON.stringify(customQueryResult, null, 2));
+                          setCopiedResultJson(true);
+                          toast.success("Datos copiados en formato JSON");
+                          setTimeout(() => setCopiedResultJson(false), 2000);
+                        }}
+                        className="h-8 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-mono font-medium border border-slate-800 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        title="Copiar resultado completo como JSON"
+                      >
+                        {copiedResultJson ? (
+                          <>
+                            <Check size={12} className="text-[#22D3A6]" />
+                            <span className="text-[#22D3A6]">¡Copiado!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={12} />
+                            <span>JSON</span>
+                          </>
+                        )}
+                      </button>
+
+                      {/* Export CSV */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!customQueryResult || customQueryResult.length === 0) return;
+                          const ws = XLSX.utils.json_to_sheet(customQueryResult);
+                          const wb = XLSX.utils.book_new();
+                          XLSX.utils.book_append_sheet(wb, ws, "Consulta_SQL");
+                          XLSX.writeFile(wb, `consulta_sql_${new Date().toISOString().slice(0, 10)}.csv`, { bookType: "csv" });
+                          toast.success("CSV exportado con éxito");
+                        }}
+                        className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 text-[11px] font-semibold border border-slate-800 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        title="Exportar a archivo CSV"
+                      >
+                        <Download size={12} className="text-[#22D3A6]" />
+                        <span>Exportar CSV</span>
+                      </button>
+                    </div>
                   </div>
 
                   {customQueryResult.length === 0 ? (
-                    <div className="p-10 text-center text-slate-500 font-mono text-xs">
-                      La consulta se completó con éxito pero no devolvió ninguna fila.
+                    <div className="p-12 text-center text-slate-500 font-mono text-xs space-y-1">
+                      <p className="text-slate-400 font-semibold">0 filas encontradas</p>
+                      <p className="text-slate-600">La consulta se completó exitosamente en PostgreSQL pero no devolvió registros coincidentes.</p>
                     </div>
                   ) : (
-                    <div className="overflow-x-auto max-h-[400px]">
+                    <div className="overflow-x-auto max-h-[460px] sidebar-scrollbar">
                       <table className="w-full text-left border-collapse text-xs font-mono">
                         <thead>
-                          <tr className="border-b border-slate-900 text-slate-400 bg-slate-950/20 font-bold uppercase tracking-wider text-[10px] sticky top-0">
+                          <tr className="border-b border-slate-900 text-slate-400 bg-slate-950 font-bold uppercase tracking-wider text-[10px] sticky top-0 z-10 shadow-sm">
+                            <th className="px-3.5 py-3 w-12 text-center text-slate-600 bg-slate-950">#</th>
                             {Object.keys(customQueryResult[0]).map((key) => (
-                              <th key={key} className="px-5 py-3 whitespace-nowrap bg-slate-950">
+                              <th key={key} className="px-4 py-3 whitespace-nowrap bg-slate-950 text-slate-300">
                                 {key}
                               </th>
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-900">
-                          {customQueryResult.map((row, idx) => (
-                            <tr key={idx} className="hover:bg-slate-900/10 transition-colors text-slate-300">
-                              {Object.keys(customQueryResult[0]).map((key) => {
-                                const cellVal = row[key];
-                                return (
-                                  <td key={key} className="px-5 py-3 whitespace-nowrap max-w-[250px] truncate">
-                                    {cellVal === null ? (
-                                      <span className="text-slate-600 font-semibold italic">NULL</span>
-                                    ) : typeof cellVal === "object" ? (
-                                      JSON.stringify(cellVal)
-                                    ) : (
-                                      String(cellVal)
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          ))}
+                        <tbody className="divide-y divide-slate-900/70">
+                          {customQueryResult
+                            .filter((row) => {
+                              if (!resultSearchFilter.trim()) return true;
+                              const q = resultSearchFilter.toLowerCase();
+                              return Object.values(row).some((val) =>
+                                val !== null && val !== undefined && String(val).toLowerCase().includes(q)
+                              );
+                            })
+                            .map((row, idx) => (
+                              <tr key={idx} className="hover:bg-slate-900/40 transition-colors text-slate-300 group">
+                                <td className="px-3.5 py-2.5 text-center text-[10px] text-slate-600 font-mono select-none group-hover:text-slate-400">
+                                  {idx + 1}
+                                </td>
+                                {Object.keys(customQueryResult[0]).map((key) => {
+                                  const cellVal = row[key];
+                                  return (
+                                    <td key={key} className="px-4 py-2.5 whitespace-nowrap max-w-[320px] truncate">
+                                      {cellVal === null || cellVal === undefined ? (
+                                        <span className="text-slate-600 font-semibold italic text-[10px] bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800/80">
+                                          NULL
+                                        </span>
+                                      ) : typeof cellVal === "boolean" ? (
+                                        <span
+                                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                            cellVal
+                                              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                                              : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+                                          }`}
+                                        >
+                                          {cellVal ? "true" : "false"}
+                                        </span>
+                                      ) : typeof cellVal === "number" ? (
+                                        <span className="text-[#22D3A6] font-semibold">
+                                          {Number.isInteger(cellVal) ? cellVal : cellVal.toLocaleString("es-GT", { minimumFractionDigits: 2 })}
+                                        </span>
+                                      ) : typeof cellVal === "object" ? (
+                                        <span className="text-sky-300 font-mono text-[11px] bg-sky-950/40 px-1.5 py-0.5 rounded border border-sky-900/40">
+                                          {JSON.stringify(cellVal)}
+                                        </span>
+                                      ) : typeof cellVal === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cellVal) ? (
+                                        <span
+                                          className="text-slate-400 font-mono text-[11px] hover:text-white cursor-pointer select-all"
+                                          title="Haga clic para seleccionar UUID"
+                                        >
+                                          {cellVal}
+                                        </span>
+                                      ) : (
+                                        <span className="text-slate-200">{String(cellVal)}</span>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
                         </tbody>
                       </table>
                     </div>

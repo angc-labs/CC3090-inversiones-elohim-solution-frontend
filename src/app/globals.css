@@ -283,3 +283,77 @@ select[style*="background-color: rgb(255, 255, 255)"] option,
   background-color: #ffffff !important;
   color: #0f172a !important;
 }
+
+/* Custom subtle scrollbar styling with transparent background */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 166, 0.4);
+}
+
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
+}
+
+/* Specific sidebar scrollbar styling */
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 166, 0.4);
+}
+
+/* Monaco Editor Widget & Suggest Dropdown Styling */
+.monaco-editor-overflow-widgets {
+  z-index: 99999 !important;
+}
+
+.monaco-editor .suggest-widget {
+  border-radius: 8px !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid #1E293B !important;
+  background-color: #0b1523 !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list {
+  border-radius: 8px !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row {
+  border-radius: 4px !important;
+}
