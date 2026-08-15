@@ -46,6 +46,8 @@ import {
   actualizarConfiguracionVisual,
   getIntegraciones
 } from "@/lib/api/admin";
+import { obtenerCategorias } from "@/lib/api/productos";
+import type { TCategoria } from "@/types";
 
 // Import modular tab components
 import { DashboardTab } from "@/components/features/portal/DashboardTab";
@@ -133,6 +135,7 @@ export default function PortalPage() {
 
   const [productos, setProductos] = useState<PlatformProductoDto[]>([]);
   const [loadingProductos, setLoadingProductos] = useState(false);
+  const [categorias, setCategorias] = useState<TCategoria[]>([]);
 
   const [reservaciones, setReservaciones] = useState<ReservacionDto[]>([]);
   const [loadingReservaciones, setLoadingReservaciones] = useState(false);
@@ -411,9 +414,13 @@ export default function PortalPage() {
   const refreshProductos = () => {
     if (!token) return;
     setLoadingProductos(true);
-    getPlatformProductos(token)
-      .then((prods) => {
+    Promise.all([
+      getPlatformProductos(token).catch(() => [] as PlatformProductoDto[]),
+      obtenerCategorias(token).catch(() => [] as TCategoria[])
+    ])
+      .then(([prods, cats]) => {
         setProductos(prods);
+        setCategorias(cats);
       })
       .catch(() => {
         toast.error("Error al cargar productos");
@@ -760,7 +767,7 @@ export default function PortalPage() {
   return (
     <div className="flex min-h-screen bg-[#081018] text-slate-100 font-sans antialiased">
       {/* Desktop Sidebar */}
-      <aside className="w-64 border-r border-slate-900 bg-slate-955/40 p-6 flex-col justify-between shrink-0 hidden lg:flex h-[100dvh] max-h-[100dvh] fixed top-0 left-0 z-20 overflow-y-auto">
+      <aside className="w-64 border-r border-slate-900 bg-slate-955/40 p-6 flex-col justify-between shrink-0 hidden lg:flex h-[100dvh] max-h-[100dvh] fixed top-0 left-0 z-20 overflow-y-auto sidebar-scrollbar">
         {renderSidebar(false)}
       </aside>
 
@@ -775,7 +782,7 @@ export default function PortalPage() {
       {/* Mobile Sidebar Drawer */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col justify-between border-r border-slate-900 bg-slate-955 p-6 transition-transform duration-200 lg:hidden h-[100dvh] max-h-[100dvh] overflow-y-auto",
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col justify-between border-r border-slate-900 bg-slate-955 p-6 transition-transform duration-200 lg:hidden h-[100dvh] max-h-[100dvh] overflow-y-auto sidebar-scrollbar",
           menuAbierto ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -1020,7 +1027,7 @@ export default function PortalPage() {
               token={token ?? ""}
               productos={productos}
               loadingProductos={loadingProductos}
-              categorias={[]}
+              categorias={categorias}
               sucursales={sucursales}
               esAdmin={esAdmin}
               hasCloudinary={hasCloudinary}

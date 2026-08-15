@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Upload, Plus, Loader2, Package, Eye, EyeOff, Edit, Trash2, X, Download, FileText } from "lucide-react";
+import { Search, Upload, Plus, Loader2, Package, Eye, EyeOff, Edit, Trash2, X, Download, FileText, Grid, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 import { PortalModal } from "@/components/ui/PortalModal";
 import * as XLSX from "xlsx";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import ProductSpreadsheetEditor from "./ProductSpreadsheetEditor";
 import {
   crearPlatformProducto,
   crearPlatformProductosBulk,
@@ -45,10 +46,12 @@ export function ProductosTab({
   const [isProductoModalOpen, setIsProductoModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isColumnMappingModalOpen, setIsColumnMappingModalOpen] = useState(false);
+  const [importTab, setImportTab] = useState<"excel" | "spreadsheet">("excel");
 
   // Edits
   const [selectedProducto, setSelectedProducto] = useState<PlatformProductoDto | null>(null);
   const [parsedProducts, setParsedProducts] = useState<CrearPlatformProductoBulkInput[]>([]);
+  const [rawExcelRows, setRawExcelRows] = useState<any[]>([]);
   const [isImporting, setIsImporting] = useState(false);
   
   // Column mapping
@@ -230,6 +233,83 @@ export function ProductosTab({
     toast.success(`Plantilla descargada en formato ${format.toUpperCase()}`);
   };
 
+  const parseRowsWithMapping = (rows: any[], mapping: Record<string, string>): CrearPlatformProductoBulkInput[] => {
+    return rows.map((row, index) => {
+      const getValue = (fieldKey: string) => {
+        const colName = mapping[fieldKey];
+        if (colName && colName in row) return row[colName];
+        return undefined;
+      };
+
+      const rawNombre = getValue("nombre") ?? row.Nombre ?? row.nombre ?? row.Producto ?? row.producto ?? row.Name ?? row.name;
+      const nombre = String(rawNombre || "").trim();
+      if (!nombre) {
+        throw new Error(`Fila ${index + 2}: El 'Nombre' del producto es requerido.`);
+      }
+
+      const rawPrecioDetalle = getValue("precioDetalle") ?? row.PrecioDetalle ?? row.precioDetalle ?? row.Precio ?? row.precio ?? row.Price ?? row.price;
+      const precioDetalle = parseFloat(rawPrecioDetalle);
+      if (isNaN(precioDetalle) || precioDetalle < 0) {
+        throw new Error(`Fila ${index + 2} (${nombre}): 'Precio Detalle' debe ser un número válido >= 0.`);
+      }
+
+      const rawPrecioMayoreo = getValue("precioMayoreo") ?? row.PrecioMayoreo ?? row.precioMayoreo ?? row.Mayoreo ?? row.mayoreo;
+      let precioMayoreo = parseFloat(rawPrecioMayoreo);
+      if (isNaN(precioMayoreo) || precioMayoreo < 0) {
+        precioMayoreo = precioDetalle;
+      }
+
+      const rawStockActual = getValue("stockActual") ?? row.StockActual ?? row.stockActual ?? row.Stock ?? row.stock;
+      const stockActual = parseInt(rawStockActual || "0", 10);
+
+      const rawStockMinimo = getValue("stockMinimo") ?? row.StockMinimo ?? row.stockMinimo;
+      const stockMinimo = parseInt(rawStockMinimo || "0", 10);
+
+      const rawSku = getValue("sku") ?? row.Sku ?? row.sku ?? row.SKU ?? row.Codigo ?? row.codigo;
+      const sku = rawSku ? String(rawSku).trim() : null;
+
+      const rawDescripcion = getValue("descripcion") ?? row.Descripcion ?? row.descripcion ?? row.Descripción;
+      const descripcion = rawDescripcion ? String(rawDescripcion).trim() : null;
+
+      const rawImagen = getValue("imagenUrl") ?? row.ImagenUrl ?? row.imagenUrl ?? row.Imagen ?? row.imagen;
+      const imagenUrl = rawImagen ? String(rawImagen).trim() : null;
+
+      const rawCat = getValue("categoriaId") ?? row.CategoriaId ?? row.categoriaId ?? row.Categoria ?? row.categoria;
+      let categoriaId: string | null = null;
+      if (rawCat) {
+        const strCat = String(rawCat).trim();
+        const match = categorias.find(
+          (c) =>
+            c.id === strCat ||
+            (c.nombreCategoria && c.nombreCategoria.toLowerCase() === strCat.toLowerCase()) ||
+            ((c as any).nombre && (c as any).nombre.toLowerCase() === strCat.toLowerCase())
+        );
+        categoriaId = match ? match.id : strCat;
+      }
+
+      const rawPublicado = getValue("publicado") ?? row.Publicado ?? row.publicado;
+      const publicado =
+        rawPublicado === undefined
+          ? true
+          : String(rawPublicado).toLowerCase() === "true" ||
+            rawPublicado === true ||
+            rawPublicado === 1;
+
+      return {
+        nombre,
+        descripcion,
+        sku,
+        precioDetalle,
+        precioMayoreo,
+        stockActual: isNaN(stockActual) ? 0 : Math.max(0, stockActual),
+        stockMinimo: isNaN(stockMinimo) ? 0 : Math.max(0, stockMinimo),
+        categoriaId,
+        publicado,
+        imagenUrl,
+      };
+    });
+  };
+
   const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -248,58 +328,26 @@ export function ProductosTab({
           return;
         }
 
-        // Extract detected columns from the file
         const detectedCols = Object.keys(json[0]);
         setDetectedColumns(detectedCols);
+        setRawExcelRows(json);
 
-        // Validate headers
-        const requiredColumns = ["Nombre", "PrecioDetalle", "PrecioMayoreo"];
-        const firstRow = json[0];
-        const missing = requiredColumns.filter((col) => !(col in firstRow));
-        if (missing.length > 0) {
-          toast.error(`Columnas requeridas faltantes: ${missing.join(", ")}`);
-          return;
-        }
+        // Auto-guess column mapping
+        const guessedMapping: Record<string, string> = {
+          nombre: detectedCols.find((c) => /nombre|producto|name|titulo/i.test(c)) || "",
+          precioDetalle: detectedCols.find((c) => /precio.*det|precio|price/i.test(c)) || "",
+          precioMayoreo: detectedCols.find((c) => /mayoreo|mayorista/i.test(c)) || "",
+          sku: detectedCols.find((c) => /sku|codigo|code/i.test(c)) || "",
+          stockActual: detectedCols.find((c) => /stock.*act|stock|cantidad/i.test(c)) || "",
+          stockMinimo: detectedCols.find((c) => /stock.*min|min/i.test(c)) || "",
+          descripcion: detectedCols.find((c) => /descrip/i.test(c)) || "",
+          categoriaId: detectedCols.find((c) => /cat/i.test(c)) || "",
+          imagenUrl: detectedCols.find((c) => /img|imagen|image/i.test(c)) || "",
+        };
 
-        // Map excel data
-        const productsToCreate: CrearPlatformProductoBulkInput[] = json.map((row, index) => {
-          const nombre = String(row.Nombre || "").trim();
-          if (!nombre) {
-            throw new Error(`Fila ${index + 2}: El 'Nombre' es requerido.`);
-          }
+        setColumnMapping(guessedMapping);
 
-          const precioDetalle = parseFloat(row.PrecioDetalle);
-          if (isNaN(precioDetalle) || precioDetalle < 0) {
-            throw new Error(`Fila ${index + 2}: El 'PrecioDetalle' debe ser un número válido >= 0.`);
-          }
-
-          const precioMayoreo = parseFloat(row.PrecioMayoreo);
-          if (isNaN(precioMayoreo) || precioMayoreo < 0) {
-            throw new Error(`Fila ${index + 2}: El 'PrecioMayoreo' debe ser un número válido >= 0.`);
-          }
-
-          const stockActual = parseInt(row.StockActual || "0", 10);
-          const stockMinimo = parseInt(row.StockMinimo || "0", 10);
-
-          return {
-            nombre,
-            descripcion: row.Descripcion ? String(row.Descripcion) : null,
-            sku: row.Sku ? String(row.Sku) : null,
-            precioDetalle,
-            precioMayoreo,
-            stockActual: isNaN(stockActual) ? 0 : stockActual,
-            stockMinimo: isNaN(stockMinimo) ? 0 : stockMinimo,
-            categoriaId: row.CategoriaId ? String(row.CategoriaId) : null,
-            publicado:
-              row.Publicado === undefined
-                ? true
-                : String(row.Publicado).toLowerCase() === "true" ||
-                  row.Publicado === true ||
-                  row.Publicado === 1,
-            imagenUrl: row.ImagenUrl ? String(row.ImagenUrl) : null,
-          };
-        });
-
+        const productsToCreate = parseRowsWithMapping(json, guessedMapping);
         setParsedProducts(productsToCreate);
         toast.success(`Archivo cargado con éxito. ${productsToCreate.length} productos listos para importar.`);
       } catch (err: any) {
@@ -314,13 +362,15 @@ export function ProductosTab({
 
     setIsImporting(true);
     try {
-      await crearPlatformProductosBulk(token, parsedProducts);
-      toast.success(`¡Carga masiva completada!`);
+      const result = await crearPlatformProductosBulk(token, parsedProducts);
+      const count = result?.length || parsedProducts.length;
+      toast.success(`¡Carga masiva completada! ${count} productos creados exitosamente en el servidor.`);
       setIsImportModalOpen(false);
       setParsedProducts([]);
+      setRawExcelRows([]);
       onRefresh();
-    } catch (err) {
-      toast.error("Error al importar productos al servidor.");
+    } catch (err: any) {
+      toast.error(err.message || "Error al importar productos al servidor.");
     } finally {
       setIsImporting(false);
     }
@@ -731,141 +781,181 @@ export function ProductosTab({
 
             <div className="space-y-1">
               <h3 className="text-lg font-black text-white">Importación Masiva de Productos</h3>
-              <p className="text-xs text-slate-400">Carga tus productos en lote usando archivos CSV o XLSX (Excel)</p>
+              <p className="text-xs text-slate-400">Carga tus productos por lote subiendo un archivo Excel/CSV o creándolos interactivamente.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-slate-900 bg-slate-900/10 p-4 rounded-xl">
-              <div className="space-y-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  1. Descarga la Plantilla
-                </span>
-                <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
-                  Usa nuestras plantillas para asegurarte de que los encabezados y tipos de datos coincidan
-                  exactamente.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => downloadTemplate("csv")}
-                    className="h-8 px-3 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer border border-slate-800"
-                  >
-                    <Download size={10} />
-                    <span>Plantilla CSV</span>
-                  </button>
-                  <button
-                    onClick={() => downloadTemplate("xlsx")}
-                    className="h-8 px-3 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer border border-slate-800"
-                  >
-                    <Download size={10} />
-                    <span>Plantilla Excel</span>
-                  </button>
-                </div>
-              </div>
+            {/* Import Mode Switcher Tabs */}
+            <div className="flex border-b border-slate-900 gap-2 pb-1">
+              <button
+                type="button"
+                onClick={() => setImportTab("excel")}
+                className={`px-4 py-2 text-xs font-bold rounded-t-xl transition-all cursor-pointer flex items-center gap-2 border-b-2 ${
+                  importTab === "excel"
+                    ? "border-[#22D3A6] text-[#22D3A6] bg-slate-900/60"
+                    : "border-transparent text-slate-400 hover:text-white hover:bg-slate-900/30"
+                }`}
+              >
+                <FileSpreadsheet size={14} />
+                <span>Subir Archivo Excel/CSV</span>
+              </button>
 
-              <div className="space-y-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  2. Sube tu archivo (.csv / .xlsx)
-                </span>
-                <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
-                  Selecciona el archivo excel o delimitado por comas con tus productos listos para publicar.
-                </p>
-                <label className="h-8 px-3 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none w-full text-center">
-                  <Upload size={12} />
-                  <span>Seleccionar Archivo</span>
-                  <input
-                    type="file"
-                    accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                    onChange={handleImportFileChange}
-                    className="hidden"
-                  />
-                </label>
-              </div>
+              <button
+                type="button"
+                onClick={() => setImportTab("spreadsheet")}
+                className={`px-4 py-2 text-xs font-bold rounded-t-xl transition-all cursor-pointer flex items-center gap-2 border-b-2 ${
+                  importTab === "spreadsheet"
+                    ? "border-[#22D3A6] text-[#22D3A6] bg-slate-900/60"
+                    : "border-transparent text-slate-400 hover:text-white hover:bg-slate-900/30"
+                }`}
+              >
+                <Grid size={14} />
+                <span>Editor Interactivo (react-spreadsheet)</span>
+              </button>
             </div>
 
-            {parsedProducts.length > 0 && (
-              <>
-                <div className="space-y-2 border border-slate-900 bg-slate-900/10 p-4 rounded-xl">
+            {/* TAB BODY: EXCEL UPLOAD */}
+            {importTab === "excel" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-slate-900 bg-slate-900/10 p-4 rounded-xl">
+                <div className="space-y-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    Estandariza tus Columnas
+                    1. Descarga la Plantilla
                   </span>
                   <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
-                    Utiliza el formulario de mapeo de columnas, para validar su compatibilidad con el proyecto.
+                    Usa nuestras plantillas para asegurarte de que los encabezados y tipos de datos coincidan.
                   </p>
-                  <button
-                    onClick={() => setIsColumnMappingModalOpen(true)}
-                    className="h-8 px-3 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none w-full"
-                  >
-                    <span>Avanzar con el Formulario</span>
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => downloadTemplate("csv")}
+                      className="h-8 px-3 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer border border-slate-800"
+                    >
+                      <Download size={10} />
+                      <span>Plantilla CSV</span>
+                    </button>
+                    <button
+                      onClick={() => downloadTemplate("xlsx")}
+                      className="h-8 px-3 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer border border-slate-800"
+                    >
+                      <Download size={10} />
+                      <span>Plantilla Excel</span>
+                    </button>
+                  </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-[#22D3A6] uppercase tracking-wider">
-                      Vista Previa de Importación ({parsedProducts.length} productos)
-                    </span>
-                    <span className="text-[9px] text-slate-500 italic font-semibold">
-                      * El inventario inicial se asignará a la sucursal por defecto.
-                    </span>
-                  </div>
-
-                  <div className="rounded-xl border border-slate-900 overflow-hidden max-h-48 overflow-y-auto bg-slate-950/40">
-                    <table className="w-full text-left border-collapse text-[10px]">
-                      <thead>
-                        <tr className="border-b border-slate-900 bg-slate-950 text-slate-500 uppercase font-bold tracking-wider sticky top-0">
-                          <th className="p-2">Nombre</th>
-                          <th className="p-2">SKU</th>
-                          <th className="p-2 text-right">P. Detalle</th>
-                          <th className="p-2 text-right">P. Mayoreo</th>
-                          <th className="p-2 text-center">Stock</th>
-                          <th className="p-2 text-center">Publicado</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-900">
-                        {parsedProducts.map((p, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-slate-900/10 transition-colors text-slate-350"
-                          >
-                            <td className="p-2 font-semibold text-white max-w-[150px] truncate">{p.nombre}</td>
-                            <td className="p-2 font-mono text-slate-400">{p.sku || "—"}</td>
-                            <td className="p-2 text-right font-mono">Q{p.precioDetalle.toFixed(2)}</td>
-                            <td className="p-2 text-right font-mono">Q{p.precioMayoreo.toFixed(2)}</td>
-                            <td className="p-2 text-center font-mono">{p.stockActual}</td>
-                            <td className="p-2 text-center">
-                              <span
-                                className={`inline-flex rounded px-1.5 py-0.5 text-[8px] font-bold ${
-                                  p.publicado
-                                    ? "bg-emerald-500/10 text-emerald-400"
-                                    : "bg-slate-800 text-slate-400"
-                                }`}
-                              >
-                                {p.publicado ? "SÍ" : "NO"}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <button
-                    onClick={handleConfirmImport}
-                    disabled={isImporting}
-                    className="h-11 w-full rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] disabled:bg-slate-800 disabled:text-slate-500 text-slate-955 font-bold transition-all cursor-pointer border-none flex items-center justify-center gap-2"
-                  >
-                    {isImporting ? (
-                      <>
-                        <Loader2 className="animate-spin" size={16} />
-                        <span>Importando {parsedProducts.length} productos...</span>
-                      </>
-                    ) : (
-                      <span>Confirmar y Guardar en Catálogo</span>
-                    )}
-                  </button>
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    2. Sube tu archivo (.csv / .xlsx)
+                  </span>
+                  <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+                    Selecciona el archivo excel o delimitado por comas con tus productos listos para publicar.
+                  </p>
+                  <label className="h-8 px-3 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-955 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none w-full text-center">
+                    <Upload size={12} />
+                    <span>Seleccionar Archivo</span>
+                    <input
+                      type="file"
+                      accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                      onChange={handleImportFileChange}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
-              </>
+              </div>
             )}
 
+            {/* TAB BODY: SPREADSHEET */}
+            {importTab === "spreadsheet" && (
+              <ProductSpreadsheetEditor
+                categorias={categorias}
+                onParsedProducts={setParsedProducts}
+              />
+            )}
+
+            {/* MAPPING BUTTON FOR EXCEL MODE */}
+            {importTab === "excel" && parsedProducts.length > 0 && (
+              <div className="space-y-2 border border-slate-900 bg-slate-900/10 p-4 rounded-xl">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Estandariza tus Columnas
+                </span>
+                <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+                  Utiliza el formulario de mapeo de columnas para ajustar campos personalizados del Excel.
+                </p>
+                <button
+                  onClick={() => setIsColumnMappingModalOpen(true)}
+                  className="h-8 px-3 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-955 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none w-full"
+                >
+                  <span>Mapear Columnas Manualmente</span>
+                </button>
+              </div>
+            )}
+
+            {/* PREVIEW TABLE AND CONFIRMATION BUTTON */}
+            {parsedProducts.length > 0 && (
+              <div className="space-y-3 pt-2 border-t border-slate-900">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-[#22D3A6] uppercase tracking-wider">
+                    Vista Previa de Importación ({parsedProducts.length} productos listos)
+                  </span>
+                  <span className="text-[9px] text-slate-500 italic font-semibold">
+                    * El inventario inicial se asignará a la sucursal por defecto.
+                  </span>
+                </div>
+
+                <div className="rounded-xl border border-slate-900 overflow-hidden max-h-44 overflow-y-auto bg-slate-950/40">
+                  <table className="w-full text-left border-collapse text-[10px]">
+                    <thead>
+                      <tr className="border-b border-slate-900 bg-slate-950 text-slate-500 uppercase font-bold tracking-wider sticky top-0">
+                        <th className="p-2">Nombre</th>
+                        <th className="p-2">SKU</th>
+                        <th className="p-2 text-right">P. Detalle</th>
+                        <th className="p-2 text-right">P. Mayoreo</th>
+                        <th className="p-2 text-center">Stock</th>
+                        <th className="p-2 text-center">Publicado</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-900">
+                      {parsedProducts.map((p, i) => (
+                        <tr
+                          key={i}
+                          className="hover:bg-slate-900/10 transition-colors text-slate-300"
+                        >
+                          <td className="p-2 font-semibold text-white max-w-[150px] truncate">{p.nombre}</td>
+                          <td className="p-2 font-mono text-slate-400">{p.sku || "—"}</td>
+                          <td className="p-2 text-right font-mono">Q{p.precioDetalle.toFixed(2)}</td>
+                          <td className="p-2 text-right font-mono">Q{p.precioMayoreo.toFixed(2)}</td>
+                          <td className="p-2 text-center font-mono">{p.stockActual}</td>
+                          <td className="p-2 text-center">
+                            <span
+                              className={`inline-flex rounded px-1.5 py-0.5 text-[8px] font-bold ${
+                                p.publicado
+                                  ? "bg-emerald-500/10 text-emerald-400"
+                                  : "bg-slate-800 text-slate-400"
+                              }`}
+                            >
+                              {p.publicado ? "SÍ" : "NO"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <button
+                  onClick={handleConfirmImport}
+                  disabled={isImporting}
+                  className="h-11 w-full rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] disabled:bg-slate-800 disabled:text-slate-500 text-slate-955 font-bold transition-all cursor-pointer border-none flex items-center justify-center gap-2"
+                >
+                  {isImporting ? (
+                    <>
+                      <Loader2 className="animate-spin" size={16} />
+                      <span>Importando {parsedProducts.length} productos al servidor...</span>
+                    </>
+                  ) : (
+                    <span>Confirmar y Guardar {parsedProducts.length} Productos en el Backend</span>
+                  )}
+                </button>
+              </div>
+            )}
 
           </div>
         </PortalModal>
@@ -965,26 +1055,28 @@ export function ProductosTab({
               </button>
               <button
                 onClick={() => {
-                  const requiredFields = ["nombre", "precioDetalle", "precioMayoreo", "sku", "stockActual", "stockMinimo"];
-                  const missingFields = requiredFields.filter(field => !columnMapping[field]);
-                  
-                  if (missingFields.length > 0) {
-                    toast.error("Por favor asigna todos los campos requeridos antes de continuar");
+                  if (rawExcelRows.length === 0) {
+                    toast.error("No hay filas de Excel cargadas para mapear.");
+                    setIsColumnMappingModalOpen(false);
                     return;
                   }
-                  
-                  toast.success("Mapeo aplicado correctamente");
-                  setIsColumnMappingModalOpen(false);
+                  try {
+                    const mappedProducts = parseRowsWithMapping(rawExcelRows, columnMapping);
+                    setParsedProducts(mappedProducts);
+                    toast.success(`Mapeo aplicado. ${mappedProducts.length} productos listos para importar.`);
+                    setIsColumnMappingModalOpen(false);
+                  } catch (err: any) {
+                    toast.error(err.message || "Error al aplicar el mapeo de columnas.");
+                  }
                 }}
-                className="flex-1 h-10 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-sm font-bold transition-all cursor-pointer border-none"
+                className="flex-1 h-10 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-955 text-sm font-bold transition-all cursor-pointer border-none"
               >
-                Aplicar Mapeo
+                Aplicar Mapeo y Actualizar Vista Previa
               </button>
             </div>
           </div>
         </PortalModal>
       )}
-
 
     </div>
   );

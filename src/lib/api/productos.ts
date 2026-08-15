@@ -91,12 +91,12 @@ export async function obtenerMarcas(): Promise<TMarca[]> {
   );
 }
 
-export async function obtenerCategorias(): Promise<TCategoria[]> {
+export async function obtenerCategorias(token?: string): Promise<TCategoria[]> {
   return apiRequest<TCategoria[]>(
     "/api/categorias",
     {
       method: "GET",
-      headers: buildAuthHeaders(),
+      headers: buildAuthHeaders(token),
     },
     "Error al obtener categorías"
   );
