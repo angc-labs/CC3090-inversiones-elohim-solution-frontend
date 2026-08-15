@@ -62,7 +62,7 @@ import { SettingsTab } from "@/components/features/portal/SettingsTab";
 import { KanbanTab } from "@/components/features/portal/KanbanTab";
 import { PortalModal } from "@/components/ui/PortalModal";
 import { useTheme, useLanguage } from "@/contexts/ThemeLanguageContext";
-import { MoonStar, SunMedium, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 
 const getDocsUrl = () => {
   if (process.env.NEXT_PUBLIC_DOCS_URL) {
@@ -873,40 +873,21 @@ export default function PortalPage() {
 
           {/* Dropdown Stores, Profile */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className={`flex items-center gap-2 rounded-xl border p-1 transition-colors ${
-              isDark ? "border-slate-800 bg-slate-900/40" : "border-slate-200 bg-slate-100"
-            }`}>
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg border transition cursor-pointer ${
-                  isDark
-                    ? "border-transparent bg-transparent text-slate-300 hover:border-slate-700 hover:text-white"
-                    : "border-transparent bg-transparent text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                }`}
-                aria-label={t("portal.toggle_theme")}
-                title={isDark ? t("portal.light_mode") : t("portal.dark_mode")}
-              >
-                {isDark ? <SunMedium size={16} /> : <MoonStar size={16} />}
-              </button>
-
-              <div className={`h-5 w-px ${isDark ? "bg-slate-700" : "bg-slate-300"}`} />
-
-              <button
-                type="button"
-                onClick={toggleLanguage}
-                className={`flex items-center gap-1 rounded-lg border transition px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide cursor-pointer ${
-                  isDark
-                    ? "border-transparent bg-transparent text-slate-300 hover:border-slate-700 hover:text-white"
-                    : "border-transparent bg-transparent text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                }`}
-                aria-label={t("portal.toggle_lang")}
-                title={language === "es" ? "Switch to English" : "Cambiar a Español"}
-              >
-                <Globe size={14} />
-                {language === "es" ? "ES" : "EN"}
-              </button>
-            </div>
+            {/* Language Selector */}
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[11px] font-bold uppercase tracking-wide transition-all cursor-pointer ${
+                isDark
+                  ? "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700 hover:text-white"
+                  : "border-slate-200 bg-slate-100 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+              }`}
+              aria-label={t("portal.toggle_lang")}
+              title={language === "es" ? "Switch to English" : "Cambiar a Español"}
+            >
+              <Globe size={14} className="text-[#38BDF8]" />
+              <span>{language === "es" ? "ES" : "EN"}</span>
+            </button>
 
             {/* Store Selector */}
             <div ref={dropdownRef} className="relative">
