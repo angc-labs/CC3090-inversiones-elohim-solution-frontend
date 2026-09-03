@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { register } from "@/lib/api/auth";
+import type { CredentialResponse } from "@react-oauth/google";
+import { GoogleSignInButton } from "@/components/features/auth/GoogleSignInButton";
+import { loginWithGoogle, register } from "@/lib/api/auth";
+import { hasTenantContext } from "@/lib/api/client";
 import { getPostLoginPath } from "@/lib/auth-routes";
 import { useAuthStore } from "@/stores/useAuthStore";
 
@@ -104,6 +106,46 @@ export default function RegisterPage() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Error al registrar usuario";
       setError(errorMessage);
+      setSuccess("");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential || isLoading) {
+      setError("Google no devolvió una credencial válida");
+      return;
+    }
+
+    setError("");
+    setSuccess("Creando o vinculando tu cuenta con Google...");
+    setIsLoading(true);
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const requestedRole = params.get("role") || params.get("tipo");
+      const tipoUsuario = requestedRole === "cliente" || requestedRole === "client" ||
+        (!requestedRole && hasTenantContext())
+        ? "cliente"
+        : "administrador";
+      const response = await loginWithGoogle(credentialResponse.credential, tipoUsuario);
+
+      loginStore(
+        {
+          usuarioId: response.usuarioId,
+          correo: response.correo,
+          nombre: response.nombre,
+          rol: response.rol,
+          esSuperAdmin: response.esSuperAdmin,
+        },
+        response.token,
+        response.expiraEn
+      );
+      setSuccess("¡Cuenta lista! Redirigiendo...");
+      router.push(getPostLoginPath(response.rol));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al continuar con Google");
       setSuccess("");
     } finally {
       setIsLoading(false);
@@ -239,6 +281,16 @@ export default function RegisterPage() {
             {isLoading ? "Creando cuenta..." : "Crear cuenta"}
           </button>
         </form>
+
+        <div className="my-6! flex! items-center! gap-3!" aria-hidden="true">
+          <div className="h-px! flex-1! bg-slate-800!" />
+          <span className="text-[11px]! text-slate-500!">o continúa con</span>
+          <div className="h-px! flex-1! bg-slate-800!" />
+        </div>
+        <GoogleSignInButton
+          onSuccess={handleGoogleSuccess}
+          onError={() => setError("No se pudo continuar con Google")}
+        />
 
         <p className="mt-8! text-center! text-xs! text-slate-500!">
           ¿Ya tienes cuenta?{" "}
