@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useImperativeHandle, forwardRef } from "react";
+import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import type { OnMount } from "@monaco-editor/react";
 import { Code2, Sparkles, Loader2, Play, BookOpen, Terminal, Check } from "lucide-react";
@@ -30,6 +31,7 @@ type MonacoInstance = Parameters<OnMount>[1];
 
 export const MonacoSqlEditor = forwardRef<MonacoSqlEditorHandle, MonacoSqlEditorProps>(
   ({ value, onChange, onExecute, onToggleHelp, isLoading = false, height = "280px" }, ref) => {
+    const t = useTranslations("SqlEditor");
     const editorRef = useRef<MonacoEditor | null>(null);
     const monacoRef = useRef<MonacoInstance | null>(null);
     const completionDisposableRef = useRef<any>(null);
@@ -324,7 +326,7 @@ export const MonacoSqlEditor = forwardRef<MonacoSqlEditorHandle, MonacoSqlEditor
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-[#22D3A6]/10 text-[#22D3A6] border border-[#22D3A6]/20">
               <Terminal size={14} />
             </div>
-            <span className="tracking-wide">Consola de Consultas SQL</span>
+            <span className="tracking-wide">{t("console_title")}</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -334,10 +336,10 @@ export const MonacoSqlEditor = forwardRef<MonacoSqlEditorHandle, MonacoSqlEditor
                 type="button"
                 onClick={onToggleHelp}
                 className="px-3 py-1.5 text-[11px] font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/80 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                title="Ver lista de tablas y atributos disponibles"
+                title={t("view_schema_tooltip")}
               >
                 <BookOpen size={13} className="text-[#22D3A6]" />
-                <span>Ver Esquema & Atributos</span>
+                <span>{t("view_schema_button")}</span>
               </button>
             )}
 
@@ -346,7 +348,7 @@ export const MonacoSqlEditor = forwardRef<MonacoSqlEditorHandle, MonacoSqlEditor
               type="button"
               onClick={() => insertTextAtCursor(" WHERE tienda_id = @tenant_id")}
               className="px-3 py-1.5 text-[11px] font-mono font-bold bg-[#22D3A6]/10 text-[#22D3A6] hover:bg-[#22D3A6]/20 border border-[#22D3A6]/30 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
-              title="Insertar filtro obligatorio de tenant"
+              title={t("insert_tenant_filter_tooltip")}
             >
               <Sparkles size={12} />
               + tienda_id = @tenant_id
@@ -357,7 +359,7 @@ export const MonacoSqlEditor = forwardRef<MonacoSqlEditorHandle, MonacoSqlEditor
               type="button"
               onClick={() => insertTextAtCursor("@tenant_id")}
               className="px-2.5 py-1.5 text-[11px] font-mono font-bold bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border border-sky-500/30 rounded-lg transition-all cursor-pointer"
-              title="Insertar variable @tenant_id"
+              title={t("insert_tenant_var_tooltip")}
             >
               + @tenant_id
             </button>
@@ -417,16 +419,16 @@ export const MonacoSqlEditor = forwardRef<MonacoSqlEditorHandle, MonacoSqlEditor
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1 text-[#22D3A6]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#22D3A6] animate-pulse" />
-                PostgreSQL Ready
+                {t("postgres_ready")}
               </span>
               <span className="text-slate-600">|</span>
-              <span>Líneas: {lineCount}</span>
+              <span>{t("lines_label", { count: lineCount })}</span>
               <span className="text-slate-600">|</span>
-              <span>Ln {cursorPos.line}, Col {cursorPos.col}</span>
+              <span>{t("cursor_position", { line: cursorPos.line, col: cursorPos.col })}</span>
             </div>
 
             <div className="flex items-center gap-2 text-slate-500">
-              <span>Caracteres: {value.length}</span>
+              <span>{t("chars_label", { count: value.length })}</span>
             </div>
           </div>
 
@@ -434,8 +436,8 @@ export const MonacoSqlEditor = forwardRef<MonacoSqlEditorHandle, MonacoSqlEditor
             <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs flex flex-col items-center justify-center gap-3 text-xs font-bold text-[#22D3A6] z-10">
               <Loader2 size={24} className="animate-spin text-[#22D3A6]" />
               <div className="text-center space-y-1">
-                <span className="text-sm text-white font-semibold">Ejecutando consulta en PostgreSQL...</span>
-                <p className="text-[11px] text-slate-400 font-normal">Obteniendo datos en tiempo real de la base de datos</p>
+                <span className="text-sm text-white font-semibold">{t("executing_query")}</span>
+                <p className="text-[11px] text-slate-400 font-normal">{t("fetching_data")}</p>
               </div>
             </div>
           )}
@@ -446,11 +448,11 @@ export const MonacoSqlEditor = forwardRef<MonacoSqlEditorHandle, MonacoSqlEditor
           <span className="flex items-center gap-1.5">
             <Play size={11} className="text-[#22D3A6] fill-[#22D3A6]" />
             <span>
-              Ejecutar: <kbd className="px-1.5 py-0.5 bg-slate-800 text-[#22D3A6] rounded text-[10px] font-mono border border-slate-700">Ctrl + Enter</kbd>
+              {t("execute_hint")} <kbd className="px-1.5 py-0.5 bg-slate-800 text-[#22D3A6] rounded text-[10px] font-mono border border-slate-700">Ctrl + Enter</kbd>
             </span>
           </span>
           <span className="text-slate-500">
-            Autocompletado: <kbd className="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px] font-mono border border-slate-700">Ctrl + Espacio</kbd>
+            {t("autocomplete_hint")} <kbd className="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px] font-mono border border-slate-700">Ctrl + Espacio</kbd>
           </span>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { Plus, Trash2, Download, CheckCircle2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -17,17 +18,6 @@ interface ProductSpreadsheetEditorProps {
 }
 
 type SpreadsheetCell = { value: string };
-
-const COLUMN_LABELS = [
-  "Nombre (*)",
-  "Precio Detalle (*)",
-  "Precio Mayoreo",
-  "Stock Actual",
-  "Stock Mínimo",
-  "Categoría",
-  "SKU",
-  "Descripción",
-];
 
 const createEmptyRow = (): SpreadsheetCell[] => [
   { value: "" },
@@ -70,6 +60,17 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
   categorias,
   onParsedProducts,
 }) => {
+  const t = useTranslations("SpreadsheetEditor");
+  const columnLabels = [
+    t("col_nombre"),
+    t("col_precio_detalle"),
+    t("col_precio_mayoreo"),
+    t("col_stock_actual"),
+    t("col_stock_minimo"),
+    t("col_categoria"),
+    t("col_sku"),
+    t("col_descripcion"),
+  ];
   const [data, setData] = useState<SpreadsheetCell[][]>(INITIAL_ROWS);
 
   const handleAddRow = () => {
@@ -85,7 +86,7 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
       createEmptyRow(),
     ]);
     onParsedProducts([]);
-    toast.info("Hoja de cálculo limpiada");
+    toast.info(t("toast_cleared"));
   };
 
   const handleDownloadExcel = () => {
@@ -101,7 +102,7 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
     })).filter((r) => r.Nombre || r.PrecioDetalle);
 
     if (rawRows.length === 0) {
-      toast.error("No hay datos en la hoja de cálculo para exportar.");
+      toast.error(t("toast_no_data_export"));
       return;
     }
 
@@ -109,7 +110,7 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Productos");
     XLSX.writeFile(workbook, "mis_productos_creados.xlsx");
-    toast.success("Excel generado y descargado con éxito.");
+    toast.success(t("toast_excel_generated"));
   };
 
   const handleParseAndConvert = () => {
@@ -133,13 +134,13 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
         }
 
         if (!nombre) {
-          errors.push(`Fila ${index + 1}: El Nombre es obligatorio.`);
+          errors.push(t("err_name_required", { row: index + 1 }));
           return;
         }
 
         const precioDetalle = parseFloat(rawPrecioDetalle);
         if (isNaN(precioDetalle) || precioDetalle < 0) {
-          errors.push(`Fila ${index + 1} (${nombre}): El Precio Detalle debe ser un número >= 0.`);
+          errors.push(t("err_invalid_price", { row: index + 1, name: nombre }));
           return;
         }
 
@@ -187,16 +188,16 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
 
       if (validProducts.length === 0) {
         if (errors.length === 0) {
-          toast.error("Completa al menos una fila con Nombre y Precio Detalle.");
+          toast.error(t("toast_min_one_row"));
         }
         onParsedProducts([]);
         return;
       }
 
       onParsedProducts(validProducts);
-      toast.success(`${validProducts.length} productos procesados correctamente desde la hoja de cálculo.`);
+      toast.success(t("toast_products_processed", { count: validProducts.length }));
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Error al procesar la hoja de cálculo";
+      const message = err instanceof Error ? err.message : t("err_process_generic");
       toast.error(message);
     }
   };
@@ -207,7 +208,7 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
       <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
         <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
           <Sparkles size={16} className="text-[#22D3A6]" />
-          <span>Editor Interactivo react-spreadsheet</span>
+          <span>{t("toolbar_title")}</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -217,7 +218,7 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
             className="h-8 px-3 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer border border-slate-700"
           >
             <Plus size={14} />
-            <span>Fila</span>
+            <span>{t("add_row_button")}</span>
           </button>
 
           <button
@@ -226,7 +227,7 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
             className="h-8 px-3 text-xs font-bold bg-rose-950/40 hover:bg-rose-900/50 text-rose-400 border border-rose-900/40 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Trash2 size={14} />
-            <span>Limpiar</span>
+            <span>{t("clear_button")}</span>
           </button>
 
           <button
@@ -235,7 +236,7 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
             className="h-8 px-3 text-xs font-bold bg-sky-950/40 hover:bg-sky-900/50 text-sky-400 border border-sky-900/40 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Download size={14} />
-            <span>Descargar .xlsx</span>
+            <span>{t("download_button")}</span>
           </button>
 
           <button
@@ -244,7 +245,7 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
             className="h-8 px-4 text-xs font-bold bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-955 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-950/20"
           >
             <CheckCircle2 size={14} />
-            <span>Cargar a Vista Previa</span>
+            <span>{t("load_preview_button")}</span>
           </button>
         </div>
       </div>
@@ -257,13 +258,13 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
             onChange={(newData) => {
               setData(newData as SpreadsheetCell[][]);
             }}
-            columnLabels={COLUMN_LABELS}
+            columnLabels={columnLabels}
           />
         </div>
       </div>
 
       <p className="text-[11px] text-slate-400 leading-normal">
-        💡 Tip: Puedes escribir directamente en las celdas o copiar y pegar bloques de datos desde Excel/CSV. Haz clic en <span className="text-[#22D3A6] font-bold">Cargar a Vista Previa</span> para procesar tus filas.
+        {t("tip_prefix")} <span className="text-[#22D3A6] font-bold">{t("load_preview_button")}</span> {t("tip_suffix")}
       </p>
     </div>
   );

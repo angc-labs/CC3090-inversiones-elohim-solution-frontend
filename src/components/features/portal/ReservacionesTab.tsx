@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Calendar, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cambiarEstadoReservacion, type ReservacionDto } from "@/lib/api/admin";
@@ -17,15 +18,17 @@ export function ReservacionesTab({
   loadingReservaciones,
   onRefresh,
 }: ReservacionesTabProps) {
+  const t = useTranslations("Reservaciones");
+
   const handleToggleEstadoPagoReservacion = async (res: ReservacionDto) => {
     if (!token) return;
     const nuevoEstado = res.estadoPago === "pagado" ? "pendiente" : "pagado";
     try {
       await cambiarEstadoReservacion(token, res.id, { estadoPago: nuevoEstado });
-      toast.success("Estado de pago actualizado");
+      toast.success(t("toast_payment_updated"));
       onRefresh();
     } catch (err) {
-      toast.error("Error al actualizar el estado de pago");
+      toast.error(t("toast_payment_error"));
     }
   };
 
@@ -34,10 +37,10 @@ export function ReservacionesTab({
     const nuevoEstado = res.estadoDespacho === "despachado" ? "procesando" : "despachado";
     try {
       await cambiarEstadoReservacion(token, res.id, { estadoDespacho: nuevoEstado });
-      toast.success("Estado de despacho actualizado");
+      toast.success(t("toast_dispatch_updated"));
       onRefresh();
     } catch (err) {
-      toast.error("Error al actualizar el estado de despacho");
+      toast.error(t("toast_dispatch_error"));
     }
   };
 
@@ -46,9 +49,9 @@ export function ReservacionesTab({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-black text-white">Reservaciones</h2>
+        <h2 className="text-xl font-black text-white">{t("title")}</h2>
         <p className="text-xs text-slate-400">
-          Consulta las reservaciones y pedidos de tus clientes en tiempo real
+          {t("subtitle")}
         </p>
       </div>
 
@@ -59,7 +62,7 @@ export function ReservacionesTab({
       ) : activeReservations.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-800 p-12 text-center space-y-3">
           <Calendar className="mx-auto text-slate-600" size={40} />
-          <p className="text-sm text-slate-400">No hay reservaciones activas para esta tienda.</p>
+          <p className="text-sm text-slate-400">{t("empty_state")}</p>
         </div>
       ) : (
         <div className="rounded-xl border border-slate-900 bg-slate-950/20 overflow-hidden">
@@ -67,12 +70,12 @@ export function ReservacionesTab({
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-slate-900 bg-slate-950/60 text-slate-400 uppercase font-bold tracking-wider">
-                  <th className="p-4">Código Reservación</th>
-                  <th className="p-4">Fecha</th>
-                  <th className="p-4">Monto Total</th>
-                  <th className="p-4">Estado Pago</th>
-                  <th className="p-4">Despacho</th>
-                  <th className="p-4">Detalle Artículos</th>
+                  <th className="p-4">{t("table_code")}</th>
+                  <th className="p-4">{t("table_date")}</th>
+                  <th className="p-4">{t("table_amount")}</th>
+                  <th className="p-4">{t("table_payment_status")}</th>
+                  <th className="p-4">{t("table_dispatch")}</th>
+                  <th className="p-4">{t("table_items_detail")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -116,7 +119,7 @@ export function ReservacionesTab({
                       <div className="flex flex-col gap-0.5 text-[10px]">
                         {res.detalles.map((d, index) => (
                           <span key={index}>
-                            • {d.productoNombre ?? "Artículo"}: {d.cantidad} ud x Q
+                            • {d.productoNombre ?? t("item_fallback")}: {d.cantidad} ud x Q
                             {d.precioCobrado.toFixed(2)}
                           </span>
                         ))}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { cambiarEstadoReservacion, type ReservacionDto } from "@/lib/api/admin";
@@ -11,15 +12,17 @@ interface PagosTabProps {
 }
 
 export function PagosTab({ token, reservaciones, onRefresh }: PagosTabProps) {
+  const t = useTranslations("Pagos");
+
   const handleToggleDespachoReservacion = async (res: ReservacionDto) => {
     if (!token) return;
     const nuevoEstado = res.estadoDespacho === "despachado" ? "procesando" : "despachado";
     try {
       await cambiarEstadoReservacion(token, res.id, { estadoDespacho: nuevoEstado });
-      toast.success("Estado de despacho actualizado");
+      toast.success(t("toast_dispatch_updated"));
       onRefresh();
     } catch (err) {
-      toast.error("Error al actualizar el estado de despacho");
+      toast.error(t("toast_dispatch_error"));
     }
   };
 
@@ -28,16 +31,16 @@ export function PagosTab({ token, reservaciones, onRefresh }: PagosTabProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-black text-white">Control de Caja y Pagos</h2>
+        <h2 className="text-xl font-black text-white">{t("title")}</h2>
         <p className="text-xs text-slate-400">
-          Verifica las transacciones con estado de pago registrado como COMPLETADO
+          {t("subtitle")}
         </p>
       </div>
 
       {paidReservations.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-800 p-12 text-center space-y-3">
           <CreditCard className="mx-auto text-slate-600" size={40} />
-          <p className="text-sm text-slate-400">No hay pagos confirmados registrados para esta tienda.</p>
+          <p className="text-sm text-slate-400">{t("empty_state")}</p>
         </div>
       ) : (
         <div className="rounded-xl border border-slate-900 bg-slate-950/20 overflow-hidden">
@@ -45,12 +48,12 @@ export function PagosTab({ token, reservaciones, onRefresh }: PagosTabProps) {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-slate-900 bg-slate-950/60 text-slate-400 uppercase font-bold tracking-wider">
-                  <th className="p-4">Identificador Pago</th>
-                  <th className="p-4">Stripe Intent ID</th>
-                  <th className="p-4">Fecha Transacción</th>
-                  <th className="p-4">Importe Neto</th>
-                  <th className="p-4">Estado</th>
-                  <th className="p-4">Despacho / Entrega</th>
+                  <th className="p-4">{t("table_payment_id")}</th>
+                  <th className="p-4">{t("table_stripe_intent")}</th>
+                  <th className="p-4">{t("table_transaction_date")}</th>
+                  <th className="p-4">{t("table_net_amount")}</th>
+                  <th className="p-4">{t("table_status")}</th>
+                  <th className="p-4">{t("table_dispatch")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -60,14 +63,14 @@ export function PagosTab({ token, reservaciones, onRefresh }: PagosTabProps) {
                     className="border-b border-slate-900/55 hover:bg-slate-950/30 transition-all"
                   >
                     <td className="p-4 font-mono font-bold text-white">
-                      PAG-{res.id.substring(0, 6).toUpperCase()}
+                      {t("payment_prefix", { code: res.id.substring(0, 6).toUpperCase() })}
                     </td>
-                    <td className="p-4 text-slate-450">{res.stripeIntentId || "Efectivo / Transferencia"}</td>
+                    <td className="p-4 text-slate-450">{res.stripeIntentId || t("cash_transfer")}</td>
                     <td className="p-4 text-slate-400">{new Date(res.fechaReserva).toLocaleString()}</td>
                     <td className="p-4 text-[#22D3A6] font-bold">Q{res.montoTotal.toFixed(2)}</td>
                     <td className="p-4">
                       <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 text-[9px] font-black uppercase tracking-wider">
-                        Verificado
+                        {t("verified_badge")}
                       </span>
                     </td>
                     <td className="p-4">

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Download, FileText, Loader2, AlertTriangle, Sliders, Play, Database, BookOpen, Copy, Check, Search, Clock, Sparkles, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -35,6 +36,8 @@ interface ReportesTabProps {
 }
 
 export function ReportesTab({ token, activeStore }: ReportesTabProps) {
+  const t = useTranslations("Reportes");
+
   const [reportSubTab, setReportSubTab] = useState<"productos" | "empleados" | "pagos" | "personalizado">(
     "productos"
   );
@@ -94,7 +97,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
         .then(setReportProductos)
         .catch((err) =>
           setReportesError(
-            err instanceof Error ? err.message : "Error al cargar reporte de productos"
+            err instanceof Error ? err.message : t("err_load_products")
           )
         )
         .finally(() => setReportesLoading(false));
@@ -103,7 +106,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
         .then(setReportEmpleados)
         .catch((err) =>
           setReportesError(
-            err instanceof Error ? err.message : "Error al cargar reporte de empleados"
+            err instanceof Error ? err.message : t("err_load_employees")
           )
         )
         .finally(() => setReportesLoading(false));
@@ -112,7 +115,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
         .then(setReportMetodosPago)
         .catch((err) =>
           setReportesError(
-            err instanceof Error ? err.message : "Error al cargar reporte de métodos de pago"
+            err instanceof Error ? err.message : t("err_load_payment_methods")
           )
         )
         .finally(() => setReportesLoading(false));
@@ -126,7 +129,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
     // Always obtain the absolute freshest query directly from the Monaco Editor instance
     const queryToExecute = (monacoEditorRef.current?.getValue() ?? customQuery).trim();
     if (!queryToExecute) {
-      toast.error("La consulta SQL no puede estar vacía");
+      toast.error(t("err_empty_query"));
       return;
     }
 
@@ -146,10 +149,10 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
         executedAt: new Date().toLocaleTimeString(),
         queryExecuted: queryToExecute,
       });
-      toast.success(`Consulta SQL ejecutada: ${result.rows.length} fila(s) en ${durationMs}ms`);
+      toast.success(t("toast_sql_executed", { rows: result.rows.length, ms: durationMs }));
     } catch (err) {
-      setCustomQueryError(err instanceof Error ? err.message : "Error al ejecutar la consulta SQL");
-      toast.error("Error al ejecutar la consulta");
+      setCustomQueryError(err instanceof Error ? err.message : t("err_execute_generic"));
+      toast.error(t("toast_execute_error"));
     } finally {
       setCustomQueryLoading(false);
     }
@@ -174,29 +177,29 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
 
     if (reportSubTab === "productos" && reportProductos) {
       data = reportProductos.detalle.map((row) => ({
-        Posicion: row.posicion,
-        Producto: row.producto,
-        "Cantidad Vendida": row.cantidadVendida,
-        "Ingresos (Q)": row.ingresos,
-        "Precio Promedio (Q)": row.precioPromedio,
+        [t("export_col_position")]: row.posicion,
+        [t("export_col_product")]: row.producto,
+        [t("export_col_qty_sold")]: row.cantidadVendida,
+        [t("export_col_revenue")]: row.ingresos,
+        [t("export_col_avg_price")]: row.precioPromedio,
       }));
       fileNameName = "ventas_por_producto";
     } else if (reportSubTab === "empleados" && reportEmpleados) {
       data = reportEmpleados.detalle.map((row) => ({
-        Empleado: row.empleado,
-        "Ventas Realizadas": row.ventasRealizadas,
-        "Monto Total (Q)": row.montoTotal,
-        "Promedio por Venta (Q)": row.promedioPorVenta,
-        Desempeño: row.desempeno,
+        [t("export_col_employee")]: row.empleado,
+        [t("export_col_sales_made")]: row.ventasRealizadas,
+        [t("export_col_total_amount")]: row.montoTotal,
+        [t("export_col_avg_per_sale")]: row.promedioPorVenta,
+        [t("export_col_performance")]: row.desempeno,
       }));
       fileNameName = "desempeno_empleados";
     } else if (reportSubTab === "pagos" && reportMetodosPago) {
       data = reportMetodosPago.detalle.map((row) => ({
-        "Método de Pago": row.metodo,
-        "Cantidad de Transacciones": row.cantidadTransacciones,
-        "Porcentaje (%)": row.porcentaje,
-        "Monto Total (Q)": row.montoTotal,
-        "Monto Promedio (Q)": row.montoPromedio,
+        [t("export_col_payment_method")]: row.metodo,
+        [t("export_col_transaction_count")]: row.cantidadTransacciones,
+        [t("export_col_percentage")]: row.porcentaje,
+        [t("export_col_total_amount")]: row.montoTotal,
+        [t("export_col_avg_amount")]: row.montoPromedio,
       }));
       fileNameName = "metodos_pago";
     } else if (reportSubTab === "personalizado" && customQueryResult) {
@@ -205,7 +208,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
     }
 
     if (data.length === 0) {
-      toast.error("No hay datos para exportar.");
+      toast.error(t("err_no_data_export"));
       return;
     }
 
@@ -217,7 +220,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
       `reporte_${fileNameName}_${new Date().toISOString().slice(0, 10)}.${format}`,
       { bookType: format === "xlsx" ? "xlsx" : "csv" }
     );
-    toast.success(`Reporte exportado exitosamente en formato ${format.toUpperCase()}`);
+    toast.success(t("toast_report_exported", { format: format.toUpperCase() }));
   };
 
   const isDark = activeStore?.configuracionVisual ? true : true; // Keep dark portal theme default
@@ -227,9 +230,9 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
       {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-900 pb-5">
         <div>
-          <h2 className="text-xl font-black text-white">Reportes de Negocio</h2>
+          <h2 className="text-xl font-black text-white">{t("title")}</h2>
           <p className="text-xs text-slate-400">
-            Analiza el rendimiento de tu tienda y realiza consultas personalizadas
+            {t("subtitle")}
           </p>
         </div>
 
@@ -249,7 +252,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                         : "text-slate-400 hover:text-white"
                     }`}
                   >
-                    {m === "todos" ? "Todos" : m === "ventas" ? "Ventas" : "Reservaciones"}
+                    {m === "todos" ? t("mode_all") : m === "ventas" ? t("mode_sales") : t("mode_reservations")}
                   </button>
                 ))}
               </div>
@@ -262,7 +265,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                   onChange={(e) => setReportFiltro((prev) => ({ ...prev, desde: e.target.value }))}
                   className="bg-transparent border-none text-slate-300 font-mono text-[10px] focus:outline-none p-1 w-28 cursor-pointer"
                 />
-                <span className="text-slate-600">al</span>
+                <span className="text-slate-600">{t("date_separator")}</span>
                 <input
                   type="date"
                   value={reportFiltro.hasta}
@@ -281,14 +284,14 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 className="h-8 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer border border-slate-700 shrink-0"
               >
                 <Download size={12} />
-                <span>Exportar CSV</span>
+                <span>{t("export_csv_button")}</span>
               </button>
               <button
                 onClick={() => exportarReporte("xlsx")}
                 className="h-8 px-3 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer border-none shrink-0"
               >
                 <FileText size={12} />
-                <span>Exportar Excel</span>
+                <span>{t("export_excel_button")}</span>
               </button>
             </div>
           )}
@@ -309,12 +312,12 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
             }`}
           >
             {tab === "productos"
-              ? "Productos"
+              ? t("tab_productos")
               : tab === "empleados"
-              ? "Empleados"
+              ? t("tab_empleados")
               : tab === "pagos"
-              ? "Métodos de Pago"
-              : "Personalizado (SQL)"}
+              ? t("tab_pagos")
+              : t("tab_personalizado")}
             {reportSubTab === tab && <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#22D3A6]" />}
           </button>
         ))}
@@ -345,7 +348,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 hover:border-slate-800 transition-all">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                    Total Productos Vendidos
+                    {t("kpi_total_sold")}
                   </span>
                   <span className="text-2xl font-black text-white">
                     {reportProductos.totalProductosVendidos.toLocaleString("es-GT")}
@@ -353,7 +356,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 </div>
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 hover:border-slate-800 transition-all">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                    Ingresos Totales
+                    {t("kpi_total_revenue")}
                   </span>
                   <span className="text-2xl font-black text-[#22D3A6]">
                     Q{" "}
@@ -365,14 +368,14 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 </div>
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 hover:border-slate-800 transition-all">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                    Producto Top
+                    {t("kpi_top_product")}
                   </span>
                   <span className="text-lg font-black text-white truncate">
                     {reportProductos.productoTop ?? "—"}
                   </span>
                   {reportProductos.unidadesProductoTop != null && (
                     <span className="text-[10px] text-slate-400 font-semibold">
-                      {reportProductos.unidadesProductoTop} unidades
+                      {t("units_label", { count: reportProductos.unidadesProductoTop })}
                     </span>
                   )}
                 </div>
@@ -383,7 +386,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 {/* Cantidad Vendida */}
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Cantidad Vendida por Producto
+                    {t("chart_qty_sold_title")}
                   </h3>
                   <div className="h-64 w-full text-xs">
                     <ResponsiveContainer width="100%" height="100%">
@@ -416,7 +419,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                                     {label}
                                   </p>
                                   <p className="font-semibold text-[#38BDF8] text-xs">
-                                    Cantidad: {payload[0].value}
+                                    {t("tooltip_quantity", { value: payload[0].value as number })}
                                   </p>
                                 </div>
                               );
@@ -433,7 +436,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 {/* Ingresos por Producto */}
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Ingresos por Producto
+                    {t("chart_revenue_title")}
                   </h3>
                   <div className="h-64 w-full text-xs">
                     <ResponsiveContainer width="100%" height="100%">
@@ -472,9 +475,10 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                                     {label}
                                   </p>
                                   <p className="font-semibold text-[#22D3A6] text-xs">
-                                    Ingresos: Q
-                                    {Number(payload[0].value).toLocaleString("es-GT", {
-                                      minimumFractionDigits: 2,
+                                    {t("tooltip_revenue", {
+                                      value: Number(payload[0].value).toLocaleString("es-GT", {
+                                        minimumFractionDigits: 2,
+                                      }),
                                     })}
                                   </p>
                                 </div>
@@ -494,18 +498,18 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
               <div className="rounded-xl border border-slate-900 bg-slate-950/40 overflow-hidden">
                 <div className="border-b border-slate-900 bg-slate-950/80 px-5 py-4">
                   <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                    Detalle de Productos Más Vendidos
+                    {t("detail_table_title")}
                   </h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="border-b border-slate-900 text-slate-400 bg-slate-950/10 font-bold uppercase tracking-wider text-[10px]">
-                        <th className="px-5 py-3 text-center w-16">Posición</th>
-                        <th className="px-5 py-3">Producto</th>
-                        <th className="px-5 py-3 text-center">Cantidad Vendida</th>
-                        <th className="px-5 py-3 text-right">Ingresos</th>
-                        <th className="px-5 py-3 text-right">Precio Promedio</th>
+                        <th className="px-5 py-3 text-center w-16">{t("table_position")}</th>
+                        <th className="px-5 py-3">{t("table_product")}</th>
+                        <th className="px-5 py-3 text-center">{t("table_qty_sold")}</th>
+                        <th className="px-5 py-3 text-right">{t("table_revenue")}</th>
+                        <th className="px-5 py-3 text-right">{t("table_avg_price")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-900">
@@ -551,19 +555,19 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 hover:border-slate-800 transition-all">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                    Total Empleados
+                    {t("kpi_total_employees")}
                   </span>
                   <span className="text-2xl font-black text-white">{reportEmpleados.totalEmpleados}</span>
                 </div>
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 hover:border-slate-800 transition-all">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                    Total Ventas
+                    {t("kpi_total_sales")}
                   </span>
                   <span className="text-2xl font-black text-white">{reportEmpleados.totalVentas}</span>
                 </div>
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 hover:border-slate-800 transition-all">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                    Monto Total
+                    {t("kpi_total_amount")}
                   </span>
                   <span className="text-2xl font-black text-[#22D3A6]">
                     Q{" "}
@@ -575,14 +579,14 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 </div>
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 hover:border-slate-800 transition-all">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                    Top Vendedor
+                    {t("kpi_top_seller")}
                   </span>
                   <span className="text-lg font-black text-white truncate">
                     {reportEmpleados.topVendedor ?? "—"}
                   </span>
                   {reportEmpleados.ventasTopVendedor != null && (
                     <span className="text-[10px] text-slate-400 font-semibold">
-                      {reportEmpleados.ventasTopVendedor} ventas
+                      {t("sales_label", { count: reportEmpleados.ventasTopVendedor })}
                     </span>
                   )}
                 </div>
@@ -593,7 +597,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 {/* Ventas por Empleado */}
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Número de Ventas por Empleado
+                    {t("chart_sales_by_employee_title")}
                   </h3>
                   <div className="h-64 w-full text-xs">
                     <ResponsiveContainer width="100%" height="100%">
@@ -623,7 +627,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                                     {label}
                                   </p>
                                   <p className="font-semibold text-[#38BDF8] text-xs">
-                                    Ventas: {payload[0].value}
+                                    {t("tooltip_sales", { value: payload[0].value as number })}
                                   </p>
                                 </div>
                               );
@@ -640,7 +644,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 {/* Monto por Empleado */}
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Monto Total Vendido
+                    {t("chart_amount_by_employee_title")}
                   </h3>
                   <div className="h-64 w-full text-xs">
                     <ResponsiveContainer width="100%" height="100%">
@@ -677,9 +681,10 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                                     {label}
                                   </p>
                                   <p className="font-semibold text-[#22D3A6] text-xs">
-                                    Monto: Q
-                                    {Number(payload[0].value).toLocaleString("es-GT", {
-                                      minimumFractionDigits: 2,
+                                    {t("tooltip_amount", {
+                                      value: Number(payload[0].value).toLocaleString("es-GT", {
+                                        minimumFractionDigits: 2,
+                                      }),
                                     })}
                                   </p>
                                 </div>
@@ -699,18 +704,18 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
               <div className="rounded-xl border border-slate-900 bg-slate-950/40 overflow-hidden">
                 <div className="border-b border-slate-900 bg-slate-950/80 px-5 py-4">
                   <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                    Productividad Detallada
+                    {t("detail_productivity_title")}
                   </h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="border-b border-slate-900 text-slate-400 bg-slate-950/10 font-bold uppercase tracking-wider text-[10px]">
-                        <th className="px-5 py-3">Empleado</th>
-                        <th className="px-5 py-3 text-center">Ventas Realizadas</th>
-                        <th className="px-5 py-3 text-right">Monto Total</th>
-                        <th className="px-5 py-3 text-right">Promedio por Venta</th>
-                        <th className="px-5 py-3 text-center">Desempeño</th>
+                        <th className="px-5 py-3">{t("table_employee")}</th>
+                        <th className="px-5 py-3 text-center">{t("table_sales_made")}</th>
+                        <th className="px-5 py-3 text-right">{t("table_total_amount")}</th>
+                        <th className="px-5 py-3 text-right">{t("table_avg_per_sale")}</th>
+                        <th className="px-5 py-3 text-center">{t("table_performance")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-900">
@@ -762,9 +767,9 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">
                       {item.metodo}
                     </span>
-                    <span className="text-2xl font-black text-white">{item.transacciones} transacciones</span>
+                    <span className="text-2xl font-black text-white">{t("transactions_label", { count: item.transacciones })}</span>
                     <span className="text-xs text-[#22D3A6] font-bold">
-                      Total: Q {item.monto.toLocaleString("es-GT", { minimumFractionDigits: 2 })}
+                      {t("total_label", { value: item.monto.toLocaleString("es-GT", { minimumFractionDigits: 2 }) })}
                     </span>
                   </div>
                 ))}
@@ -775,7 +780,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 {/* Distribución por Método */}
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Distribución por Método de Pago
+                    {t("chart_distribution_title")}
                   </h3>
                   <div className="h-64 w-full flex items-center justify-center text-xs">
                     <ResponsiveContainer width="100%" height="100%">
@@ -790,10 +795,10 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                                     {data.metodo}
                                   </p>
                                   <p className="font-semibold text-[#38BDF8] text-xs">
-                                    Transacciones: {data.transacciones}
+                                    {t("tooltip_transactions", { value: data.transacciones })}
                                   </p>
                                   <p className="font-semibold text-[#22D3A6] text-xs">
-                                    Porcentaje: {data.porcentaje}%
+                                    {t("tooltip_percentage", { value: data.porcentaje })}
                                   </p>
                                 </div>
                               );
@@ -825,7 +830,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 {/* Monto por Método */}
                 <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Monto por Método de Pago
+                    {t("chart_amount_by_method_title")}
                   </h3>
                   <div className="h-64 w-full text-xs">
                     <ResponsiveContainer width="100%" height="100%">
@@ -849,9 +854,10 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                                     {label}
                                   </p>
                                   <p className="font-semibold text-[#38BDF8] text-xs">
-                                    Monto Total: Q
-                                    {Number(payload[0].value).toLocaleString("es-GT", {
-                                      minimumFractionDigits: 2,
+                                    {t("tooltip_total_amount", {
+                                      value: Number(payload[0].value).toLocaleString("es-GT", {
+                                        minimumFractionDigits: 2,
+                                      }),
                                     })}
                                   </p>
                                 </div>
@@ -871,18 +877,18 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
               <div className="rounded-xl border border-slate-900 bg-slate-950/40 overflow-hidden">
                 <div className="border-b border-slate-900 bg-slate-950/80 px-5 py-4">
                   <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                    Detalle de Métodos de Pago
+                    {t("detail_payment_methods_title")}
                   </h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="border-b border-slate-900 text-slate-400 bg-slate-950/10 font-bold uppercase tracking-wider text-[10px]">
-                        <th className="px-5 py-3">Método</th>
-                        <th className="px-5 py-3 text-center">Cantidad de Transacciones</th>
-                        <th className="px-5 py-3 text-center">Porcentaje</th>
-                        <th className="px-5 py-3 text-right">Monto Total</th>
-                        <th className="px-5 py-3 text-right">Monto Promedio</th>
+                        <th className="px-5 py-3">{t("table_method")}</th>
+                        <th className="px-5 py-3 text-center">{t("table_transaction_count")}</th>
+                        <th className="px-5 py-3 text-center">{t("table_percentage")}</th>
+                        <th className="px-5 py-3 text-right">{t("table_total_amount")}</th>
+                        <th className="px-5 py-3 text-right">{t("table_avg_amount")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-900">
@@ -922,7 +928,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                   <div className="flex items-center gap-2">
                     <Sliders className="text-[#22D3A6]" size={18} />
                     <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                      Consola SQL Custom (Soporta variables: @tenant_id)
+                      {t("sql_console_title")}
                     </h3>
                   </div>
                   <div className="flex items-center gap-2">
@@ -936,10 +942,10 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                       }`}
                     >
                       <BookOpen size={13} />
-                      <span>{showSchemaHelp ? "Ocultar Ayuda de Tablas" : "Mostrar Ayuda de Tablas"}</span>
+                      <span>{showSchemaHelp ? t("hide_schema_help") : t("show_schema_help")}</span>
                     </button>
                     <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full font-bold">
-                      READ-ONLY ACTIVE
+                      {t("readonly_badge")}
                     </span>
                   </div>
                 </div>
@@ -954,18 +960,20 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                     isLoading={customQueryLoading}
                   />
                   <p className="text-[10px] text-slate-500 leading-normal">
-                    * Por razones de seguridad y aislamiento de datos, toda consulta SQL debe incluir un filtro
-                    explícito en la columna <code className="text-[#38BDF8] font-mono">tienda_id</code> utilizando
-                    la variable <code className="text-[#22D3A6] font-mono">@tenant_id</code> (ej:{" "}
-                    <code className="text-[#22D3A6] font-mono">WHERE tienda_id = @tenant_id</code>). Solo se
-                    permiten comandos de lectura (<code className="text-[#38BDF8] font-mono">SELECT</code> /{" "}
-                    <code className="text-[#38BDF8] font-mono">WITH</code>).
+                    {t("security_note_intro")} <code className="text-[#38BDF8] font-mono">tienda_id</code>{" "}
+                    {t("security_note_using")}{" "}
+                    <code className="text-[#22D3A6] font-mono">@tenant_id</code> {t("security_note_example")}{" "}
+                    <code className="text-[#22D3A6] font-mono">WHERE tienda_id = @tenant_id</code>
+                    {t("security_note_readonly")}
+                    <code className="text-[#38BDF8] font-mono">SELECT</code> {t("security_note_or")}{" "}
+                    <code className="text-[#38BDF8] font-mono">WITH</code>
+                    {t("security_note_end")}
                   </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
                   <span className="text-[10px] text-slate-400 font-semibold">
-                    Tus consultas se ejecutan con privilegios restringidos de base de datos PostgreSQL.
+                    {t("privilege_note")}
                   </span>
                   <div className="flex items-center gap-2 self-end sm:self-auto">
                     <button
@@ -975,9 +983,9 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                         monacoEditorRef.current?.setValue(defaultSqlQuery);
                       }}
                       className="h-9 px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer border border-slate-800 transition-all"
-                      title="Restaurar consulta de ejemplo inicial"
+                      title={t("restore_initial_tooltip")}
                     >
-                      Restaurar Inicial
+                      {t("restore_initial_button")}
                     </button>
                     <button
                       onClick={handleExecuteSql}
@@ -987,11 +995,11 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                       {customQueryLoading ? (
                         <>
                           <Loader2 className="animate-spin" size={14} />
-                          <span>Ejecutando...</span>
+                          <span>{t("executing_label")}</span>
                         </>
                       ) : (
                         <span className="flex items-center gap-1">
-                          <Play size={11} className="fill-slate-950" /> Ejecutar Query
+                          <Play size={11} className="fill-slate-950" /> {t("execute_query_button")}
                         </span>
                       )}
                     </button>
@@ -1016,21 +1024,21 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-rose-400 font-bold text-xs uppercase tracking-wider">
                       <AlertTriangle size={16} />
-                      <span>Error de Ejecución SQL</span>
+                      <span>{t("execution_error_title")}</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setCustomQueryError(null)}
                       className="text-xs text-rose-400 hover:text-rose-200 cursor-pointer bg-transparent border-none"
                     >
-                      ✕ Cerrar
+                      {t("close_error_button")}
                     </button>
                   </div>
                   <p className="text-xs font-mono text-rose-300 bg-rose-950/40 p-3 rounded-lg border border-rose-900/30 overflow-x-auto whitespace-pre-wrap leading-relaxed">
                     {customQueryError}
                   </p>
                   <p className="text-[11px] text-slate-400">
-                    💡 Revisa las tablas y atributos disponibles en el panel de ayuda de arriba para asegurar que los nombres de tablas y columnas sean exactos.
+                    {t("error_hint")}
                   </p>
                 </div>
               )}
@@ -1045,12 +1053,12 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                         <Database size={15} />
                       </div>
                       <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                        <span>Resultado en Tiempo Real</span>
+                        <span>{t("realtime_result_title")}</span>
                       </h3>
 
                       {/* Live Badges */}
                       <span className="text-[10px] font-bold text-[#22D3A6] bg-[#22D3A6]/10 px-2.5 py-0.5 rounded-full border border-[#22D3A6]/30 uppercase font-mono">
-                        {customQueryResult.length} fila(s)
+                        {t("rows_count_badge", { count: customQueryResult.length })}
                       </span>
 
                       {customQueryStats && (
@@ -1059,7 +1067,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                             <Clock size={11} /> {customQueryStats.durationMs}ms
                           </span>
                           <span className="hidden md:inline text-slate-500">
-                            a las {customQueryStats.executedAt}
+                            {t("executed_at_label", { time: customQueryStats.executedAt })}
                           </span>
                         </div>
                       )}
@@ -1073,7 +1081,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
                           <input
                             type="text"
-                            placeholder="Filtrar resultados..."
+                            placeholder={t("filter_results_placeholder")}
                             value={resultSearchFilter}
                             onChange={(e) => setResultSearchFilter(e.target.value)}
                             className="h-8 w-36 sm:w-44 rounded-lg bg-slate-900/90 pl-8 pr-2 text-[11px] text-slate-200 placeholder:text-slate-500 border border-slate-800 focus:border-[#22D3A6] focus:outline-none transition-colors font-mono"
@@ -1096,16 +1104,16 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                         onClick={() => {
                           navigator.clipboard.writeText(JSON.stringify(customQueryResult, null, 2));
                           setCopiedResultJson(true);
-                          toast.success("Datos copiados en formato JSON");
+                          toast.success(t("toast_json_copied"));
                           setTimeout(() => setCopiedResultJson(false), 2000);
                         }}
                         className="h-8 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-mono font-medium border border-slate-800 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                        title="Copiar resultado completo como JSON"
+                        title={t("copy_json_tooltip")}
                       >
                         {copiedResultJson ? (
                           <>
                             <Check size={12} className="text-[#22D3A6]" />
-                            <span className="text-[#22D3A6]">¡Copiado!</span>
+                            <span className="text-[#22D3A6]">{t("copied_label")}</span>
                           </>
                         ) : (
                           <>
@@ -1124,21 +1132,21 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                           const wb = XLSX.utils.book_new();
                           XLSX.utils.book_append_sheet(wb, ws, "Consulta_SQL");
                           XLSX.writeFile(wb, `consulta_sql_${new Date().toISOString().slice(0, 10)}.csv`, { bookType: "csv" });
-                          toast.success("CSV exportado con éxito");
+                          toast.success(t("toast_csv_exported"));
                         }}
                         className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 text-[11px] font-semibold border border-slate-800 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                        title="Exportar a archivo CSV"
+                        title={t("export_csv_result_tooltip")}
                       >
                         <Download size={12} className="text-[#22D3A6]" />
-                        <span>Exportar CSV</span>
+                        <span>{t("export_csv_button")}</span>
                       </button>
                     </div>
                   </div>
 
                   {customQueryResult.length === 0 ? (
                     <div className="p-12 text-center text-slate-500 font-mono text-xs space-y-1">
-                      <p className="text-slate-400 font-semibold">0 filas encontradas</p>
-                      <p className="text-slate-600">La consulta se completó exitosamente en PostgreSQL pero no devolvió registros coincidentes.</p>
+                      <p className="text-slate-400 font-semibold">{t("zero_rows_title")}</p>
+                      <p className="text-slate-600">{t("zero_rows_desc")}</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto max-h-[460px] sidebar-scrollbar">
@@ -1196,7 +1204,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                                       ) : typeof cellVal === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cellVal) ? (
                                         <span
                                           className="text-slate-400 font-mono text-[11px] hover:text-white cursor-pointer select-all"
-                                          title="Haga clic para seleccionar UUID"
+                                          title={t("uuid_tooltip")}
                                         >
                                           {cellVal}
                                         </span>

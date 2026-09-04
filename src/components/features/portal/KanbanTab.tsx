@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import {
   Play,
   Pause,
@@ -40,7 +41,6 @@ type ColumnId = "pendiente_pago" | "pagado_procesando" | "despachado";
 
 interface Column {
   id: ColumnId;
-  title: string;
   color: string;
   borderColor: string;
   badgeBg: string;
@@ -50,7 +50,6 @@ interface Column {
 const COLUMNS: Column[] = [
   {
     id: "pendiente_pago",
-    title: "Pendiente de Pago",
     color: "text-amber-400 border-amber-500/20",
     badgeBg: "bg-amber-500/10 text-amber-400",
     borderColor: "border-amber-500/15",
@@ -58,7 +57,6 @@ const COLUMNS: Column[] = [
   },
   {
     id: "pagado_procesando",
-    title: "Pago Verificado",
     color: "text-[#22D3A6] border-[#22D3A6]/20",
     badgeBg: "bg-[#22D3A6]/10 text-[#22D3A6]",
     borderColor: "border-[#22D3A6]/15",
@@ -66,7 +64,6 @@ const COLUMNS: Column[] = [
   },
   {
     id: "despachado",
-    title: "Despachado",
     color: "text-[#38BDF8] border-[#38BDF8]/20",
     badgeBg: "bg-[#38BDF8]/10 text-[#38BDF8]",
     borderColor: "border-[#38BDF8]/15",
@@ -82,6 +79,14 @@ export function KanbanTab({
   sucursales,
   onRefresh
 }: KanbanTabProps) {
+  const t = useTranslations("Kanban");
+  const columnTitle = (id: ColumnId) =>
+    id === "pendiente_pago"
+      ? t("column_pendiente_pago")
+      : id === "pagado_procesando"
+      ? t("column_pagado_procesando")
+      : t("column_despachado");
+
   // Search & Filtering States
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSucursal, setSelectedSucursal] = useState("all");
@@ -182,9 +187,9 @@ export function KanbanTab({
         const hasNew = currentIds.some((id) => !prevReservationIdsRef.current.includes(id));
         if (hasNew) {
           playSynthSound("new");
-          toast("🔔 ¡Nuevo pedido recibido en tiempo real!", {
+          toast(t("toast_new_order_title"), {
             className: "bg-slate-900 border border-slate-800 text-white font-sans rounded-xl",
-            description: "El tablero Kanban se ha actualizado automáticamente."
+            description: t("toast_new_order_desc")
           });
         }
       }
@@ -222,7 +227,7 @@ export function KanbanTab({
     onRefresh();
     setCountdown(6);
     playSynthSound("success");
-    toast.success("Tablero Kanban sincronizado.");
+    toast.success(t("toast_synced"));
   };
 
   // Resolve user info from user master list
@@ -230,13 +235,13 @@ export function KanbanTab({
     const user = usuarios.find((u) => u.id === userId);
     return user
       ? { name: user.name, email: user.email }
-      : { name: "Cliente Invitado", email: "Sin correo registrado" };
+      : { name: t("guest_client"), email: t("no_email") };
   };
 
   // Resolve sucursal name
   const getSucursalName = (sucursalId: string) => {
     const suc = sucursales.find((s) => s.id === sucursalId);
-    return suc ? suc.nombre : "Sin Asignar";
+    return suc ? suc.nombre : t("unassigned_branch");
   };
 
   // Classify reservations into their corresponding lifecycle column
@@ -307,7 +312,7 @@ export function KanbanTab({
     setIsPollingPaused(true);
 
     // Optimistic UI updates could be added, but standard toast + load is robust
-    const loadingToast = toast.loading("Actualizando estado del pedido...");
+    const loadingToast = toast.loading(t("toast_updating"));
 
     try {
       await cambiarEstadoReservacion(token, id, {
@@ -315,14 +320,14 @@ export function KanbanTab({
         estadoDespacho: targetEstadoDespacho
       });
       toast.dismiss(loadingToast);
-      toast.success(`Pedido #${id.substring(0, 8).toUpperCase()} movido con éxito.`, {
+      toast.success(t("toast_moved_success", { code: id.substring(0, 8).toUpperCase() }), {
         icon: "🚀"
       });
       playSynthSound("success");
       onRefresh();
     } catch (err) {
       toast.dismiss(loadingToast);
-      toast.error("No se pudo actualizar la reservación.");
+      toast.error(t("toast_update_error"));
     } finally {
       // Resume polling after a brief safety delay
       setTimeout(() => setIsPollingPaused(false), 2500);
@@ -357,10 +362,10 @@ export function KanbanTab({
         <div>
           <h2 className="text-xl font-black tracking-tight text-white flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-[#22D3A6] animate-pulse" />
-            Tablero de Control de Caja
+            {t("header_title")}
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Gestión visual de flujos de pago y despachos en tiempo real
+            {t("header_subtitle")}
           </p>
         </div>
 
@@ -373,14 +378,14 @@ export function KanbanTab({
                 "p-1.5 rounded-lg border border-transparent transition-all cursor-pointer bg-transparent",
                 soundEnabled ? "text-[#22D3A6] hover:bg-[#22D3A6]/10" : "text-slate-500 hover:bg-slate-800"
               )}
-              title={soundEnabled ? "Desactivar sonidos" : "Activar sonidos de alertas"}
+              title={soundEnabled ? t("sound_disable") : t("sound_enable")}
             >
               <Volume2 size={14} className={cn(!soundEnabled && "opacity-50")} />
             </button>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-slate-450 font-medium">Auto-recarga:</span>
+            <span className="text-slate-450 font-medium">{t("auto_refresh_label")}</span>
             <button
               onClick={() => setIsPollingActive(!isPollingActive)}
               className={cn(
@@ -393,12 +398,12 @@ export function KanbanTab({
               {isPollingActive ? (
                 <>
                   <Play size={10} className="animate-pulse" />
-                  <span>En Vivo ({countdown}s)</span>
+                  <span>{t("live_status", { countdown })}</span>
                 </>
               ) : (
                 <>
                   <Pause size={10} />
-                  <span>Pausado</span>
+                  <span>{t("paused_status")}</span>
                 </>
               )}
             </button>
@@ -407,7 +412,7 @@ export function KanbanTab({
               onClick={handleManualRefresh}
               disabled={loadingReservaciones}
               className="p-1.5 rounded-lg border border-slate-850 bg-slate-950 hover:bg-slate-900 text-slate-300 hover:text-white cursor-pointer transition-all disabled:opacity-50 flex items-center justify-center"
-              title="Sincronizar ahora"
+              title={t("sync_now")}
             >
               <RefreshCw size={12} className={cn(loadingReservaciones && "animate-spin text-[#22D3A6]")} />
             </button>
@@ -425,9 +430,9 @@ export function KanbanTab({
               className="p-4 rounded-xl border border-slate-900 bg-slate-955/35 backdrop-blur-md flex items-center justify-between shadow-lg"
             >
               <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{col.title}</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{columnTitle(col.id)}</p>
                 <h4 className="text-lg font-black text-white mt-1 leading-none">
-                  {items.length} <span className="text-xs font-semibold text-slate-500">pedidos</span>
+                  {items.length} <span className="text-xs font-semibold text-slate-500">{t("orders_suffix")}</span>
                 </h4>
               </div>
               <div className="text-right">
@@ -446,7 +451,7 @@ export function KanbanTab({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
           <input
             type="text"
-            placeholder="Buscar por ID de pedido, correo de cliente o importe..."
+            placeholder={t("search_placeholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 h-10 rounded-lg border border-slate-850 bg-slate-900/30 text-xs placeholder:text-slate-500 text-slate-100 outline-none transition-all focus:border-[#22D3A6]/45 focus:ring-1 focus:ring-[#22D3A6]/10"
@@ -460,7 +465,7 @@ export function KanbanTab({
             onChange={(e) => setSelectedSucursal(e.target.value)}
             className="h-10 px-3 rounded-lg border border-slate-850 bg-slate-900/40 text-xs text-slate-350 outline-none focus:border-[#22D3A6]/45 cursor-pointer max-w-[200px] truncate"
           >
-            <option value="all">Todas las Sucursales</option>
+            <option value="all">{t("all_branches")}</option>
             {sucursales.map((suc) => (
               <option key={suc.id} value={suc.id}>
                 {suc.nombre}
@@ -495,7 +500,7 @@ export function KanbanTab({
                   {col.id === "pendiente_pago" && <AlertCircle size={14} />}
                   {col.id === "pagado_procesando" && <Clock size={14} />}
                   {col.id === "despachado" && <Truck size={14} />}
-                  {col.title}
+                  {columnTitle(col.id)}
                 </span>
                 <span className={cn("text-[10px] font-black px-2 py-0.5 rounded-full", col.badgeBg)}>
                   {items.length}
@@ -507,7 +512,7 @@ export function KanbanTab({
                 {items.length === 0 ? (
                   <div className="h-32 rounded-lg border border-dashed border-slate-900 flex flex-col items-center justify-center text-center p-4">
                     <Layers className="text-slate-800 mb-1" size={24} />
-                    <p className="text-[10px] text-slate-600 font-medium">Sin pedidos en esta fase</p>
+                    <p className="text-[10px] text-slate-600 font-medium">{t("empty_column")}</p>
                   </div>
                 ) : (
                   items.map((res) => {
@@ -566,31 +571,31 @@ export function KanbanTab({
                             "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider",
                             res.estadoPago === "pagado" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"
                           )}>
-                            Pago: {res.estadoPago === "pagado" ? "Verificado" : "Pendiente"}
+                            {t("payment_label", { status: res.estadoPago === "pagado" ? t("payment_verified") : t("payment_pending") })}
                           </span>
                           <span className={cn(
                             "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider",
                             (res.estadoDespacho === "despachado" || res.estadoDespacho === "entregado") ? "bg-blue-500/10 text-blue-400" : "bg-rose-500/10 text-rose-400"
                           )}>
-                            Despacho: {(res.estadoDespacho === "despachado" || res.estadoDespacho === "entregado") ? "Despachado" : "Pendiente"}
+                            {t("dispatch_label", { status: (res.estadoDespacho === "despachado" || res.estadoDespacho === "entregado") ? t("column_despachado") : t("payment_pending") })}
                           </span>
                         </div>
 
                         {/* Product item summary */}
                         <div className="border-t border-b border-slate-900/90 py-2 my-2.5 space-y-0.5 text-[9px] text-slate-400 pl-1">
                           <div className="flex items-center justify-between text-slate-500 font-bold uppercase tracking-wider mb-1">
-                            <span>Artículos ({res.detalles.reduce((sum, d) => sum + d.cantidad, 0)})</span>
+                            <span>{t("items_count", { count: res.detalles.reduce((sum, d) => sum + d.cantidad, 0) })}</span>
                             <Package size={10} />
                           </div>
                           {res.detalles.slice(0, 2).map((d, index) => (
                             <div key={index} className="flex justify-between font-medium">
-                              <span className="truncate max-w-[120px]">• {d.productoNombre ?? "Artículo"}</span>
+                              <span className="truncate max-w-[120px]">• {d.productoNombre ?? t("item_fallback")}</span>
                               <span className="text-slate-550 text-[8px] font-bold shrink-0 ml-1">x{d.cantidad}</span>
                             </div>
                           ))}
                           {res.detalles.length > 2 && (
                             <p className="text-[8px] text-[#38BDF8] font-bold mt-1">
-                              + {res.detalles.length - 2} productos más
+                              {t("more_products", { count: res.detalles.length - 2 })}
                             </p>
                           )}
                         </div>
@@ -598,7 +603,7 @@ export function KanbanTab({
                         {/* Footer - Price and Quick Actions */}
                         <div className="flex items-center justify-between pt-1">
                           <div>
-                            <span className="text-[9px] font-bold text-slate-500 uppercase block tracking-widest leading-none">Total</span>
+                            <span className="text-[9px] font-bold text-slate-500 uppercase block tracking-widest leading-none">{t("total_label")}</span>
                             <span className="text-xs font-black text-[#22D3A6] mt-1 inline-block">
                               Q{res.montoTotal.toFixed(2)}
                             </span>
@@ -609,9 +614,9 @@ export function KanbanTab({
                             <button
                               onClick={() => setSelectedCardDetail(res)}
                               className="p-1 px-1.5 rounded-lg border border-slate-900 bg-slate-955 text-[9px] font-bold text-slate-400 hover:text-white hover:bg-slate-900 cursor-pointer transition-all"
-                              title="Ver detalles completos del pedido"
+                              title={t("view_tooltip")}
                             >
-                              Ver
+                              {t("view_button")}
                             </button>
 
                             {/* Column conditional actions */}
@@ -619,9 +624,9 @@ export function KanbanTab({
                               <button
                                 onClick={() => updateReservationStatus(res.id, "pagado_procesando")}
                                 className="p-1 px-1.5 rounded-lg bg-[#22D3A6]/10 hover:bg-[#22D3A6] border border-transparent text-[#22D3A6] hover:text-slate-955 text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-0.5"
-                                title="Marcar Pago como VERIFICADO"
+                                title={t("verify_tooltip")}
                               >
-                                Verificar
+                                {t("verify_button")}
                               </button>
                             )}
 
@@ -629,9 +634,9 @@ export function KanbanTab({
                               <button
                                 onClick={() => updateReservationStatus(res.id, "despachado")}
                                 className="p-1 px-1.5 rounded-lg bg-[#38BDF8]/10 hover:bg-[#38BDF8] border border-transparent text-[#38BDF8] hover:text-slate-955 text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-0.5"
-                                title="Despachar pedido"
+                                title={t("dispatch_tooltip")}
                               >
-                                Despachar
+                                {t("dispatch_button")}
                               </button>
                             )}
                           </div>
@@ -648,59 +653,59 @@ export function KanbanTab({
 
       {/* MOBILE/TABLET QUICK DETAIL & STATE CONTROLLER MODAL */}
       {selectedCardDetail && (
-        <PortalModal onClose={() => setSelectedCardDetail(null)} ariaLabel="Detalle de reservación">
+        <PortalModal onClose={() => setSelectedCardDetail(null)} ariaLabel={t("aria_detail")}>
           <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-955 p-6 shadow-2xl space-y-6 relative text-xs">
             {/* Close Button */}
             <button
               onClick={() => setSelectedCardDetail(null)}
               className="absolute right-4 top-4 text-slate-400 hover:text-white cursor-pointer bg-transparent border-none p-1"
             >
-              Cerrar
+              {t("close_button")}
             </button>
 
             {/* Header info */}
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] font-mono font-black text-white">
-                  PEDIDO #{selectedCardDetail.id.substring(0, 8).toUpperCase()}
+                  {t("order_prefix", { code: selectedCardDetail.id.substring(0, 8).toUpperCase() })}
                 </span>
                 <span className={cn(
                   "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider",
                   selectedCardDetail.estadoPago === "pagado" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"
                 )}>
-                  Pago: {selectedCardDetail.estadoPago === "pagado" ? "Verificado" : "Pendiente"}
+                  {t("payment_label", { status: selectedCardDetail.estadoPago === "pagado" ? t("payment_verified") : t("payment_pending") })}
                 </span>
                 <span className={cn(
                   "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider",
                   (selectedCardDetail.estadoDespacho === "despachado" || selectedCardDetail.estadoDespacho === "entregado") ? "bg-blue-500/10 text-blue-400" : "bg-rose-500/10 text-rose-400"
                 )}>
-                  Despacho: {(selectedCardDetail.estadoDespacho === "despachado" || selectedCardDetail.estadoDespacho === "entregado") ? "Despachado" : "Pendiente"}
+                  {t("dispatch_label", { status: (selectedCardDetail.estadoDespacho === "despachado" || selectedCardDetail.estadoDespacho === "entregado") ? t("column_despachado") : t("payment_pending") })}
                 </span>
               </div>
-              <h3 className="text-base font-black text-white mt-3">Detalle de la Reservación</h3>
+              <h3 className="text-base font-black text-white mt-3">{t("detail_title")}</h3>
               <p className="text-slate-500 text-[10px] mt-0.5">
-                Registrado el {new Date(selectedCardDetail.fechaReserva).toLocaleString("es-ES")}
+                {t("registered_on", { date: new Date(selectedCardDetail.fechaReserva).toLocaleString("es-ES") })}
               </p>
             </div>
 
             {/* Client Detail */}
             <div className="bg-slate-900/40 p-4 rounded-xl border border-slate-900 space-y-2">
-              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Información de Facturación</h4>
+              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t("billing_info_title")}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-slate-300">
                 <div>
-                  <p className="text-[10px] text-slate-500">Nombre de Cliente</p>
+                  <p className="text-[10px] text-slate-500">{t("client_name_label")}</p>
                   <p className="font-bold text-white mt-0.5">{getUserDetails(selectedCardDetail.usuarioId).name}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-500">Correo Electrónico</p>
+                  <p className="text-[10px] text-slate-500">{t("email_label")}</p>
                   <p className="font-semibold text-[#38BDF8] mt-0.5">{getUserDetails(selectedCardDetail.usuarioId).email}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-500">Sucursal de Entrega</p>
+                  <p className="text-[10px] text-slate-500">{t("delivery_branch_label")}</p>
                   <p className="font-semibold text-white mt-0.5">{getSucursalName(selectedCardDetail.sucursalId)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-500">Monto del Pedido</p>
+                  <p className="text-[10px] text-slate-500">{t("order_amount_label")}</p>
                   <p className="font-black text-[#22D3A6] mt-0.5">Q{selectedCardDetail.montoTotal.toFixed(2)}</p>
                 </div>
               </div>
@@ -708,21 +713,21 @@ export function KanbanTab({
 
             {/* Item Table details */}
             <div className="space-y-2">
-              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Artículos en este Pedido</h4>
+              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t("items_in_order_title")}</h4>
               <div className="rounded-xl border border-slate-900 bg-slate-900/20 overflow-hidden max-h-[160px] overflow-y-auto">
                 <table className="w-full text-left border-collapse text-[11px]">
                   <thead>
                     <tr className="border-b border-slate-900 bg-slate-950/60 text-slate-500 font-bold uppercase text-[9px] tracking-wider">
-                      <th className="p-2.5 pl-4">Producto</th>
-                      <th className="p-2.5 text-center">Cant.</th>
-                      <th className="p-2.5 text-right pr-4">Precio</th>
+                      <th className="p-2.5 pl-4">{t("table_product")}</th>
+                      <th className="p-2.5 text-center">{t("table_qty")}</th>
+                      <th className="p-2.5 text-right pr-4">{t("table_price")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {selectedCardDetail.detalles.map((d, idx) => (
                       <tr key={idx} className="border-b border-slate-900/60 hover:bg-slate-900/35 text-slate-350">
                         <td className="p-2.5 pl-4 font-semibold text-white truncate max-w-[200px]">
-                          {d.productoNombre ?? "Artículo"}
+                          {d.productoNombre ?? t("item_fallback")}
                         </td>
                         <td className="p-2.5 text-center font-bold text-slate-450">{d.cantidad}</td>
                         <td className="p-2.5 text-right pr-4 text-[#22D3A6] font-bold">
@@ -736,7 +741,7 @@ export function KanbanTab({
             </div>
             {/* Interactive Actions Selector */}
             <div className="space-y-3 pt-3 border-t border-slate-900">
-              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Actualizar Estado (Transición Directa)</h4>
+              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t("update_status_title")}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <button
                   onClick={() => {
@@ -746,7 +751,7 @@ export function KanbanTab({
                   className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold border border-slate-800 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <AlertCircle size={12} />
-                  <span>Pendiente Pago</span>
+                  <span>{t("status_pending_payment")}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -756,7 +761,7 @@ export function KanbanTab({
                   className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-[#22D3A6] font-bold border border-slate-800 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <CheckCircle2 size={12} />
-                  <span>Pago Verificado</span>
+                  <span>{t("column_pagado_procesando")}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -766,7 +771,7 @@ export function KanbanTab({
                   className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-[#38BDF8] font-bold border border-slate-800 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <Truck size={12} />
-                  <span>Despachado</span>
+                  <span>{t("column_despachado")}</span>
                 </button>
               </div>
             </div>

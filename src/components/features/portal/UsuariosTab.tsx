@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Loader2, Mail, Users, X, AlertTriangle, Check, Download } from "lucide-react";
 import { toast } from "sonner";
 import { PortalModal } from "@/components/ui/PortalModal";
@@ -33,6 +34,8 @@ export function UsuariosTab({
   esAdmin,
   onRefresh,
 }: UsuariosTabProps) {
+  const t = useTranslations("Usuarios");
+
   // Modal states
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isChangeRolModalOpen, setIsChangeRolModalOpen] = useState(false);
@@ -113,11 +116,11 @@ export function UsuariosTab({
             : null,
       };
       await invitarPlatformUsuario(token, payload);
-      toast.success("Usuario registrado exitosamente");
+      toast.success(t("toast_registered"));
       setIsInviteModalOpen(false);
       onRefresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error al registrar el usuario");
+      toast.error(err instanceof Error ? err.message : t("toast_register_error"));
     }
   };
 
@@ -145,11 +148,11 @@ export function UsuariosTab({
             : null,
       };
       await cambiarRolPlatformUsuario(token, selectedUsuario.id, payload);
-      toast.success("Rol actualizado exitosamente");
+      toast.success(t("toast_role_updated"));
       setIsChangeRolModalOpen(false);
       onRefresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error al cambiar el rol del usuario");
+      toast.error(err instanceof Error ? err.message : t("toast_role_error"));
     }
   };
 
@@ -158,23 +161,23 @@ export function UsuariosTab({
 
     try {
       const updated = await cambiarEstadoPlatformUsuario(token, u.id, !u.estado);
-      toast.success(`Usuario ${updated.estado ? "activado" : "desactivado"} exitosamente`);
+      toast.success(t("toast_status_changed", { status: updated.estado ? t("status_activated") : t("status_deactivated") }));
       onRefresh();
     } catch (err) {
-      toast.error("Error al actualizar el estado del usuario");
+      toast.error(t("toast_status_error"));
     }
   };
 
   const handleDeleteUsuario = async (id: string) => {
-    if (!window.confirm("¿Estás seguro de que deseas suspender/eliminar a este colaborador?"))
+    if (!window.confirm(t("confirm_delete")))
       return;
 
     try {
       await eliminarPlatformUsuario(token, id);
-      toast.success("Usuario eliminado o suspendido exitosamente");
+      toast.success(t("toast_deleted"));
       onRefresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error al eliminar el colaborador");
+      toast.error(err instanceof Error ? err.message : t("toast_delete_error"));
     }
   };
 
@@ -194,24 +197,24 @@ export function UsuariosTab({
       // Auto-download the .txt file
       const now = new Date().toLocaleString("es-GT", { dateStyle: "short", timeStyle: "short" });
       const contenido = [
-        "=== CÓDIGOS DE RECUPERACIÓN DE CONTRASEÑA ===",
+        t("file_header"),
         "",
-        `Usuario: ${result.nombre}`,
-        `Correo:  ${result.correo}`,
-        `Generado el: ${now}`,
+        t("file_user_label", { name: result.nombre }),
+        t("file_email_label", { email: result.correo }),
+        t("file_generated_label", { date: now }),
         "",
-        "INSTRUCCIONES:",
-        "1. Guarda estos códigos en un lugar seguro.",
-        "2. Para recuperar tu contraseña, ve a: /recuperar",
-        "3. Ingresa tu correo y uno de estos códigos.",
-        "4. Cada código solo puede usarse UNA vez.",
-        "5. Los códigos expiran en 365 días.",
+        t("file_instructions_title"),
+        t("file_instr1"),
+        t("file_instr2"),
+        t("file_instr3"),
+        t("file_instr4"),
+        t("file_instr5"),
         "",
-        "--- CÓDIGOS (úsalos en MAYÚSCULAS) ---",
+        t("file_codes_header"),
         ...result.codigos.map((c, i) => `  ${i + 1}. ${c}`),
         "",
-        "⚠️  No compartas estos códigos con nadie.",
-        "⚠️  Guárdalos fuera del sistema (papel, gestor de contraseñas).",
+        t("file_warning1"),
+        t("file_warning2"),
       ].join("\n");
 
       const blob = new Blob([contenido], { type: "text/plain;charset=utf-8" });
@@ -224,9 +227,9 @@ export function UsuariosTab({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast.success("Códigos generados y descargados exitosamente");
+      toast.success(t("toast_codes_generated"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error al reestablecer la contraseña");
+      toast.error(err instanceof Error ? err.message : t("toast_reset_error"));
     } finally {
       setIsGeneratingCodes(false);
     }
@@ -236,9 +239,9 @@ export function UsuariosTab({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-black text-white">Usuarios de la Tienda (Personal)</h2>
+          <h2 className="text-xl font-black text-white">{t("title")}</h2>
           <p className="text-xs text-slate-400">
-            Administra los roles, permisos y estados de los colaboradores del staff
+            {t("subtitle")}
           </p>
         </div>
         {esAdmin && (
@@ -247,7 +250,7 @@ export function UsuariosTab({
             className="h-10 px-4 rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border-none"
           >
             <Mail size={16} />
-            <span>Invitar Colaborador</span>
+            <span>{t("invite_button")}</span>
           </button>
         )}
       </div>
@@ -259,7 +262,7 @@ export function UsuariosTab({
       ) : staffUsuarios.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-800 p-12 text-center space-y-3">
           <Users className="mx-auto text-slate-600" size={40} />
-          <p className="text-sm text-slate-400">No se encontraron usuarios de staff.</p>
+          <p className="text-sm text-slate-400">{t("empty_state")}</p>
         </div>
       ) : (
         <div className="rounded-xl border border-slate-900 bg-slate-950/20 overflow-hidden">
@@ -267,11 +270,11 @@ export function UsuariosTab({
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-slate-900 bg-slate-950/60 text-slate-400 uppercase font-bold tracking-wider">
-                  <th className="p-4">Colaborador</th>
-                  <th className="p-4">Correo</th>
-                  <th className="p-4">Rol Staff</th>
-                  <th className="p-4">Estado</th>
-                  {esAdmin && <th className="p-4 text-right">Acciones</th>}
+                  <th className="p-4">{t("table_collaborator")}</th>
+                  <th className="p-4">{t("table_email")}</th>
+                  <th className="p-4">{t("table_staff_role")}</th>
+                  <th className="p-4">{t("table_status")}</th>
+                  {esAdmin && <th className="p-4 text-right">{t("table_actions")}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -289,7 +292,7 @@ export function UsuariosTab({
                     <td className="p-4 text-slate-300">{u.email}</td>
                     <td className="p-4">
                       <span className="px-2 py-0.5 rounded-md bg-[#38BDF8]/10 text-[#38BDF8] text-[9px] font-black uppercase tracking-wider">
-                        {u.rolStaff || "Cajero"}
+                        {u.rolStaff || t("default_role_cajero")}
                       </span>
                     </td>
                     <td className="p-4">
@@ -300,7 +303,7 @@ export function UsuariosTab({
                           u.estado ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
                         }`}
                       >
-                        {u.estado ? "Activo" : "Suspendido"}
+                        {u.estado ? t("status_active") : t("status_suspended")}
                       </button>
                     </td>
                     {esAdmin && (
@@ -308,24 +311,24 @@ export function UsuariosTab({
                         <button
                           onClick={() => handleOpenChangeRolModal(u)}
                           className="p-1.5 rounded bg-slate-900 hover:bg-slate-800 text-[#38BDF8] cursor-pointer border-none text-[10px] font-bold"
-                          title="Cambiar Tipo / Rol"
+                          title={t("action_edit_permissions_tooltip")}
                         >
-                          Editar Permisos
+                          {t("action_edit_permissions")}
                         </button>
                         <button
                           onClick={() => handleOpenResetPasswordModal(u)}
                           className="p-1.5 rounded bg-slate-900 hover:bg-amber-950/40 text-amber-400 cursor-pointer border-none text-[10px] font-bold"
-                          title="Generar códigos de recuperación de contraseña"
+                          title={t("action_reset_password_tooltip")}
                         >
-                          Reestablecer Contraseña
+                          {t("action_reset_password")}
                         </button>
                         {usuario?.correo !== u.email && (
                           <button
                             onClick={() => handleDeleteUsuario(u.id)}
                             className="p-1.5 rounded bg-slate-900 hover:bg-rose-950/30 text-rose-400 cursor-pointer border-none text-[10px] font-bold"
-                            title="Eliminar Colaborador"
+                            title={t("action_delete_tooltip")}
                           >
-                            Eliminar
+                            {t("action_delete")}
                           </button>
                         )}
                       </td>
@@ -340,7 +343,7 @@ export function UsuariosTab({
 
       {/* INVITE USER MODAL */}
       {isInviteModalOpen && (
-        <PortalModal onClose={() => setIsInviteModalOpen(false)} ariaLabel="Agregar o invitar usuario">
+        <PortalModal onClose={() => setIsInviteModalOpen(false)} ariaLabel={t("aria_invite")}>
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-6 relative">
             <button
               onClick={() => setIsInviteModalOpen(false)}
@@ -350,19 +353,19 @@ export function UsuariosTab({
             </button>
 
             <div className="space-y-1">
-              <h3 className="text-lg font-black text-white">Agregar / Invitar Usuario</h3>
-              <p className="text-xs text-slate-400">Registra o invita a un nuevo colaborador a la tienda</p>
+              <h3 className="text-lg font-black text-white">{t("invite_modal_title")}</h3>
+              <p className="text-xs text-slate-400">{t("invite_modal_subtitle")}</p>
             </div>
 
             <form onSubmit={handleInviteUsuario} className="space-y-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Nombre Completo
+                  {t("field_full_name")}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ej. José Fernando"
+                  placeholder={t("field_full_name_placeholder")}
                   value={inviteForm.name}
                   onChange={(e) => setInviteForm({ ...inviteForm, name: e.target.value })}
                   className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 text-sm text-slate-100 outline-none focus:border-[#38BDF8] focus:ring-1"
@@ -371,12 +374,12 @@ export function UsuariosTab({
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Correo Electrónico
+                  {t("field_email")}
                 </label>
                 <input
                   type="email"
                   required
-                  placeholder="ejemplo@correo.com"
+                  placeholder={t("field_email_placeholder")}
                   value={inviteForm.email}
                   onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
                   className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 text-sm text-slate-100 outline-none focus:border-[#38BDF8] focus:ring-1"
@@ -385,11 +388,11 @@ export function UsuariosTab({
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Contraseña Inicial (Opcional)
+                  {t("field_initial_password")}
                 </label>
                 <input
                   type="password"
-                  placeholder="Por defecto: DMHub123*"
+                  placeholder={t("field_initial_password_placeholder")}
                   value={inviteForm.contrasena}
                   onChange={(e) => setInviteForm({ ...inviteForm, contrasena: e.target.value })}
                   className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 text-sm text-slate-100 outline-none focus:border-[#38BDF8] focus:ring-1"
@@ -398,15 +401,15 @@ export function UsuariosTab({
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Tipo de Usuario
+                  {t("field_user_type")}
                 </label>
                 <select
                   value={inviteForm.tipoUsuario}
                   onChange={(e) => setInviteForm({ ...inviteForm, tipoUsuario: e.target.value })}
                   className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 text-sm text-slate-100 outline-none focus:border-[#38BDF8]"
                 >
-                  <option value="staff">Personal (Staff)</option>
-                  <option value="cliente">Cliente</option>
+                  <option value="staff">{t("option_staff")}</option>
+                  <option value="cliente">{t("option_client")}</option>
                 </select>
               </div>
 
@@ -414,29 +417,29 @@ export function UsuariosTab({
                 <>
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Rol de Staff
+                      {t("field_staff_role")}
                     </label>
                     <select
                       value={inviteForm.rolStaff}
                       onChange={(e) => setInviteForm({ ...inviteForm, rolStaff: e.target.value })}
                       className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 text-sm text-slate-100 outline-none focus:border-[#38BDF8]"
                     >
-                      <option value="cajero">Cajero</option>
-                      <option value="administrador">Administrador</option>
-                      <option value="superadmin">Super Administrador</option>
+                      <option value="cajero">{t("option_cajero")}</option>
+                      <option value="administrador">{t("option_administrador")}</option>
+                      <option value="superadmin">{t("option_superadmin")}</option>
                     </select>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Sucursal
+                      {t("field_branch")}
                     </label>
                     <select
                       value={inviteForm.sucursalId}
                       onChange={(e) => setInviteForm({ ...inviteForm, sucursalId: e.target.value })}
                       className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 text-sm text-slate-100 outline-none focus:border-[#38BDF8]"
                     >
-                      <option value="">Ninguna sucursal (Sin asignar)</option>
+                      <option value="">{t("option_no_branch")}</option>
                       {sucursales.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.nombre}
@@ -451,7 +454,7 @@ export function UsuariosTab({
                 type="submit"
                 className="h-11 w-full rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 font-bold transition-all cursor-pointer border-none flex items-center justify-center"
               >
-                <span>Agregar Usuario</span>
+                <span>{t("add_user_button")}</span>
               </button>
             </form>
           </div>
@@ -460,7 +463,7 @@ export function UsuariosTab({
 
       {/* CHANGE ROLE MODAL */}
       {isChangeRolModalOpen && (
-        <PortalModal onClose={() => setIsChangeRolModalOpen(false)} ariaLabel="Cambiar rol de usuario">
+        <PortalModal onClose={() => setIsChangeRolModalOpen(false)} ariaLabel={t("aria_change_role")}>
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-6 relative">
             <button
               onClick={() => setIsChangeRolModalOpen(false)}
@@ -470,22 +473,22 @@ export function UsuariosTab({
             </button>
 
             <div className="space-y-1">
-              <h3 className="text-lg font-black text-white">Cambiar Tipo & Rol</h3>
-              <p className="text-xs text-slate-400">Modifica los permisos de {selectedUsuario?.name}</p>
+              <h3 className="text-lg font-black text-white">{t("change_role_title")}</h3>
+              <p className="text-xs text-slate-400">{t("change_role_subtitle", { name: selectedUsuario?.name ?? "" })}</p>
             </div>
 
             <form onSubmit={handleChangeRolUsuario} className="space-y-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Tipo de Usuario
+                  {t("field_user_type")}
                 </label>
                 <select
                   value={changeRolForm.tipoUsuario}
                   onChange={(e) => setChangeRolForm({ ...changeRolForm, tipoUsuario: e.target.value })}
                   className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 text-sm text-slate-100 outline-none focus:border-[#38BDF8]"
                 >
-                  <option value="cliente">Cliente</option>
-                  <option value="staff">Personal (Staff)</option>
+                  <option value="cliente">{t("option_client")}</option>
+                  <option value="staff">{t("option_staff")}</option>
                 </select>
               </div>
 
@@ -493,29 +496,29 @@ export function UsuariosTab({
                 <>
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Rol de Staff
+                      {t("field_staff_role")}
                     </label>
                     <select
                       value={changeRolForm.rolStaff}
                       onChange={(e) => setChangeRolForm({ ...changeRolForm, rolStaff: e.target.value })}
                       className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 text-sm text-slate-100 outline-none focus:border-[#38BDF8]"
                     >
-                      <option value="cajero">Cajero</option>
-                      <option value="administrador">Administrador</option>
-                      <option value="superadmin">Super Administrador</option>
+                      <option value="cajero">{t("option_cajero")}</option>
+                      <option value="administrador">{t("option_administrador")}</option>
+                      <option value="superadmin">{t("option_superadmin")}</option>
                     </select>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Sucursal
+                      {t("field_branch")}
                     </label>
                     <select
                       value={changeRolForm.sucursalId}
                       onChange={(e) => setChangeRolForm({ ...changeRolForm, sucursalId: e.target.value })}
                       className="h-11 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 text-sm text-slate-100 outline-none focus:border-[#38BDF8]"
                     >
-                      <option value="">Ninguna sucursal (Sin asignar)</option>
+                      <option value="">{t("option_no_branch")}</option>
                       {sucursales.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.nombre}
@@ -530,7 +533,7 @@ export function UsuariosTab({
                 type="submit"
                 className="h-11 w-full rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 font-bold transition-all cursor-pointer border-none flex items-center justify-center"
               >
-                <span>Guardar Permisos</span>
+                <span>{t("save_permissions_button")}</span>
               </button>
             </form>
           </div>
@@ -539,7 +542,7 @@ export function UsuariosTab({
 
       {/* REESTABLECER CONTRASEÑA MODAL */}
       {isResetPasswordModalOpen && (
-        <PortalModal onClose={() => setIsResetPasswordModalOpen(false)} ariaLabel="Restablecer contraseña">
+        <PortalModal onClose={() => setIsResetPasswordModalOpen(false)} ariaLabel={t("aria_reset_password")}>
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-6 relative">
             <button
               onClick={() => setIsResetPasswordModalOpen(false)}
@@ -549,9 +552,9 @@ export function UsuariosTab({
             </button>
 
             <div className="space-y-1">
-              <h3 className="text-lg font-black text-white">Reestablecer Contraseña</h3>
+              <h3 className="text-lg font-black text-white">{t("reset_password_title")}</h3>
               <p className="text-xs text-slate-400">
-                Genera códigos de recuperación para {resetPasswordUsuario?.name}
+                {t("reset_password_subtitle", { name: resetPasswordUsuario?.name ?? "" })}
               </p>
             </div>
 
@@ -560,12 +563,11 @@ export function UsuariosTab({
                 <div className="p-4 rounded-xl border border-amber-900/40 bg-amber-950/20 text-xs text-amber-300 leading-relaxed space-y-2">
                   <p className="font-bold flex items-center gap-1.5 text-amber-400">
                     <AlertTriangle size={14} />
-                    <span>Importante</span>
+                    <span>{t("important_label")}</span>
                   </p>
-                  <p>Al reestablecer la contraseña, se generarán 8 códigos de recuperación de un solo uso.</p>
+                  <p>{t("warning_p1")}</p>
                   <p>
-                    Se descargará automáticamente un archivo de texto con las instrucciones y códigos. Debes
-                    proveerle uno de estos códigos al usuario para que pueda ingresar su nueva contraseña.
+                    {t("warning_p2")}
                   </p>
                 </div>
 
@@ -578,12 +580,12 @@ export function UsuariosTab({
                   {isGeneratingCodes ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
-                      <span>Generando códigos...</span>
+                      <span>{t("generating_codes")}</span>
                     </>
                   ) : (
                     <>
                       <Download size={16} />
-                      <span>Generar y Descargar Códigos</span>
+                      <span>{t("generate_codes_button")}</span>
                     </>
                   )}
                 </button>
@@ -593,14 +595,14 @@ export function UsuariosTab({
                 <div className="p-4 rounded-xl border border-emerald-950/40 bg-emerald-950/20 text-xs text-emerald-400 leading-relaxed space-y-2">
                   <p className="font-bold flex items-center gap-1.5">
                     <Check size={14} />
-                    <span>¡Códigos Generados Exitosamente!</span>
+                    <span>{t("codes_generated_title")}</span>
                   </p>
-                  <p>Se ha descargado un archivo de texto (.txt) con la información.</p>
+                  <p>{t("codes_generated_desc")}</p>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Códigos de Recuperación
+                    {t("recovery_codes_label")}
                   </label>
                   <div className="grid grid-cols-2 gap-2 bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 font-mono text-xs text-slate-100 select-all max-h-40 overflow-y-auto">
                     {resetCodes.map((code, idx) => (
@@ -614,7 +616,7 @@ export function UsuariosTab({
                     ))}
                   </div>
                   <p className="text-[9px] text-slate-500">
-                    Haz clic y arrastra para seleccionar y copiar cualquiera de los códigos.
+                    {t("drag_select_hint")}
                   </p>
                 </div>
 
@@ -625,14 +627,14 @@ export function UsuariosTab({
                     className="h-11 px-4 rounded-xl border border-slate-800 hover:bg-slate-900 text-slate-300 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <Download size={15} />
-                    <span>Descargar Nuevamente</span>
+                    <span>{t("download_again_button")}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsResetPasswordModalOpen(false)}
                     className="h-11 flex-1 rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 font-bold transition-all cursor-pointer border-none flex items-center justify-center"
                   >
-                    <span>Listo / Cerrar</span>
+                    <span>{t("done_close_button")}</span>
                   </button>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Table2,
   Database,
@@ -37,6 +38,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
   onInsertSnippet,
   onSetQuery,
 }) => {
+  const t = useTranslations("SqlSchemaHelp");
   const [activeTab, setActiveTab] = useState<"tablas" | "plantillas" | "guia">("tablas");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("Todas");
@@ -77,13 +79,13 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
   const handleCopy = (text: string, id: string, label: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
-    toast.success(`${label} copiado al portapapeles`);
+    toast.success(t("toast_template_copied", { label }));
     setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleApplyTemplate = (template: SqlTemplate) => {
     onSetQuery(template.sql);
-    toast.success(`Plantilla "${template.title}" cargada en el editor`);
+    toast.success(t("toast_template_loaded", { title: template.title }));
   };
 
   // Filter tables
@@ -117,13 +119,13 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
           </div>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
-              <span>Ayuda de Esquema & Tablas Disponibles</span>
+              <span>{t("header_title")}</span>
               <span className="rounded-md bg-sky-500/10 px-2 py-0.5 text-[9px] font-bold text-sky-400 border border-sky-500/20 lowercase font-mono">
                 PostgreSQL
               </span>
             </h3>
             <p className="text-[11px] text-slate-400">
-              Consulta las tablas, atributos, tipos de datos y plantillas SQL para tus consultas
+              {t("header_subtitle")}
             </p>
           </div>
         </div>
@@ -140,7 +142,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
             }`}
           >
             <Table2 size={13} />
-            <span>Tablas ({SCHEMA_TABLES.length})</span>
+            <span>{t("tab_tables", { count: SCHEMA_TABLES.length })}</span>
           </button>
 
           <button
@@ -153,7 +155,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
             }`}
           >
             <Sparkles size={13} />
-            <span>Plantillas ({SQL_QUERY_TEMPLATES.length})</span>
+            <span>{t("tab_templates", { count: SQL_QUERY_TEMPLATES.length })}</span>
           </button>
 
           <button
@@ -166,7 +168,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
             }`}
           >
             <ShieldCheck size={13} />
-            <span>Reglas & Seguridad</span>
+            <span>{t("tab_rules")}</span>
           </button>
         </div>
       </div>
@@ -184,7 +186,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
               />
               <input
                 type="text"
-                placeholder="Buscar tabla, columna o tipo (ej: producto, precio, cantidad)..."
+                placeholder={t("search_placeholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-xl bg-slate-900/90 pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 border border-slate-800 focus:border-[#22D3A6] focus:outline-none transition-colors font-mono"
@@ -225,7 +227,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                 onClick={expandAll}
                 className="hover:text-[#22D3A6] transition-colors cursor-pointer bg-transparent border-none"
               >
-                Expandir todas
+                {t("expand_all")}
               </button>
               <span>•</span>
               <button
@@ -233,7 +235,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                 onClick={collapseAll}
                 className="hover:text-[#22D3A6] transition-colors cursor-pointer bg-transparent border-none"
               >
-                Colapsar todas
+                {t("collapse_all")}
               </button>
             </div>
           </div>
@@ -242,19 +244,19 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
           <div className="space-y-3">
             {filteredTables.length === 0 ? (
               <div className="rounded-xl border border-slate-900 bg-slate-950/40 p-8 text-center text-xs text-slate-500 font-mono">
-                No se encontraron tablas ni columnas que coincidan con &quot;{searchQuery}&quot;.
+                {t("no_tables_found", { query: searchQuery })}
               </div>
             ) : (
-              filteredTables.map((t) => {
-                const isExpanded = !!expandedTables[t.table];
+              filteredTables.map((tbl) => {
+                const isExpanded = !!expandedTables[tbl.table];
                 return (
                   <div
-                    key={t.table}
+                    key={tbl.table}
                     className="rounded-xl border border-slate-900 bg-slate-950/40 hover:border-slate-800/80 transition-all overflow-hidden"
                   >
                     {/* Table Header / Accordion trigger */}
                     <div
-                      onClick={() => toggleTable(t.table)}
+                      onClick={() => toggleTable(tbl.table)}
                       className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:px-4 cursor-pointer hover:bg-slate-900/30 transition-colors select-none"
                     >
                       <div className="flex items-center gap-2.5">
@@ -262,10 +264,10 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                           {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                         </span>
                         <code className="text-xs font-bold text-[#22D3A6] font-mono tracking-wide bg-[#22D3A6]/10 px-2 py-0.5 rounded border border-[#22D3A6]/20">
-                          {t.table}
+                          {tbl.table}
                         </code>
                         <span className="text-[11px] text-slate-300 font-medium">
-                          {t.detail}
+                          {tbl.detail}
                         </span>
                       </div>
 
@@ -274,39 +276,39 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                         onClick={(e) => e.stopPropagation()}
                       >
                         <span className="text-[10px] text-slate-500 font-mono uppercase bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-                          {t.columns.length} columnas
+                          {t("columns_count", { count: tbl.columns.length })}
                         </span>
 
                         {/* Quick Insert Table Snippet */}
                         <button
                           type="button"
                           onClick={() => {
-                            onInsertSnippet(` ${t.table} `);
-                            toast.success(`Nombre de tabla insertado en editor`);
+                            onInsertSnippet(` ${tbl.table} `);
+                            toast.success(t("toast_table_inserted"));
                           }}
                           className="px-2 py-1 text-[10px] font-bold font-mono rounded bg-slate-800 text-slate-300 hover:bg-[#22D3A6]/20 hover:text-[#22D3A6] border border-slate-700 transition-all cursor-pointer flex items-center gap-1"
-                          title="Insertar nombre de tabla en la posición actual del cursor"
+                          title={t("insert_tooltip")}
                         >
                           <Code size={11} />
-                          + Insertar
+                          {t("insert_button")}
                         </button>
 
                         {/* Quick Insert SELECT Query */}
                         <button
                           type="button"
                           onClick={() => {
-                            const hasTiendaId = t.columns.some((c) => c.name === "tienda_id");
+                            const hasTiendaId = tbl.columns.some((c) => c.name === "tienda_id");
                             const filterClause = hasTiendaId
                               ? "WHERE tienda_id = @tenant_id"
-                              : t.table.includes("Tienda")
+                              : tbl.table.includes("Tienda")
                               ? "WHERE id = @tenant_id"
                               : "";
-                            const sql = `SELECT * FROM ${t.table} ${filterClause} LIMIT 20;`;
+                            const sql = `SELECT * FROM ${tbl.table} ${filterClause} LIMIT 20;`;
                             onSetQuery(sql);
-                            toast.success(`Consulta SELECT para ${t.label} cargada`);
+                            toast.success(t("toast_select_loaded", { label: tbl.label }));
                           }}
                           className="px-2 py-1 text-[10px] font-bold font-mono rounded bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border border-sky-500/30 transition-all cursor-pointer flex items-center gap-1"
-                          title="Cargar consulta SELECT básica en el editor"
+                          title={t("select_query_tooltip")}
                         >
                           <ArrowRight size={11} />
                           SELECT *
@@ -318,22 +320,22 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                     {isExpanded && (
                       <div className="border-t border-slate-900 bg-slate-955/60 p-3 sm:p-4 space-y-3 animate-fade-in">
                         <p className="text-xs text-slate-400 leading-relaxed">
-                          {t.description}
+                          {tbl.description}
                         </p>
 
                         <div className="overflow-x-auto rounded-lg border border-slate-900 bg-slate-950">
                           <table className="w-full text-left text-xs border-collapse font-mono">
                             <thead>
                               <tr className="border-b border-slate-900 bg-slate-900/60 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                <th className="px-3.5 py-2">Columna</th>
-                                <th className="px-3.5 py-2">Tipo de Dato</th>
-                                <th className="px-3.5 py-2">Restricciones</th>
-                                <th className="px-3.5 py-2">Descripción</th>
-                                <th className="px-3.5 py-2 text-right">Acción</th>
+                                <th className="px-3.5 py-2">{t("table_column")}</th>
+                                <th className="px-3.5 py-2">{t("table_data_type")}</th>
+                                <th className="px-3.5 py-2">{t("table_constraints")}</th>
+                                <th className="px-3.5 py-2">{t("table_description")}</th>
+                                <th className="px-3.5 py-2 text-right">{t("table_action")}</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-900/60">
-                              {t.columns.map((col) => {
+                              {tbl.columns.map((col) => {
                                 const isQueryMatch =
                                   searchQuery &&
                                   (col.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -353,7 +355,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                                         {col.isPk && (
                                           <span
                                             className="inline-flex items-center gap-0.5 rounded bg-amber-500/15 px-1.5 py-0.2 text-[9px] font-bold text-amber-400 border border-amber-500/30"
-                                            title="Clave Primaria (Primary Key)"
+                                            title={t("pk_tooltip")}
                                           >
                                             <Key size={9} /> PK
                                           </span>
@@ -361,7 +363,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                                         {col.isFk && (
                                           <span
                                             className="inline-flex items-center gap-0.5 rounded bg-sky-500/15 px-1.5 py-0.2 text-[9px] font-bold text-sky-400 border border-sky-500/30"
-                                            title={`Clave Foránea hacia ${col.fkRef}`}
+                                            title={t("fk_tooltip", { ref: col.fkRef ?? "" })}
                                           >
                                             <Link2 size={9} /> FK
                                           </span>
@@ -395,7 +397,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                                       {col.description}
                                       {col.fkRef && (
                                         <span className="block text-[10px] text-slate-500 font-mono mt-0.5">
-                                          → Ref: {col.fkRef}
+                                          {t("ref_label", { ref: col.fkRef })}
                                         </span>
                                       )}
                                     </td>
@@ -406,12 +408,12 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                                         type="button"
                                         onClick={() => {
                                           onInsertSnippet(col.name);
-                                          toast.success(`Columna "${col.name}" insertada`);
+                                          toast.success(t("toast_column_inserted", { name: col.name }));
                                         }}
                                         className="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-800 text-slate-300 hover:bg-[#22D3A6] hover:text-slate-950 transition-all border border-slate-700 cursor-pointer"
-                                        title={`Insertar "${col.name}" en el editor`}
+                                        title={t("add_column_tooltip", { name: col.name })}
                                       >
-                                        + Añadir
+                                        {t("add_column_button")}
                                       </button>
                                     </td>
                                   </tr>
@@ -434,8 +436,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
       {activeTab === "plantillas" && (
         <div className="p-4 sm:p-5 space-y-4">
           <p className="text-xs text-slate-400">
-            Selecciona cualquiera de las siguientes consultas preconstruidas y optimizadas para tu base de datos.
-            Puedes cargarlas directamente en el editor con un solo clic:
+            {t("templates_intro")}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -468,18 +469,18 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                 <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-900">
                   <button
                     type="button"
-                    onClick={() => handleCopy(tmpl.sql, tmpl.id, "SQL de plantilla")}
+                    onClick={() => handleCopy(tmpl.sql, tmpl.id, t("template_sql_label"))}
                     className="px-2.5 py-1 text-[11px] font-mono font-semibold text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-lg border border-slate-800 transition-all flex items-center gap-1 cursor-pointer"
                   >
                     {copiedId === tmpl.id ? (
                       <>
                         <Check size={12} className="text-[#22D3A6]" />
-                        <span className="text-[#22D3A6]">¡Copiado!</span>
+                        <span className="text-[#22D3A6]">{t("copied_label")}</span>
                       </>
                     ) : (
                       <>
                         <Copy size={12} />
-                        <span>Copiar SQL</span>
+                        <span>{t("copy_template_button")}</span>
                       </>
                     )}
                   </button>
@@ -490,7 +491,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                     className="px-3 py-1 text-[11px] font-bold bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 rounded-lg transition-all flex items-center gap-1 cursor-pointer border-none shadow-sm"
                   >
                     <Code size={12} />
-                    <span>Cargar en Editor</span>
+                    <span>{t("load_in_editor_button")}</span>
                   </button>
                 </div>
               </div>
@@ -507,16 +508,16 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
             <div className="rounded-xl border border-slate-900 bg-slate-950/40 p-4 space-y-2.5">
               <div className="flex items-center gap-2 text-[#22D3A6] font-bold text-xs">
                 <ShieldCheck size={16} />
-                <span>Aislamiento por @tenant_id</span>
+                <span>{t("box1_title")}</span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Cada comercio o inquilino opera en un entorno seguro y aislado. Toda consulta debe incluir la variable:
+                {t("box1_p1")}
               </p>
               <code className="block rounded bg-[#09111c] border border-slate-800 p-2 text-xs font-mono text-[#22D3A6]">
                 WHERE tienda_id = @tenant_id
               </code>
               <p className="text-[11px] text-slate-500">
-                La variable se sustituye automáticamente en el backend por el UUID correspondiente a tu tienda activa.
+                {t("box1_p2")}
               </p>
             </div>
 
@@ -524,10 +525,10 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
             <div className="rounded-xl border border-slate-900 bg-slate-950/40 p-4 space-y-2.5">
               <div className="flex items-center gap-2 text-sky-400 font-bold text-xs">
                 <Code size={16} />
-                <span>Nombres de Tabla en PostgreSQL</span>
+                <span>{t("box2_title")}</span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Las tablas del esquema PostgreSQL usan mayúsculas/minúsculas y nombres reservados como <code className="text-sky-300 font-mono">user</code>.
+                {t("box2_p1")} <code className="text-sky-300 font-mono">user</code>.
               </p>
               <code className="block rounded bg-[#09111c] border border-slate-800 p-2 text-xs font-mono text-sky-300">
                 public.&quot;Producto&quot;<br />
@@ -535,7 +536,7 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
                 public.&quot;user&quot;
               </code>
               <p className="text-[11px] text-slate-500">
-                Usa comillas dobles en el nombre de la tabla para asegurar la compatibilidad en PostgreSQL.
+                {t("box2_p2")}
               </p>
             </div>
 
@@ -543,21 +544,21 @@ export const SqlSchemaHelp: React.FC<SqlSchemaHelpProps> = ({
             <div className="rounded-xl border border-slate-900 bg-slate-950/40 p-4 space-y-2.5">
               <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
                 <Info size={16} />
-                <span>Privilegios de Solo Lectura</span>
+                <span>{t("box3_title")}</span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Por seguridad, la consola opera con un rol restringido que únicamente permite sentencias de lectura:
+                {t("box3_p1")}
               </p>
               <div className="flex items-center gap-2">
                 <span className="rounded bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
-                  SELECT permitido
+                  {t("select_allowed_badge")}
                 </span>
                 <span className="rounded bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 text-[10px] font-bold text-sky-400">
-                  WITH (CTE) permitido
+                  {t("with_allowed_badge")}
                 </span>
               </div>
               <p className="text-[11px] text-slate-500">
-                Comandos de escritura o modificación (INSERT, UPDATE, DELETE, DROP) están estrictamente deshabilitados.
+                {t("box3_p2")}
               </p>
             </div>
           </div>

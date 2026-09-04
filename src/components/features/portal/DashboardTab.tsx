@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ShoppingCart, DollarSign, Package, AlertTriangle } from "lucide-react";
 import {
   BarChart,
@@ -31,6 +32,8 @@ export function DashboardTab({
   esAdmin,
   esStaff,
 }: DashboardTabProps) {
+  const t = useTranslations("Dashboard");
+
   // Hoy / Ayer starts
   const hoyStart = new Date();
   hoyStart.setHours(0, 0, 0, 0);
@@ -57,13 +60,13 @@ export function DashboardTab({
     return d >= ayerStart && d < hoyStart;
   }).length;
 
-  let displayVentasHoy = `${ventasHoyCount} orden(es)`;
-  let displayVentasHoyChange = "Sin cambios";
+  let displayVentasHoy = t("orders_count", { count: ventasHoyCount });
+  let displayVentasHoyChange = t("no_change");
   if (ventasAyerCount > 0) {
     const diff = ((ventasHoyCount - ventasAyerCount) / ventasAyerCount) * 100;
-    displayVentasHoyChange = `${diff >= 0 ? "+" : ""}${diff.toFixed(0)}% vs ayer`;
+    displayVentasHoyChange = t("pct_vs_yesterday", { value: `${diff >= 0 ? "+" : ""}${diff.toFixed(0)}` });
   } else if (ventasHoyCount > 0) {
-    displayVentasHoyChange = `+100% vs ayer`;
+    displayVentasHoyChange = t("pct_vs_yesterday", { value: "+100" });
   }
 
   const displayIngresos = `Q ${totalVentas.toLocaleString("es-GT", {
@@ -85,12 +88,12 @@ export function DashboardTab({
     })
     .reduce((acc, r) => acc + Number(r.montoTotal), 0);
 
-  let displayIngresosChange = "Sin ingresos hoy";
+  let displayIngresosChange = t("no_revenue_today");
   if (ingresosAyer > 0) {
     const diff = ((ingresosHoy - ingresosAyer) / ingresosAyer) * 100;
-    displayIngresosChange = `${diff >= 0 ? "+" : ""}${diff.toFixed(0)}% vs ayer`;
+    displayIngresosChange = t("pct_vs_yesterday", { value: `${diff >= 0 ? "+" : ""}${diff.toFixed(0)}` });
   } else if (ingresosHoy > 0) {
-    displayIngresosChange = `+100% vs ayer`;
+    displayIngresosChange = t("pct_vs_yesterday", { value: "+100" });
   }
 
   const displayProductosActivos = productos.filter((p) => p.publicado).length;
@@ -138,7 +141,7 @@ export function DashboardTab({
   // Helper to fetch user name
   const getUsuarioNombre = (usrId: string) => {
     const found = usuarios.find((u) => u.id === usrId);
-    return found ? found.name : "Usuario Desconocido";
+    return found ? found.name : t("unknown_user");
   };
 
   // List 2: Últimas Ventas
@@ -153,15 +156,15 @@ export function DashboardTab({
       minute: "2-digit",
     }),
     monto: `Q ${res.montoTotal.toFixed(2)}`,
-    metodo: res.stripeIntentId ? "Tarjeta" : "Efectivo",
+    metodo: res.stripeIntentId ? t("payment_card") : t("payment_cash"),
   }));
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-black text-white">Dashboard</h2>
-        <p className="text-xs text-slate-400">Bienvenido al panel de administración</p>
+        <h2 className="text-xl font-black text-white">{t("title")}</h2>
+        <p className="text-xs text-slate-400">{t("subtitle")}</p>
       </div>
 
       {/* Metrics Cards */}
@@ -169,7 +172,7 @@ export function DashboardTab({
         {/* Card 1: Ventas del Día */}
         <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-800 transition-all">
           <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-            <span>Ventas del Día</span>
+            <span>{t("card_sales_today")}</span>
             <ShoppingCart size={14} className="text-[#38BDF8]" />
           </div>
           <div className="flex items-baseline gap-2">
@@ -187,7 +190,7 @@ export function DashboardTab({
         {/* Card 2: Ingresos Totales */}
         <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-800 transition-all">
           <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-            <span>Ingresos Totales</span>
+            <span>{t("card_total_revenue")}</span>
             <DollarSign size={14} className="text-[#22D3A6]" />
           </div>
           <div className="flex items-baseline gap-2">
@@ -205,28 +208,28 @@ export function DashboardTab({
         {/* Card 3: Productos Activos */}
         <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-800 transition-all">
           <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-            <span>Productos Activos</span>
+            <span>{t("card_active_products")}</span>
             <Package size={14} className="text-[#38BDF8]" />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-white">{displayProductosActivos}</span>
           </div>
           <div className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-            <span>En inventario</span>
+            <span>{t("in_inventory")}</span>
           </div>
         </div>
 
         {/* Card 4: Stock Crítico */}
         <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex flex-col gap-2 relative overflow-hidden group hover:border-slate-800 transition-all">
           <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-            <span>Stock Crítico</span>
+            <span>{t("card_critical_stock")}</span>
             <AlertTriangle size={14} className="text-amber-500 animate-pulse" />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-amber-500">{displayStockCritico}</span>
           </div>
           <div className="text-[10px] font-bold text-amber-500/80 flex items-center gap-1">
-            <span>Requieren atención</span>
+            <span>{t("requires_attention")}</span>
           </div>
         </div>
       </div>
@@ -235,7 +238,7 @@ export function DashboardTab({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Ventas por Hora */}
         <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ventas por Hora</h3>
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("chart_sales_by_hour")}</h3>
           <div className="h-64 w-full text-xs">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartDataVentasHora} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
@@ -252,7 +255,7 @@ export function DashboardTab({
                             {label}
                           </p>
                           <p className="font-semibold text-[#38BDF8] text-xs leading-none">
-                            Ventas: {payload[0].value}
+                            {t("tooltip_sales", { value: payload[0].value as number })}
                           </p>
                         </div>
                       );
@@ -276,7 +279,7 @@ export function DashboardTab({
         {/* Productos Más Vendidos (Top 5) */}
         <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Productos Más Vendidos (Top 5)
+            {t("chart_top_products")}
           </h3>
           <div className="h-64 w-full text-xs">
             <ResponsiveContainer width="100%" height="100%">
@@ -303,7 +306,7 @@ export function DashboardTab({
                             {label}
                           </p>
                           <p className="font-semibold text-[#22D3A6] text-xs leading-none">
-                            Ventas: {payload[0].value} uds
+                            {t("tooltip_sales_units", { value: payload[0].value as number })}
                           </p>
                         </div>
                       );
@@ -324,10 +327,10 @@ export function DashboardTab({
         <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              Alertas de Stock Crítico
+              {t("critical_stock_alerts")}
             </h3>
             <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-bold">
-              {displayedCriticalProducts.length} productos
+              {t("products_count_badge", { count: displayedCriticalProducts.length })}
             </span>
           </div>
           <div className="space-y-3">
@@ -338,17 +341,17 @@ export function DashboardTab({
               >
                 <div>
                   <h4 className="text-xs font-bold text-white">{p.nombre}</h4>
-                  <span className="text-[10px] text-slate-400">Stock mínimo: {p.minimo} unidades</span>
+                  <span className="text-[10px] text-slate-400">{t("min_stock", { minimo: p.minimo })}</span>
                 </div>
                 <div className="text-right">
                   <span className="text-sm font-black text-amber-500">{p.disponibles}</span>
-                  <p className="text-[9px] text-slate-400">disponibles</p>
+                  <p className="text-[9px] text-slate-400">{t("available")}</p>
                 </div>
               </div>
             ))}
             {displayedCriticalProducts.length === 0 && (
               <p className="text-xs text-slate-500 italic text-center py-8">
-                No hay productos en estado de stock crítico actualmente.
+                {t("no_critical_stock")}
               </p>
             )}
           </div>
@@ -356,7 +359,7 @@ export function DashboardTab({
 
         {/* Últimas Ventas */}
         <div className="rounded-xl border border-slate-900 bg-slate-955/40 p-6 flex flex-col gap-4">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Últimas Ventas</h3>
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("latest_sales")}</h3>
           <div className="space-y-3">
             {displayedSales.map((sale, idx) => (
               <div
@@ -380,7 +383,7 @@ export function DashboardTab({
             ))}
             {displayedSales.length === 0 && (
               <p className="text-xs text-slate-500 italic text-center py-8">
-                No se han registrado ventas recientemente.
+                {t("no_recent_sales")}
               </p>
             )}
           </div>

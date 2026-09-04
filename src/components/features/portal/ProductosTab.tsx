@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Search, Upload, Plus, Loader2, Package, Eye, EyeOff, Edit, Trash2, X, Download, FileText, Grid, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 import { PortalModal } from "@/components/ui/PortalModal";
@@ -39,6 +40,8 @@ export function ProductosTab({
   hasCloudinary,
   onRefresh,
 }: ProductosTabProps) {
+  const t = useTranslations("Productos");
+
   // Search queries
   const [productSearchQuery, setProductSearchQuery] = useState("");
 
@@ -149,15 +152,15 @@ export function ProductosTab({
     try {
       if (selectedProducto) {
         await actualizarPlatformProducto(token, selectedProducto.id, payload);
-        toast.success("Producto modificado exitosamente");
+        toast.success(t("toast_updated"));
       } else {
         await crearPlatformProducto(token, payload);
-        toast.success("Producto creado exitosamente");
+        toast.success(t("toast_created"));
       }
       setIsProductoModalOpen(false);
       onRefresh();
     } catch (err) {
-      toast.error("Error al guardar el producto");
+      toast.error(t("toast_save_error"));
     }
   };
 
@@ -176,22 +179,22 @@ export function ProductosTab({
         publicado: !prod.publicado,
       };
       const updated = await actualizarPlatformProducto(token, prod.id, payload);
-      toast.success(`Producto ${updated.publicado ? "visible" : "oculto"} en el catálogo`);
+      toast.success(t("toast_visibility_changed", { status: updated.publicado ? t("visible") : t("hidden") }));
       onRefresh();
     } catch (err) {
-      toast.error("Error al cambiar la visibilidad");
+      toast.error(t("toast_visibility_error"));
     }
   };
 
   const handleDeleteProducto = async (id: string) => {
-    if (!token || !window.confirm("¿Estás seguro de que deseas eliminar este producto?")) return;
+    if (!token || !window.confirm(t("toast_delete_confirm"))) return;
 
     try {
       await eliminarPlatformProducto(token, id);
-      toast.success("Producto eliminado exitosamente");
+      toast.success(t("toast_deleted"));
       onRefresh();
     } catch (err) {
-      toast.error("Error al eliminar el producto");
+      toast.error(t("toast_delete_error"));
     }
   };
 
@@ -230,7 +233,7 @@ export function ProductosTab({
     XLSX.writeFile(workbook, `plantilla_importacion_productos.${format}`, {
       bookType: format === "xlsx" ? "xlsx" : "csv",
     });
-    toast.success(`Plantilla descargada en formato ${format.toUpperCase()}`);
+    toast.success(t("toast_template_downloaded", { format: format.toUpperCase() }));
   };
 
   const parseRowsWithMapping = (rows: any[], mapping: Record<string, string>): CrearPlatformProductoBulkInput[] => {
@@ -244,13 +247,13 @@ export function ProductosTab({
       const rawNombre = getValue("nombre") ?? row.Nombre ?? row.nombre ?? row.Producto ?? row.producto ?? row.Name ?? row.name;
       const nombre = String(rawNombre || "").trim();
       if (!nombre) {
-        throw new Error(`Fila ${index + 2}: El 'Nombre' del producto es requerido.`);
+        throw new Error(t("err_name_required", { row: index + 2 }));
       }
 
       const rawPrecioDetalle = getValue("precioDetalle") ?? row.PrecioDetalle ?? row.precioDetalle ?? row.Precio ?? row.precio ?? row.Price ?? row.price;
       const precioDetalle = parseFloat(rawPrecioDetalle);
       if (isNaN(precioDetalle) || precioDetalle < 0) {
-        throw new Error(`Fila ${index + 2} (${nombre}): 'Precio Detalle' debe ser un número válido >= 0.`);
+        throw new Error(t("err_invalid_price", { row: index + 2, name: nombre }));
       }
 
       const rawPrecioMayoreo = getValue("precioMayoreo") ?? row.PrecioMayoreo ?? row.precioMayoreo ?? row.Mayoreo ?? row.mayoreo;
@@ -324,7 +327,7 @@ export function ProductosTab({
         const json = XLSX.utils.sheet_to_json<any>(worksheet);
 
         if (json.length === 0) {
-          toast.error("El archivo está vacío o no contiene filas de datos.");
+          toast.error(t("toast_empty_file"));
           return;
         }
 
@@ -349,9 +352,9 @@ export function ProductosTab({
 
         const productsToCreate = parseRowsWithMapping(json, guessedMapping);
         setParsedProducts(productsToCreate);
-        toast.success(`Archivo cargado con éxito. ${productsToCreate.length} productos listos para importar.`);
+        toast.success(t("toast_file_loaded", { count: productsToCreate.length }));
       } catch (err: any) {
-        toast.error(err.message || "Error al procesar el archivo.");
+        toast.error(err.message || t("toast_file_process_error"));
       }
     };
     reader.readAsBinaryString(file);
@@ -364,13 +367,13 @@ export function ProductosTab({
     try {
       const result = await crearPlatformProductosBulk(token, parsedProducts);
       const count = result?.length || parsedProducts.length;
-      toast.success(`¡Carga masiva completada! ${count} productos creados exitosamente en el servidor.`);
+      toast.success(t("toast_bulk_success", { count }));
       setIsImportModalOpen(false);
       setParsedProducts([]);
       setRawExcelRows([]);
       onRefresh();
     } catch (err: any) {
-      toast.error(err.message || "Error al importar productos al servidor.");
+      toast.error(err.message || t("toast_bulk_error"));
     } finally {
       setIsImporting(false);
     }
@@ -380,9 +383,9 @@ export function ProductosTab({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-white">Productos</h2>
+          <h2 className="text-xl font-black text-white">{t("title")}</h2>
           <p className="text-xs text-slate-400">
-            Administra catálogo de productos, precios y visualiza stocks totales
+            {t("subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -390,7 +393,7 @@ export function ProductosTab({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
             <input
               type="text"
-              placeholder="Filtrar por nombre o SKU..."
+              placeholder={t("search_placeholder")}
               value={productSearchQuery}
               onChange={(e) => setProductSearchQuery(e.target.value)}
               className="h-9 w-full pl-9 pr-3 rounded-lg border border-slate-800 bg-slate-900/40 text-xs placeholder:text-slate-500 text-slate-100 outline-none focus:border-[#22D3A6]/40"
@@ -403,14 +406,14 @@ export function ProductosTab({
                 className="h-9 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-100 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border border-slate-750 shrink-0"
               >
                 <Upload size={16} />
-                <span>Importar Productos</span>
+                <span>{t("import_button")}</span>
               </button>
               <button
                 onClick={() => handleOpenProductoModal()}
                 className="h-9 px-4 rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border-none shrink-0"
               >
                 <Plus size={16} />
-                <span>Nuevo Producto</span>
+                <span>{t("new_button")}</span>
               </button>
             </>
           )}
@@ -424,7 +427,7 @@ export function ProductosTab({
       ) : productos.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-800 p-12 text-center space-y-3">
           <Package className="mx-auto text-slate-600" size={40} />
-          <p className="text-sm text-slate-400">No se encontraron productos registrados.</p>
+          <p className="text-sm text-slate-400">{t("empty_state")}</p>
         </div>
       ) : (
         <div className="rounded-xl border border-slate-900 bg-slate-950/20 overflow-hidden">
@@ -432,13 +435,13 @@ export function ProductosTab({
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-slate-900 bg-slate-950/60 text-slate-400 uppercase font-bold tracking-wider">
-                  <th className="p-4">Nombre</th>
-                  <th className="p-4">SKU</th>
-                  <th className="p-4">Precio Detalle</th>
-                  <th className="p-4">Precio Mayoreo</th>
-                  <th className="p-4 text-center">Stock Total</th>
-                  <th className="p-4">Publicado</th>
-                  {esAdmin && <th className="p-4 text-right">Acciones</th>}
+                  <th className="p-4">{t("table_name")}</th>
+                  <th className="p-4">{t("table_sku")}</th>
+                  <th className="p-4">{t("table_price_detail")}</th>
+                  <th className="p-4">{t("table_price_wholesale")}</th>
+                  <th className="p-4 text-center">{t("table_stock_total")}</th>
+                  <th className="p-4">{t("table_published")}</th>
+                  {esAdmin && <th className="p-4 text-right">{t("table_actions")}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -475,7 +478,7 @@ export function ProductosTab({
                       <td className="p-4 text-slate-400 font-mono">{p.sku || "—"}</td>
                       <td className="p-4 text-white font-semibold">Q{p.precioDetalle.toFixed(2)}</td>
                       <td className="p-4 text-slate-350">Q{p.precioMayoreo.toFixed(2)}</td>
-                      <td className="p-4 text-center font-bold text-[#38BDF8]">{p.stockTotal} uds</td>
+                      <td className="p-4 text-center font-bold text-[#38BDF8]">{t("stock_units", { count: p.stockTotal })}</td>
                       <td className="p-4">
                         <button
                           disabled={!esAdmin}
@@ -513,7 +516,7 @@ export function ProductosTab({
 
       {/* PRODUCT FORM MODAL */}
       {isProductoModalOpen && (
-        <PortalModal onClose={() => setIsProductoModalOpen(false)} ariaLabel={selectedProducto ? "Editar producto" : "Crear producto"}>
+        <PortalModal onClose={() => setIsProductoModalOpen(false)} ariaLabel={selectedProducto ? t("aria_edit") : t("aria_add")}>
           <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-5 my-8 relative animate-fade-in">
             <button
               onClick={() => setIsProductoModalOpen(false)}
@@ -524,21 +527,21 @@ export function ProductosTab({
 
             <div className="space-y-1">
               <h3 className="text-lg font-black text-white">
-                {selectedProducto ? "Editar Producto" : "Agregar Producto"}
+                {selectedProducto ? t("modal_edit_title") : t("modal_add_title")}
               </h3>
-              <p className="text-xs text-slate-400">Llena los datos para el catálogo de productos</p>
+              <p className="text-xs text-slate-400">{t("modal_subtitle")}</p>
             </div>
 
             <form onSubmit={handleSubmitProducto} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Nombre del Producto
+                    {t("field_name_label")}
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="Ej. Harina Suave Premium"
+                    placeholder={t("field_name_placeholder")}
                     value={productoForm.nombre}
                     onChange={(e) => setProductoForm({ ...productoForm, nombre: e.target.value })}
                     className="h-10 w-full rounded-lg border border-slate-800 bg-slate-900/60 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
@@ -547,11 +550,11 @@ export function ProductosTab({
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Código SKU
+                    {t("field_sku_label")}
                   </label>
                   <input
                     type="text"
-                    placeholder="Ej. HAR-SUA-01"
+                    placeholder={t("field_sku_placeholder")}
                     value={productoForm.sku}
                     onChange={(e) => setProductoForm({ ...productoForm, sku: e.target.value })}
                     className="h-10 w-full rounded-lg border border-slate-800 bg-slate-900/60 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
@@ -562,7 +565,7 @@ export function ProductosTab({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Precio Detalle
+                    {t("field_price_detail_label")}
                   </label>
                   <input
                     type="number"
@@ -576,7 +579,7 @@ export function ProductosTab({
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Precio Mayoreo
+                    {t("field_price_wholesale_label")}
                   </label>
                   <input
                     type="number"
@@ -592,11 +595,11 @@ export function ProductosTab({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5 relative">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Categoría
+                    {t("field_category_label")}
                   </label>
                   <input
                     type="text"
-                    placeholder="Selecciona o escribe una categoría..."
+                    placeholder={t("field_category_placeholder")}
                     value={productoForm.categoriaBuscada}
                     onChange={(e) => {
                       setProductoForm({ ...productoForm, categoriaBuscada: e.target.value });
@@ -633,18 +636,18 @@ export function ProductosTab({
                     </div>
                   )}
                   {productoForm.categoriaBuscada && !categorias.some(c => c.nombreCategoria.toLowerCase() === productoForm.categoriaBuscada.toLowerCase()) && (
-                    <p className="text-[10px] text-slate-400 mt-1">💡 Se guardará como categoría personalizada</p>
+                    <p className="text-[10px] text-slate-400 mt-1">{t("category_custom_hint")}</p>
                   )}
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Punto Crítico (Stock Mínimo)
+                    {t("field_min_stock_label")}
                   </label>
                   <input
                     type="number"
                     min="0"
-                    placeholder="Ej. 10"
+                    placeholder={t("field_min_stock_placeholder")}
                     value={productoForm.stockMinimo || 0}
                     onChange={(e) => setProductoForm({ ...productoForm, stockMinimo: Number(e.target.value) })}
                     className="h-10 w-full rounded-lg border border-slate-800 bg-slate-900/60 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
@@ -654,12 +657,12 @@ export function ProductosTab({
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Imagen URL
+                  {t("field_image_label")}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
-                    placeholder="https://cloudinary.com/ejemplo.jpg"
+                    placeholder={t("field_image_placeholder")}
                     value={productoForm.imagenUrl}
                     onChange={(e) => setProductoForm({ ...productoForm, imagenUrl: e.target.value })}
                     className="flex-1 h-10 rounded-lg border border-slate-800 bg-slate-900/60 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
@@ -667,7 +670,7 @@ export function ProductosTab({
                   {hasCloudinary && (
                     <label className="h-10 px-4 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-700 shrink-0">
                       <Upload size={14} />
-                      <span>Subir</span>
+                      <span>{t("upload_button")}</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -675,14 +678,14 @@ export function ProductosTab({
                           const file = e.target.files?.[0];
                           if (file) {
                             try {
-                              toast.loading("Subiendo imagen del producto...");
+                              toast.loading(t("toast_uploading_image"));
                               const url = await uploadToCloudinary(file, token);
                               setProductoForm((prev) => ({ ...prev, imagenUrl: url }));
                               toast.dismiss();
-                              toast.success("Imagen de producto subida correctamente");
+                              toast.success(t("toast_image_uploaded"));
                             } catch (err) {
                               toast.dismiss();
-                              toast.error(err instanceof Error ? err.message : "Error al subir imagen");
+                              toast.error(err instanceof Error ? err.message : t("toast_image_error"));
                             }
                           }
                         }}
@@ -695,10 +698,10 @@ export function ProductosTab({
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Descripción del Producto
+                  {t("field_description_label")}
                 </label>
                 <textarea
-                  placeholder="Detalles sobre presentación, empaque, peso..."
+                  placeholder={t("field_description_placeholder")}
                   value={productoForm.descripcion}
                   onChange={(e) => setProductoForm({ ...productoForm, descripcion: e.target.value })}
                   className="h-20 w-full rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8] resize-none"
@@ -707,7 +710,7 @@ export function ProductosTab({
 
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Stock por Sucursal
+                  {t("stock_by_branch_label")}
                 </label>
                 <div className="space-y-2 max-h-40 overflow-y-auto pr-1 border border-slate-800 bg-slate-900/40 p-3 rounded-lg">
                   {sucursales.map((suc) => (
@@ -730,7 +733,7 @@ export function ProductosTab({
                     </div>
                   ))}
                   {sucursales.length === 0 && (
-                    <p className="text-xs text-slate-500 italic">No hay sucursales registradas.</p>
+                    <p className="text-xs text-slate-500 italic">{t("no_branches")}</p>
                   )}
                 </div>
               </div>
@@ -744,7 +747,7 @@ export function ProductosTab({
                   className="h-4 w-4 rounded border-slate-800 bg-slate-900 text-[#22D3A6] focus:ring-0 cursor-pointer"
                 />
                 <label htmlFor="prod-publicado" className="text-xs text-slate-350 cursor-pointer select-none">
-                  Publicar en catálogo de clientes inmediatamente
+                  {t("publish_checkbox_label")}
                 </label>
               </div>
 
@@ -752,7 +755,7 @@ export function ProductosTab({
                 type="submit"
                 className="h-11 w-full rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 font-bold transition-all cursor-pointer border-none flex items-center justify-center"
               >
-                <span>Guardar Producto</span>
+                <span>{t("save_button")}</span>
               </button>
             </form>
           </div>
@@ -766,7 +769,7 @@ export function ProductosTab({
             setIsImportModalOpen(false);
             setParsedProducts([]);
           }}
-          ariaLabel="Importar productos"
+          ariaLabel={t("aria_import")}
         >
           <div className="w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-5 my-8 relative">
             <button
@@ -780,8 +783,8 @@ export function ProductosTab({
             </button>
 
             <div className="space-y-1">
-              <h3 className="text-lg font-black text-white">Importación Masiva de Productos</h3>
-              <p className="text-xs text-slate-400">Carga tus productos por lote subiendo un archivo Excel/CSV o creándolos interactivamente.</p>
+              <h3 className="text-lg font-black text-white">{t("import_title")}</h3>
+              <p className="text-xs text-slate-400">{t("import_subtitle")}</p>
             </div>
 
             {/* Import Mode Switcher Tabs */}
@@ -796,7 +799,7 @@ export function ProductosTab({
                 }`}
               >
                 <FileSpreadsheet size={14} />
-                <span>Subir Archivo Excel/CSV</span>
+                <span>{t("tab_excel")}</span>
               </button>
 
               <button
@@ -809,7 +812,7 @@ export function ProductosTab({
                 }`}
               >
                 <Grid size={14} />
-                <span>Editor Interactivo (react-spreadsheet)</span>
+                <span>{t("tab_spreadsheet")}</span>
               </button>
             </div>
 
@@ -818,10 +821,10 @@ export function ProductosTab({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-slate-900 bg-slate-900/10 p-4 rounded-xl">
                 <div className="space-y-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    1. Descarga la Plantilla
+                    {t("step1_title")}
                   </span>
                   <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
-                    Usa nuestras plantillas para asegurarte de que los encabezados y tipos de datos coincidan.
+                    {t("step1_desc")}
                   </p>
                   <div className="flex gap-2">
                     <button
@@ -829,28 +832,28 @@ export function ProductosTab({
                       className="h-8 px-3 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer border border-slate-800"
                     >
                       <Download size={10} />
-                      <span>Plantilla CSV</span>
+                      <span>{t("template_csv_button")}</span>
                     </button>
                     <button
                       onClick={() => downloadTemplate("xlsx")}
                       className="h-8 px-3 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer border border-slate-800"
                     >
                       <Download size={10} />
-                      <span>Plantilla Excel</span>
+                      <span>{t("template_excel_button")}</span>
                     </button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    2. Sube tu archivo (.csv / .xlsx)
+                    {t("step2_title")}
                   </span>
                   <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
-                    Selecciona el archivo excel o delimitado por comas con tus productos listos para publicar.
+                    {t("step2_desc")}
                   </p>
                   <label className="h-8 px-3 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-955 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none w-full text-center">
                     <Upload size={12} />
-                    <span>Seleccionar Archivo</span>
+                    <span>{t("select_file_button")}</span>
                     <input
                       type="file"
                       accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
@@ -874,16 +877,16 @@ export function ProductosTab({
             {importTab === "excel" && parsedProducts.length > 0 && (
               <div className="space-y-2 border border-slate-900 bg-slate-900/10 p-4 rounded-xl">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Estandariza tus Columnas
+                  {t("standardize_columns_title")}
                 </span>
                 <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
-                  Utiliza el formulario de mapeo de columnas para ajustar campos personalizados del Excel.
+                  {t("standardize_columns_desc")}
                 </p>
                 <button
                   onClick={() => setIsColumnMappingModalOpen(true)}
                   className="h-8 px-3 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-955 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none w-full"
                 >
-                  <span>Mapear Columnas Manualmente</span>
+                  <span>{t("map_columns_button")}</span>
                 </button>
               </div>
             )}
@@ -893,10 +896,10 @@ export function ProductosTab({
               <div className="space-y-3 pt-2 border-t border-slate-900">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-[#22D3A6] uppercase tracking-wider">
-                    Vista Previa de Importación ({parsedProducts.length} productos listos)
+                    {t("preview_title", { count: parsedProducts.length })}
                   </span>
                   <span className="text-[9px] text-slate-500 italic font-semibold">
-                    * El inventario inicial se asignará a la sucursal por defecto.
+                    {t("preview_hint")}
                   </span>
                 </div>
 
@@ -904,12 +907,12 @@ export function ProductosTab({
                   <table className="w-full text-left border-collapse text-[10px]">
                     <thead>
                       <tr className="border-b border-slate-900 bg-slate-950 text-slate-500 uppercase font-bold tracking-wider sticky top-0">
-                        <th className="p-2">Nombre</th>
-                        <th className="p-2">SKU</th>
-                        <th className="p-2 text-right">P. Detalle</th>
-                        <th className="p-2 text-right">P. Mayoreo</th>
-                        <th className="p-2 text-center">Stock</th>
-                        <th className="p-2 text-center">Publicado</th>
+                        <th className="p-2">{t("table_name")}</th>
+                        <th className="p-2">{t("table_sku")}</th>
+                        <th className="p-2 text-right">{t("preview_price_detail")}</th>
+                        <th className="p-2 text-right">{t("preview_price_wholesale")}</th>
+                        <th className="p-2 text-center">{t("table_stock_total")}</th>
+                        <th className="p-2 text-center">{t("table_published")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-900">
@@ -931,7 +934,7 @@ export function ProductosTab({
                                   : "bg-slate-800 text-slate-400"
                               }`}
                             >
-                              {p.publicado ? "SÍ" : "NO"}
+                              {p.publicado ? t("import_yes") : t("import_no")}
                             </span>
                           </td>
                         </tr>
@@ -948,10 +951,10 @@ export function ProductosTab({
                   {isImporting ? (
                     <>
                       <Loader2 className="animate-spin" size={16} />
-                      <span>Importando {parsedProducts.length} productos al servidor...</span>
+                      <span>{t("importing_button", { count: parsedProducts.length })}</span>
                     </>
                   ) : (
-                    <span>Confirmar y Guardar {parsedProducts.length} Productos en el Backend</span>
+                    <span>{t("confirm_import_button", { count: parsedProducts.length })}</span>
                   )}
                 </button>
               </div>
@@ -965,7 +968,7 @@ export function ProductosTab({
       {isColumnMappingModalOpen && (
         <PortalModal
           onClose={() => setIsColumnMappingModalOpen(false)}
-          ariaLabel="Mapear columnas"
+          ariaLabel={t("aria_mapping")}
         >
           <div className="w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-5 my-8 relative">
             <button
@@ -976,33 +979,28 @@ export function ProductosTab({
             </button>
 
             <div className="space-y-1">
-              <h3 className="text-lg font-black text-white">Mapeo de Columnas</h3>
-              <p className="text-xs text-slate-400">Asigna las columnas de tu archivo a los campos del proyecto</p>
+              <h3 className="text-lg font-black text-white">{t("mapping_title")}</h3>
+              <p className="text-xs text-slate-400">{t("mapping_subtitle")}</p>
             </div>
 
             <div className="space-y-4">
               {/* Campos Requeridos */}
               <div className="space-y-3">
                 <h4 className="text-xs font-bold text-[#22D3A6] uppercase tracking-wider">
-                  * Campos Requeridos
+                  {t("required_fields_title")}
                 </h4>
                 
                 {["nombre", "precioDetalle", "precioMayoreo", "sku", "stockActual", "stockMinimo"].map((field) => (
                   <div key={field} className="flex items-center gap-3">
                     <label className="w-40 text-sm font-semibold text-white">
-                      {field === "nombre" && "Nombre"}
-                      {field === "precioDetalle" && "Precio Detalle"}
-                      {field === "precioMayoreo" && "Precio Mayoreo"}
-                      {field === "sku" && "SKU"}
-                      {field === "stockActual" && "Stock Actual"}
-                      {field === "stockMinimo" && "Stock Mínimo"}
+                      {t(`field_label_${field}` as any)}
                     </label>
                     <select
                       value={columnMapping[field]}
                       onChange={(e) => setColumnMapping({ ...columnMapping, [field]: e.target.value })}
                       className="flex-1 h-9 rounded-lg border border-slate-800 bg-slate-900/60 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8] cursor-pointer"
                     >
-                      <option value="">-- Seleccionar columna --</option>
+                      <option value="">{t("select_column_placeholder")}</option>
                       {detectedColumns.map((col) => (
                         <option key={col} value={col}>
                           {col}
@@ -1019,22 +1017,20 @@ export function ProductosTab({
               {/* Campos Opcionales */}
               <div className="space-y-3 border-t border-slate-800 pt-4">
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Campos Opcionales
+                  {t("optional_fields_title")}
                 </h4>
                 
                 {["descripcion", "categoriaId", "imagenUrl"].map((field) => (
                   <div key={field} className="flex items-center gap-3">
                     <label className="w-40 text-sm text-slate-300">
-                      {field === "descripcion" && "Descripción"}
-                      {field === "categoriaId" && "Categoría ID"}
-                      {field === "imagenUrl" && "Imagen URL"}
+                      {t(`field_label_${field}` as any)}
                     </label>
                     <select
                       value={columnMapping[field]}
                       onChange={(e) => setColumnMapping({ ...columnMapping, [field]: e.target.value })}
                       className="flex-1 h-9 rounded-lg border border-slate-800 bg-slate-900/60 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8] cursor-pointer"
                     >
-                      <option value="">-- No asignada --</option>
+                      <option value="">{t("not_assigned_placeholder")}</option>
                       {detectedColumns.map((col) => (
                         <option key={col} value={col}>
                           {col}
@@ -1051,27 +1047,27 @@ export function ProductosTab({
                 onClick={() => setIsColumnMappingModalOpen(false)}
                 className="flex-1 h-10 rounded-lg border border-slate-800 bg-slate-900/60 text-slate-300 hover:bg-slate-800 text-sm font-bold transition-all cursor-pointer"
               >
-                Cancelar
+                {t("cancel_button")}
               </button>
               <button
                 onClick={() => {
                   if (rawExcelRows.length === 0) {
-                    toast.error("No hay filas de Excel cargadas para mapear.");
+                    toast.error(t("toast_no_rows_for_mapping"));
                     setIsColumnMappingModalOpen(false);
                     return;
                   }
                   try {
                     const mappedProducts = parseRowsWithMapping(rawExcelRows, columnMapping);
                     setParsedProducts(mappedProducts);
-                    toast.success(`Mapeo aplicado. ${mappedProducts.length} productos listos para importar.`);
+                    toast.success(t("toast_mapping_applied", { count: mappedProducts.length }));
                     setIsColumnMappingModalOpen(false);
                   } catch (err: any) {
-                    toast.error(err.message || "Error al aplicar el mapeo de columnas.");
+                    toast.error(err.message || t("toast_mapping_error"));
                   }
                 }}
                 className="flex-1 h-10 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-955 text-sm font-bold transition-all cursor-pointer border-none"
               >
-                Aplicar Mapeo y Actualizar Vista Previa
+                {t("apply_mapping_button")}
               </button>
             </div>
           </div>
