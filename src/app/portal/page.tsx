@@ -52,6 +52,7 @@ import type { TCategoria } from "@/types";
 // Import modular tab components
 import { DashboardTab } from "@/components/features/portal/DashboardTab";
 import { SucursalesTab } from "@/components/features/portal/SucursalesTab";
+import { BlogTab } from "@/components/features/portal/BlogTab";
 import { ClientesTab } from "@/components/features/portal/ClientesTab";
 import { UsuariosTab } from "@/components/features/portal/UsuariosTab";
 import { ProductosTab } from "@/components/features/portal/ProductosTab";
@@ -100,6 +101,7 @@ export default function PortalPage() {
   const tabTitles: Record<string, string> = {
     tablero: t("portal.tablero"),
     sucursales: t("portal.sucursales"),
+    blog: t("portal.blog"),
     clientes: t("portal.clientes"),
     usuarios: t("portal.usuarios"),
     productos: t("portal.productos"),
@@ -707,6 +709,15 @@ export default function PortalPage() {
             >
               <BookOpen size={18} />
               <span>{t("portal.docs")}</span>
+            </button>
+	    <button
+              onClick={() => handleLinkClick("blog")}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all t>
+                "blog"
+              )}`}
+            >
+              <GitBranch size={18} />
+              <span>{t("portal.blog")}</span>
             </button>
             {esAdmin && (
               <>
