@@ -96,6 +96,17 @@ function getSubdomain(): string | null {
   return null;
 }
 
+export function hasTenantContext(): boolean {
+  if (typeof window === "undefined") return false;
+
+  const subdomain = getSubdomain();
+  if (subdomain && subdomain !== "www" && subdomain !== "admin") {
+    return true;
+  }
+
+  return Boolean(window.localStorage.getItem("active_tenant_id"));
+}
+
 export function buildAuthHeaders(token?: string, skipTenant?: boolean): HeadersInit {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

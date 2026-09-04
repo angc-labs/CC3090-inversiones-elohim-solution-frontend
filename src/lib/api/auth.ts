@@ -76,6 +76,24 @@ export async function login(correo: string, contrasena: string): Promise<TAuthRe
   return mapAuthResponse(response);
 }
 
+export async function loginWithGoogle(
+  idToken: string,
+  tipoUsuario: "cliente" | "administrador",
+  tiendaId?: string
+): Promise<TAuthResponse> {
+  const response = await apiRequest<TAuthApiResponse>(
+    "/api/v1/auth/google",
+    {
+      method: "POST",
+      headers: buildAuthHeaders(undefined, tipoUsuario === "administrador"),
+      body: JSON.stringify({ idToken, tiendaId, tipoUsuario }),
+    },
+    "Error al continuar con Google"
+  );
+
+  return mapAuthResponse(response);
+}
+
 export async function register(data: TRegisterInput): Promise<TAuthResponse> {
   const isClient = data.tipoUsuario === "cliente";
   const response = await apiRequest<TAuthApiResponse>(
