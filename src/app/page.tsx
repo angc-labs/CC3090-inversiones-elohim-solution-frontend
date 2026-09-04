@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getPostLoginPath } from "@/lib/auth-routes";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Button } from "@/components/ui/button";
+import { UseCasesBlog } from "@/components/features/landing/UseCasesBlog";
 import { cn } from "@/lib/utils";
 import {
   FaArrowRight,
@@ -18,11 +19,9 @@ import {
   FaMobileAlt,
   FaStore,
   FaRocket,
-  FaGithub,
   FaUserShield,
   FaUserTag,
   FaUser,
-  FaColumns,
   FaDownload,
   FaUpload
 } from "react-icons/fa";
@@ -67,15 +66,6 @@ const FEATURES = [
   },
 ];
 
-const SECTIONS_DEMO = [
-  { type: "Anuncio", label: "📢 Barra de Anuncio", color: "#22D3A6" },
-  { type: "Header", label: "🧭 Encabezado / Nav", color: "#818CF8" },
-  { type: "Hero", label: "🌟 Sección Hero", color: "#F59E0B" },
-  { type: "Products", label: "📦 Grid de Productos", color: "#60A5FA" },
-  { type: "RichText", label: "📝 Texto Enriquecido", color: "#34D399" },
-  { type: "Footer", label: "📄 Pie de Página", color: "#F472B6" },
-];
-
 export default function LandingPage() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -90,22 +80,11 @@ export default function LandingPage() {
   const featuresRef = useRef<HTMLDivElement>(null);
   const demoRef = useRef<HTMLDivElement>(null);
 
-  const [activeSection, setActiveSection] = useState(0);
-  const [demoStep, setDemoStep] = useState(0);
-
   useEffect(() => {
     if (isAuthenticated && usuario) {
       router.push(getPostLoginPath(usuario.rol));
     }
   }, [isAuthenticated, router, usuario]);
-
-  // Cycle through demo sections
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveSection((prev) => (prev + 1) % SECTIONS_DEMO.length);
-    }, 1800);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -163,6 +142,7 @@ export default function LandingPage() {
             <a href="#constructor" className="hover:text-[#22D3A6]! transition-colors!">Constructor</a>
             <a href="#roles" className="hover:text-[#22D3A6]! transition-colors!">Roles</a>
             <a href="#ventas" className="hover:text-[#22D3A6]! transition-colors!">Administración</a>
+            <a href="#blog" className="hover:text-[#22D3A6]! transition-colors!">Blog</a>
             <a href="http://localhost:3001" target="_blank" rel="noopener noreferrer" className="hover:text-[#22D3A6]! transition-colors!">Documentación</a>
             <a href="#precios" className="hover:text-[#22D3A6]! transition-colors!">Empezar</a>
           </nav>
@@ -516,6 +496,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      <UseCasesBlog />
 
       {/* ─── CTA final ─── */}
       <section
