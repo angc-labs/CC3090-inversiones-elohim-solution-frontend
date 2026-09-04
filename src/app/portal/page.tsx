@@ -62,6 +62,7 @@ import { SettingsTab } from "@/components/features/portal/SettingsTab";
 import { KanbanTab } from "@/components/features/portal/KanbanTab";
 import { PortalModal } from "@/components/ui/PortalModal";
 import { useTheme, useLanguage } from "@/contexts/ThemeLanguageContext";
+import { useTranslations } from "next-intl";
 import { Globe } from "lucide-react";
 
 const getDocsUrl = () => {
@@ -91,23 +92,25 @@ export default function PortalPage() {
 
   // Theme and Language from global context
   const { theme, toggleTheme, isDark } = useTheme();
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, toggleLanguage } = useLanguage();
+  const t = useTranslations("Portal");
+  const tCommon = useTranslations("Common");
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<string>("tablero");
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   const tabTitles: Record<string, string> = {
-    tablero: t("portal.tablero"),
-    sucursales: t("portal.sucursales"),
-    clientes: t("portal.clientes"),
-    usuarios: t("portal.usuarios"),
-    productos: t("portal.productos"),
-    reservaciones: t("portal.reservaciones"),
-    pagos: t("portal.pagos"),
-    reportes: t("portal.reportes"),
-    settings: t("portal.configuracion"),
-    kanban: t("portal.kanban"),
+    tablero: t("tablero"),
+    sucursales: t("sucursales"),
+    clientes: t("clientes"),
+    usuarios: t("usuarios"),
+    productos: t("productos"),
+    reservaciones: t("reservaciones"),
+    pagos: t("pagos"),
+    reportes: t("reportes"),
+    settings: t("configuracion"),
+    kanban: t("kanban"),
   };
 
   // Shared platform master data
@@ -623,7 +626,7 @@ export default function PortalPage() {
               )}`}
             >
               <LayoutDashboard size={18} />
-              <span>{t("portal.tablero")}</span>
+              <span>{t("tablero")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("sucursales")}
@@ -632,7 +635,7 @@ export default function PortalPage() {
               )}`}
             >
               <GitBranch size={18} />
-              <span>{t("portal.sucursales")}</span>
+              <span>{t("sucursales")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("reservaciones")}
@@ -641,7 +644,7 @@ export default function PortalPage() {
               )}`}
             >
               <Calendar size={18} />
-              <span>{t("portal.reservaciones")}</span>
+              <span>{t("reservaciones")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("pagos")}
@@ -650,7 +653,7 @@ export default function PortalPage() {
               )}`}
             >
               <CreditCard size={18} />
-              <span>{t("portal.pagos")}</span>
+              <span>{t("pagos")}</span>
             </button>
             {esStaff && (
               <button
@@ -660,7 +663,7 @@ export default function PortalPage() {
                 )}`}
               >
                 <Kanban size={18} />
-                <span>{t("portal.kanban")}</span>
+                <span>{t("kanban")}</span>
               </button>
             )}
             <button
@@ -670,7 +673,7 @@ export default function PortalPage() {
               )}`}
             >
               <Users size={18} />
-              <span>{t("portal.clientes")}</span>
+              <span>{t("clientes")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("productos")}
@@ -679,7 +682,7 @@ export default function PortalPage() {
               )}`}
             >
               <Package size={18} />
-              <span>{t("portal.productos")}</span>
+              <span>{t("productos")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("reportes")}
@@ -688,7 +691,7 @@ export default function PortalPage() {
               )}`}
             >
               <BarChart3 size={18} />
-              <span>{t("portal.reportes")}</span>
+              <span>{t("reportes")}</span>
             </button>
             <button
               onClick={() => handleLinkClick("usuarios")}
@@ -697,7 +700,7 @@ export default function PortalPage() {
               )}`}
             >
               <User size={18} />
-              <span>{t("portal.usuarios")}</span>
+              <span>{t("usuarios")}</span>
             </button>
             <button
               onClick={() => window.open(getDocsUrl(), "_blank", "noopener,noreferrer")}
@@ -706,7 +709,7 @@ export default function PortalPage() {
               )}`}
             >
               <BookOpen size={18} />
-              <span>{t("portal.docs")}</span>
+              <span>{t("docs")}</span>
             </button>
             {esAdmin && (
               <>
@@ -720,7 +723,7 @@ export default function PortalPage() {
                   )}`}
                 >
                   <Sparkles size={18} />
-                  <span>{t("portal.constructor")}</span>
+                  <span>{t("constructor")}</span>
                 </button>
                 <button
                   onClick={() => handleLinkClick("settings")}
@@ -729,7 +732,7 @@ export default function PortalPage() {
                   )}`}
                 >
                   <Settings size={18} />
-                  <span>{t("portal.configuracion")}</span>
+                  <span>{t("configuracion")}</span>
                 </button>
               </>
             )}
@@ -747,7 +750,7 @@ export default function PortalPage() {
             className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 hover:text-rose-500 rounded-xl transition-all text-left cursor-pointer border-none bg-transparent w-full"
           >
             <LogOut size={18} />
-            <span>{t("portal.logout")}</span>
+            <span>{t("logout")}</span>
           </button>
         </div>
       </>
@@ -811,7 +814,7 @@ export default function PortalPage() {
               <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? "text-slate-500" : "text-slate-400"}`} size={16} />
               <input
                 type="text"
-                placeholder={t("portal.search_placeholder")}
+                placeholder={t("search_placeholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
@@ -841,7 +844,7 @@ export default function PortalPage() {
                   : "border border-slate-200 bg-white shadow-slate-300/50 ring-1 ring-black/5 text-slate-900 portal-card-base"
               }`}>
                 {searchResults.length === 0 ? (
-                  <p className="text-xs text-slate-500 text-center py-4">{t("common.no_results")} "{searchQuery}"</p>
+                  <p className="text-xs text-slate-500 text-center py-4">{tCommon("no_results")} "{searchQuery}"</p>
                 ) : (
                   <div className="space-y-4">
                     {Object.entries(groupedSearchResults).map(([cat, items]) => (
@@ -882,7 +885,7 @@ export default function PortalPage() {
                   ? "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700 hover:text-white"
                   : "border-slate-200 bg-slate-100 text-slate-600 hover:border-slate-300 hover:text-slate-900"
               }`}
-              aria-label={t("portal.toggle_lang")}
+              aria-label={t("toggle_lang")}
               title={language === "es" ? "Switch to English" : "Cambiar a Español"}
             >
               <Globe size={14} className="text-[#38BDF8]" />
@@ -900,7 +903,7 @@ export default function PortalPage() {
                 }`}
               >
                 <Store size={14} className="text-[#38BDF8]" />
-                <span className="max-w-[150px] truncate">{activeStore?.nombre ?? t("portal.select_store")}</span>
+                <span className="max-w-[150px] truncate">{activeStore?.nombre ?? t("select_store")}</span>
                 <ChevronDown size={14} className={isDark ? "text-slate-500" : "text-slate-400"} />
               </button>
 
@@ -913,7 +916,7 @@ export default function PortalPage() {
                   <div className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 border-b ${
                     isDark ? "text-slate-500 border-slate-900" : "text-slate-400 border-slate-100"
                   }`}>
-                    {t("portal.switch_instance")}
+                    {t("switch_instance")}
                   </div>
                   <div className="max-h-48 overflow-y-auto py-1 flex flex-col gap-0.5">
                     {tiendas.map((t) => (
@@ -958,7 +961,7 @@ export default function PortalPage() {
                       }`}
                     >
                       <Plus size={14} />
-                      <span>{t("common.create")} {language === "es" ? "nueva tienda" : "new store"}</span>
+                      <span>{tCommon("create")} {language === "es" ? "nueva tienda" : "new store"}</span>
                     </button>
                   </div>
                 </div>
@@ -976,7 +979,7 @@ export default function PortalPage() {
                     ? "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700 hover:text-white"
                     : "border-slate-200 bg-slate-100 text-slate-600 hover:border-slate-300 hover:text-slate-900"
                 }`}
-                title={t("portal.configuracion")}
+                title={t("configuracion")}
               >
                 <Settings size={16} />
               </button>

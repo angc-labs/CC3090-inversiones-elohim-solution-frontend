@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import { NextIntlClientProvider } from "next-intl";
 import {
   type SupportedLanguage,
   type ThemeMode,
@@ -11,7 +12,13 @@ import {
   getUpdatedUrlWithLanguage,
   normalizeLanguage,
 } from "@/lib/theme-language";
-import { translate } from "@/lib/i18n/translations";
+import esMessages from "@/lib/i18n/es.json";
+import enMessages from "@/lib/i18n/en.json";
+
+const messagesByLanguage: Record<SupportedLanguage, typeof esMessages> = {
+  es: esMessages,
+  en: enMessages,
+};
 
 interface ThemeLanguageContextType {
   theme: ThemeMode;
@@ -20,7 +27,6 @@ interface ThemeLanguageContextType {
   language: SupportedLanguage;
   setLanguage: (lang: SupportedLanguage) => void;
   toggleLanguage: () => void;
-  t: (key: string, fallback?: string) => string;
 }
 
 const ThemeLanguageContext = createContext<ThemeLanguageContextType | undefined>(undefined);
@@ -86,13 +92,6 @@ export function ThemeLanguageProvider({ children }: { children: React.ReactNode 
     });
   }, []);
 
-  const t = useCallback(
-    (key: string, fallback?: string) => {
-      return translate(language, key, fallback);
-    },
-    [language]
-  );
-
   const value = useMemo(
     () => ({
       theme,
@@ -101,14 +100,15 @@ export function ThemeLanguageProvider({ children }: { children: React.ReactNode 
       language,
       setLanguage,
       toggleLanguage,
-      t,
     }),
-    [theme, setTheme, toggleTheme, language, setLanguage, toggleLanguage, t]
+    [theme, setTheme, toggleTheme, language, setLanguage, toggleLanguage]
   );
 
   return (
     <ThemeLanguageContext.Provider value={value}>
-      {children}
+      <NextIntlClientProvider locale={language} messages={messagesByLanguage[language]}>
+        {children}
+      </NextIntlClientProvider>
     </ThemeLanguageContext.Provider>
   );
 }
@@ -133,26 +133,6 @@ export function useLanguage() {
     throw new Error("useLanguage must be used within a ThemeLanguageProvider");
   }
   return {
-    language: context.language,
-    setLanguage: context.setLanguage,
-    toggleLanguage: context.toggleLanguage,
-    t: context.t,
-  };
-}
-
-export function useTranslation() {
-  const context = useContext(ThemeLanguageContext);
-  if (!context) {
-    // Fallback if rendered outside provider
-    return {
-      t: (key: string, fallback?: string) => translate("es", key, fallback),
-      language: "es" as SupportedLanguage,
-      setLanguage: () => {},
-      toggleLanguage: () => {},
-    };
-  }
-  return {
-    t: context.t,
     language: context.language,
     setLanguage: context.setLanguage,
     toggleLanguage: context.toggleLanguage,
