@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import type { CredentialResponse } from "@react-oauth/google";
 import { GoogleSignInButton } from "@/components/features/auth/GoogleSignInButton";
 import { login, loginWithGoogle } from "@/lib/api/auth";
@@ -117,7 +117,15 @@ export default function LoginPage() {
       <div className="pointer-events-none! absolute! top-1/3! right-1/4! h-[600px]! w-[600px]! translate-x-1/2! rounded-full! bg-brand-secondary/5! blur-[150px]! opacity-40!" />
 
       {/* Login Card */}
-      <div className="w-full! max-w-md! rounded-2xl! border! border-slate-800/80! bg-slate-950/80! p-8! shadow-2xl! shadow-black/80! backdrop-blur-md!">
+      <div className="relative! w-full! max-w-md! rounded-2xl! border! border-slate-800/80! bg-slate-950/80! p-8! shadow-2xl! shadow-black/80! backdrop-blur-md!">
+        <button
+          type="button"
+          onClick={() => router.push("/")}
+          aria-label="Volver al inicio"
+          className="absolute! top-6! left-6! flex! h-9! w-9! items-center! justify-center! rounded-full! text-brand-primary! hover:bg-brand-primary/10! transition-colors!"
+        >
+          <ArrowLeft className="h-5! w-5!" />
+        </button>
         <div className="flex! items-center! justify-center! mb-6!">
           <img src="/logo.png" alt="DM Hub Logo" className="h-10! w-auto! object-contain!" />
         </div>

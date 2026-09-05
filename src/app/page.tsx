@@ -89,6 +89,9 @@ export default function LandingPage() {
   const visualRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
   const demoRef = useRef<HTMLDivElement>(null);
+  const rolesRef = useRef<HTMLDivElement>(null);
+  const ventasRef = useRef<HTMLDivElement>(null);
+  const kanbanRef = useRef<HTMLDivElement>(null);
 
   const [activeSection, setActiveSection] = useState(0);
   const [demoStep, setDemoStep] = useState(0);
@@ -111,7 +114,7 @@ export default function LandingPage() {
     if (typeof window === "undefined") return;
 
     const ctx = gsap.context(() => {
-      gsap.set([badgeRef.current, titleRef.current, descRef.current, ctasRef.current, visualRef.current], {
+      gsap.set([badgeRef.current, titleRef.current, descRef.current, ctasRef.current], {
         opacity: 0, y: 30,
       });
 
@@ -119,16 +122,25 @@ export default function LandingPage() {
       tl.to(badgeRef.current, { opacity: 1, y: 0, delay: 0.2 })
         .to(titleRef.current, { opacity: 1, y: 0 }, "-=0.6")
         .to(descRef.current, { opacity: 1, y: 0 }, "-=0.6")
-        .to(ctasRef.current, { opacity: 1, y: 0 }, "-=0.6")
-        .to(visualRef.current, { opacity: 1, y: 0 }, "-=0.4");
+        .to(ctasRef.current, { opacity: 1, y: 0 }, "-=0.6");
 
-      const revealOnScroll = (element: HTMLElement | null) => {
+      const blurTargets = [visualRef.current, featuresRef.current, demoRef.current, rolesRef.current, ventasRef.current, kanbanRef.current];
+      gsap.set(blurTargets, { opacity: 0, y: 50, filter: "blur(16px)" });
+
+      const revealOnScroll = (element: HTMLElement | null, delay = 0) => {
         if (!element) return;
         const observer = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
               if (entry.isIntersecting) {
-                gsap.fromTo(element, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1, ease: "power2.out" });
+                gsap.to(element, {
+                  opacity: 1,
+                  y: 0,
+                  filter: "blur(0px)",
+                  duration: 1.1,
+                  delay,
+                  ease: "power2.out",
+                });
                 observer.unobserve(element);
               }
             });
@@ -138,8 +150,12 @@ export default function LandingPage() {
         observer.observe(element);
       };
 
+      revealOnScroll(visualRef.current);
       revealOnScroll(featuresRef.current);
       revealOnScroll(demoRef.current);
+      revealOnScroll(rolesRef.current);
+      revealOnScroll(ventasRef.current);
+      revealOnScroll(kanbanRef.current, 0.15);
     });
 
     return () => ctx.revert();
@@ -308,6 +324,8 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* ─── Constructor Features Grid ─── */}
       <section
         id="constructor"
         ref={demoRef}
@@ -352,12 +370,12 @@ export default function LandingPage() {
           ].map((s) => (
             <div
               key={s.step}
-              className="bg-slate-900/40! border! border-slate-800! p-6! rounded-2xl! relative! overflow-hidden! flex! flex-col! justify-between!"
+              className="group! bg-slate-900/40! border! border-slate-800! p-6! rounded-2xl! relative! overflow-hidden! flex! flex-col! justify-between! hover:border-slate-700/80! transition-all! hover:-translate-y-1! duration-300!"
             >
               <div>
                 <div className="flex! items-center! justify-between! mb-6!">
                   <div
-                    className="h-10! w-10! rounded-xl! flex! items-center! justify-center! text-lg!"
+                    className="h-10! w-10! rounded-xl! flex! items-center! justify-center! text-lg! transition-transform! group-hover:scale-110! duration-300!"
                     style={{ backgroundColor: `${s.color}15` }}
                   >
                     {s.icon}
@@ -386,6 +404,7 @@ export default function LandingPage() {
       {/* ─── Roles Section ─── */}
       <section
         id="roles"
+        ref={rolesRef}
         className="py-24! px-4! max-w-7xl! mx-auto! border-t! border-slate-800/40!"
       >
         <div className="text-center! max-w-3xl! mx-auto! mb-16!">
@@ -427,13 +446,13 @@ export default function LandingPage() {
             <div
               key={i}
               className={cn(
-                "p-8! rounded-2xl! border! transition-all! duration-300! flex! flex-col! justify-between!",
+                "group! p-8! rounded-2xl! border! transition-all! duration-300! flex! flex-col! justify-between! hover:-translate-y-1!",
                 r.color
               )}
             >
               <div>
                 <div className="flex! items-center! gap-3! mb-5!">
-                  <div className="text-2xl!">{r.icon}</div>
+                  <div className="text-2xl! transition-transform! group-hover:scale-110! duration-300!">{r.icon}</div>
                   <h4 className="text-base! font-bold! text-white!">{r.title}</h4>
                 </div>
                 <p className="text-xs! text-slate-400! leading-relaxed! mb-6!">{r.desc}</p>
@@ -456,6 +475,7 @@ export default function LandingPage() {
       {/* ─── Ventas Section ─── */}
       <section
         id="ventas"
+        ref={ventasRef}
         className="py-24! px-4! max-w-7xl! mx-auto! border-t! border-slate-800/40!"
       >
         <div className="grid! grid-cols-1! lg:grid-cols-2! gap-16! items-center!">
@@ -502,7 +522,7 @@ export default function LandingPage() {
           </div>
 
           {/* Kanban GIF or Mockup container */}
-          <div className="bg-slate-900/60! border! border-slate-800! rounded-2xl! overflow-hidden! shadow-2xl! shadow-black/80! p-3! relative!">
+          <div ref={kanbanRef} className="bg-slate-900/60! border! border-slate-800! rounded-2xl! overflow-hidden! shadow-2xl! shadow-black/80! p-3! relative!">
             <p className="text-[9px]! font-black! text-slate-500! uppercase! tracking-wider! mb-2.5! px-1!">
               Tablero Kanban Operativo
             </p>
