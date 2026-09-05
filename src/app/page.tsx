@@ -27,6 +27,9 @@ import {
   FaUpload
 } from "react-icons/fa";
 import gsap from "gsap";
+import { SplitText } from "gsap/SplitText";
+
+gsap.registerPlugin(SplitText);
 
 const FEATURES = [
   {
@@ -91,7 +94,10 @@ export default function LandingPage() {
   const demoRef = useRef<HTMLDivElement>(null);
   const rolesRef = useRef<HTMLDivElement>(null);
   const ventasRef = useRef<HTMLDivElement>(null);
-  const kanbanRef = useRef<HTMLDivElement>(null);
+  const featuresTitleRef = useRef<HTMLHeadingElement>(null);
+  const constructorTitleRef = useRef<HTMLHeadingElement>(null);
+  const rolesTitleRef = useRef<HTMLHeadingElement>(null);
+  const ventasTitleRef = useRef<HTMLHeadingElement>(null);
 
   const [activeSection, setActiveSection] = useState(0);
   const [demoStep, setDemoStep] = useState(0);
@@ -113,6 +119,9 @@ export default function LandingPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    const splitInstances: SplitText[] = [];
+    const tiltCleanups: Array<() => void> = [];
+
     const ctx = gsap.context(() => {
       gsap.set([badgeRef.current, titleRef.current, descRef.current, ctasRef.current], {
         opacity: 0, y: 30,
@@ -124,23 +133,74 @@ export default function LandingPage() {
         .to(descRef.current, { opacity: 1, y: 0 }, "-=0.6")
         .to(ctasRef.current, { opacity: 1, y: 0 }, "-=0.6");
 
-      const blurTargets = [visualRef.current, featuresRef.current, demoRef.current, rolesRef.current, ventasRef.current, kanbanRef.current];
-      gsap.set(blurTargets, { opacity: 0, y: 50, filter: "blur(16px)" });
-
-      const revealOnScroll = (element: HTMLElement | null, delay = 0) => {
-        if (!element) return;
+      // Section headings: split into words and flip up like a hinge (3D rotationX).
+      const revealHeading = (el: HTMLElement | null) => {
+        if (!el) return;
+        const split = new SplitText(el, { type: "words" });
+        splitInstances.push(split);
+        gsap.set(split.words, {
+          opacity: 0,
+          rotationX: -90,
+          transformOrigin: "50% 100%",
+          transformPerspective: 600,
+        });
         const observer = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
               if (entry.isIntersecting) {
-                gsap.to(element, {
-                  opacity: 1,
-                  y: 0,
-                  filter: "blur(0px)",
-                  duration: 1.1,
-                  delay,
-                  ease: "power2.out",
-                });
+                gsap.to(split.words, { opacity: 1, rotationX: 0, duration: 0.7, ease: "power3.out", stagger: 0.06 });
+                observer.unobserve(el);
+              }
+            });
+          },
+          { threshold: 0.3 }
+        );
+        observer.observe(el);
+      };
+
+      revealHeading(featuresTitleRef.current);
+      revealHeading(constructorTitleRef.current);
+      revealHeading(rolesTitleRef.current);
+      revealHeading(ventasTitleRef.current);
+
+      // Mouse-reactive 3D tilt, attached to cards once they've assembled into view.
+      const attachMagneticTilt = (container: HTMLElement, maxTilt = 10) => {
+        const cards = Array.from(container.children) as HTMLElement[];
+        cards.forEach((card) => {
+          gsap.set(card, { transformPerspective: 700 });
+          const setRotateX = gsap.quickTo(card, "rotateX", { duration: 0.4, ease: "power3.out" });
+          const setRotateY = gsap.quickTo(card, "rotateY", { duration: 0.4, ease: "power3.out" });
+
+          const handleMove = (e: MouseEvent) => {
+            const rect = card.getBoundingClientRect();
+            const px = (e.clientX - rect.left) / rect.width - 0.5;
+            const py = (e.clientY - rect.top) / rect.height - 0.5;
+            setRotateY(px * maxTilt * 2);
+            setRotateX(-py * maxTilt * 2);
+          };
+          const handleLeave = () => {
+            setRotateX(0);
+            setRotateY(0);
+          };
+
+          card.addEventListener("mousemove", handleMove);
+          card.addEventListener("mouseleave", handleLeave);
+          tiltCleanups.push(() => {
+            card.removeEventListener("mousemove", handleMove);
+            card.removeEventListener("mouseleave", handleLeave);
+          });
+        });
+      };
+
+      // Dashboard Preview: drops in and settles with a slight overshoot rotation.
+      const revealBlock = (element: HTMLElement | null) => {
+        if (!element) return;
+        gsap.set(element, { opacity: 0, y: 70, scale: 0.9, rotation: -4, transformPerspective: 800 });
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                gsap.to(element, { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 1, ease: "power3.out" });
                 observer.unobserve(element);
               }
             });
@@ -150,15 +210,56 @@ export default function LandingPage() {
         observer.observe(element);
       };
 
-      revealOnScroll(visualRef.current);
-      revealOnScroll(featuresRef.current);
-      revealOnScroll(demoRef.current);
-      revealOnScroll(rolesRef.current);
-      revealOnScroll(ventasRef.current);
-      revealOnScroll(kanbanRef.current, 0.15);
+      // Chaos → order: cards scatter randomly, then assemble into their grid slot together.
+      const revealAssemble = (container: HTMLElement | null, options?: { staggerEach?: number; tilt?: boolean }) => {
+        if (!container) return;
+        const targets = Array.from(container.children) as HTMLElement[];
+        if (!targets.length) return;
+        targets.forEach((el) => {
+          gsap.set(el, {
+            opacity: 0,
+            x: gsap.utils.random(-120, 120),
+            y: gsap.utils.random(-90, 110),
+            rotation: gsap.utils.random(-24, 24),
+            scale: gsap.utils.random(0.72, 0.9),
+          });
+        });
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                gsap.to(targets, {
+                  opacity: 1,
+                  x: 0,
+                  y: 0,
+                  rotation: 0,
+                  scale: 1,
+                  duration: 0.9,
+                  ease: "power3.out",
+                  stagger: { each: options?.staggerEach ?? 0.08, from: "random" },
+                });
+                if (options?.tilt) attachMagneticTilt(container);
+                observer.unobserve(container);
+              }
+            });
+          },
+          { threshold: 0.08 }
+        );
+        observer.observe(container);
+      };
+
+      revealBlock(visualRef.current);
+      revealAssemble(featuresRef.current, { tilt: true });
+      revealAssemble(demoRef.current, { tilt: true });
+      revealAssemble(rolesRef.current, { tilt: true });
+      revealAssemble(ventasRef.current, { staggerEach: 0.15 });
     });
 
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+      splitInstances.forEach((split) => split.revert());
+      tiltCleanups.forEach((cleanup) => cleanup());
+    };
   }, []);
 
   return (
@@ -290,11 +391,10 @@ export default function LandingPage() {
       {/* ─── Features Grid ─── */}
       <section
         id="caracteristicas"
-        ref={featuresRef}
         className="py-24! px-4! max-w-7xl! mx-auto! border-t! border-slate-800/40!"
       >
         <div className="text-center! max-w-3xl! mx-auto! mb-16!">
-          <h2 className="text-3xl! sm:text-5xl! font-black! text-white!">
+          <h2 ref={featuresTitleRef} className="text-3xl! sm:text-5xl! font-black! text-white!">
             Todo lo que necesitas
           </h2>
           <p className="mt-4! text-slate-400! text-base! sm:text-lg!">
@@ -302,7 +402,7 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="grid! grid-cols-1! sm:grid-cols-2! lg:grid-cols-3! gap-6!">
+        <div ref={featuresRef} className="grid! grid-cols-1! sm:grid-cols-2! lg:grid-cols-3! gap-6!">
           {FEATURES.map((f) => (
             <div
               key={f.title}
@@ -328,14 +428,13 @@ export default function LandingPage() {
       {/* ─── Constructor Features Grid ─── */}
       <section
         id="constructor"
-        ref={demoRef}
         className="py-24! px-4! max-w-7xl! mx-auto! border-t! border-slate-800/40!"
       >
         <div className="text-center! max-w-3xl! mx-auto! mb-16!">
           <div className="inline-flex! items-center! gap-2! rounded-full! bg-[#818CF8]/10! border! border-[#818CF8]/20! px-3! py-1! text-xs! font-bold! text-[#818CF8]! mb-4!">
             <FaRocket /> Proceso Simple
           </div>
-          <h2 className="text-3xl! sm:text-5xl! font-black! text-white! leading-tight!">
+          <h2 ref={constructorTitleRef} className="text-3xl! sm:text-5xl! font-black! text-white! leading-tight!">
             Configura, diseña y publica
           </h2>
           <p className="text-slate-400! text-base! sm:text-lg! leading-relaxed! mt-4!">
@@ -343,7 +442,7 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="grid! grid-cols-1! md:grid-cols-3! gap-8!">
+        <div ref={demoRef} className="grid! grid-cols-1! md:grid-cols-3! gap-8!">
           {[
             {
               step: "01",
@@ -404,14 +503,13 @@ export default function LandingPage() {
       {/* ─── Roles Section ─── */}
       <section
         id="roles"
-        ref={rolesRef}
         className="py-24! px-4! max-w-7xl! mx-auto! border-t! border-slate-800/40!"
       >
         <div className="text-center! max-w-3xl! mx-auto! mb-16!">
           <div className="inline-flex! items-center! gap-2! rounded-full! bg-[#38BDF8]/10! border! border-[#38BDF8]/20! px-3! py-1! text-xs! font-bold! text-[#38BDF8]! mb-4!">
             <FaUserShield /> Control de Roles y Acceso
           </div>
-          <h2 className="text-3xl! sm:text-5xl! font-black! text-white!">
+          <h2 ref={rolesTitleRef} className="text-3xl! sm:text-5xl! font-black! text-white!">
             Perfiles de Usuario Definidos
           </h2>
           <p className="mt-4! text-slate-400! text-base! sm:text-lg!">
@@ -419,7 +517,7 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="grid! grid-cols-1! md:grid-cols-3! gap-8!">
+        <div ref={rolesRef} className="grid! grid-cols-1! md:grid-cols-3! gap-8!">
           {[
             {
               title: "Administrador / Super Admin",
@@ -475,16 +573,15 @@ export default function LandingPage() {
       {/* ─── Ventas Section ─── */}
       <section
         id="ventas"
-        ref={ventasRef}
         className="py-24! px-4! max-w-7xl! mx-auto! border-t! border-slate-800/40!"
       >
-        <div className="grid! grid-cols-1! lg:grid-cols-2! gap-16! items-center!">
+        <div ref={ventasRef} className="grid! grid-cols-1! lg:grid-cols-2! gap-16! items-center!">
           {/* Text descriptions */}
           <div className="space-y-6!">
             <div className="inline-flex! items-center! gap-2! rounded-full! bg-[#22D3A6]/10! border! border-[#22D3A6]/20! px-3! py-1! text-xs! font-bold! text-[#22D3A6]! mb-2!">
               <FaCreditCard /> Consola de Ventas
             </div>
-            <h2 className="text-3xl! sm:text-4xl! lg:text-5xl! font-black! text-white! leading-tight!">
+            <h2 ref={ventasTitleRef} className="text-3xl! sm:text-4xl! lg:text-5xl! font-black! text-white! leading-tight!">
               Administración de Ventas y Flujo de Caja
             </h2>
             <p className="text-slate-400! text-sm! sm:text-base! leading-relaxed!">
@@ -522,7 +619,7 @@ export default function LandingPage() {
           </div>
 
           {/* Kanban GIF or Mockup container */}
-          <div ref={kanbanRef} className="bg-slate-900/60! border! border-slate-800! rounded-2xl! overflow-hidden! shadow-2xl! shadow-black/80! p-3! relative!">
+          <div className="bg-slate-900/60! border! border-slate-800! rounded-2xl! overflow-hidden! shadow-2xl! shadow-black/80! p-3! relative!">
             <p className="text-[9px]! font-black! text-slate-500! uppercase! tracking-wider! mb-2.5! px-1!">
               Tablero Kanban Operativo
             </p>
