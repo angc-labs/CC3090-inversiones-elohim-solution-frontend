@@ -66,21 +66,7 @@ import { useTranslations } from "next-intl";
 import { Globe } from "lucide-react";
 
 const getDocsUrl = () => {
-  if (process.env.NEXT_PUBLIC_DOCS_URL) {
-    return process.env.NEXT_PUBLIC_DOCS_URL;
-  }
-  if (typeof window !== "undefined") {
-    const hostname = window.location.hostname;
-    if (
-      hostname === "localhost" ||
-      hostname.endsWith(".localhost") ||
-      hostname.endsWith(".lvh.me") ||
-      hostname === "127.0.0.1"
-    ) {
-      return "http://localhost:3001/docs/intro";
-    }
-  }
-  return "https://docs.dmhub.fun/docs/intro";
+  return "https://docs.dmhub.fun";
 };
 
 export default function PortalPage() {
@@ -607,9 +593,8 @@ export default function PortalPage() {
             {isMobile && (
               <button
                 onClick={() => setMenuAbierto(false)}
-                className={`ml-auto bg-transparent border-none cursor-pointer p-1 ${
-                  isDark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-900"
-                }`}
+                className={`ml-auto bg-transparent border-none cursor-pointer p-1 ${isDark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-900"
+                  }`}
                 aria-label="Cerrar menú lateral"
               >
                 <X size={18} />
@@ -762,13 +747,11 @@ export default function PortalPage() {
   }
 
   return (
-    <div className={`flex min-h-screen font-sans antialiased transition-colors duration-200 ${
-      isDark ? "bg-[#081018] text-slate-100" : "bg-slate-100 text-slate-900 portal-bg-base"
-    }`}>
-      {/* Desktop Sidebar */}
-      <aside className={`w-64 border-r p-6 flex-col justify-between shrink-0 hidden lg:flex h-[100dvh] max-h-[100dvh] fixed top-0 left-0 z-20 overflow-y-auto sidebar-scrollbar transition-colors duration-200 ${
-        isDark ? "border-slate-900 bg-slate-955/40" : "border-slate-200 bg-white/95 shadow-sm portal-sidebar-base"
+    <div className={`flex min-h-screen font-sans antialiased transition-colors duration-200 ${isDark ? "bg-[#081018] text-slate-100" : "bg-slate-100 text-slate-900 portal-bg-base"
       }`}>
+      {/* Desktop Sidebar */}
+      <aside className={`w-64 border-r p-6 flex-col justify-between shrink-0 hidden lg:flex h-[100dvh] max-h-[100dvh] fixed top-0 left-0 z-20 overflow-y-auto sidebar-scrollbar transition-colors duration-200 ${isDark ? "border-slate-900 bg-slate-955/40" : "border-slate-200 bg-white/95 shadow-sm portal-sidebar-base"
+        }`}>
         {renderSidebar(false)}
       </aside>
 
@@ -794,15 +777,13 @@ export default function PortalPage() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 lg:ml-64">
         {/* Top Navbar */}
-        <header className={`h-16 border-b px-4 sm:px-8 flex items-center justify-between shrink-0 gap-4 relative z-45 transition-colors duration-200 ${
-          isDark ? "border-slate-900 bg-slate-950/20" : "border-slate-200 bg-white/95 shadow-xs portal-header-base"
-        }`}>
+        <header className={`h-16 border-b px-4 sm:px-8 flex items-center justify-between shrink-0 gap-4 relative z-45 transition-colors duration-200 ${isDark ? "border-slate-900 bg-slate-950/20" : "border-slate-200 bg-white/95 shadow-xs portal-header-base"
+          }`}>
           {/* Hamburger Menu Toggle on Mobile/Tablet */}
           <button
             onClick={() => setMenuAbierto(true)}
-            className={`lg:hidden p-2 rounded-xl border-none bg-transparent cursor-pointer flex items-center justify-center ${
-              isDark ? "text-slate-400 hover:text-white hover:bg-slate-900/60" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-            }`}
+            className={`lg:hidden p-2 rounded-xl border-none bg-transparent cursor-pointer flex items-center justify-center ${isDark ? "text-slate-400 hover:text-white hover:bg-slate-900/60" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              }`}
             aria-label="Abrir menú lateral"
           >
             <Menu size={20} />
@@ -818,18 +799,16 @@ export default function PortalPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
-                className={`h-10 w-full pl-10 pr-4 rounded-xl text-sm outline-none transition-all ${
-                  isDark
+                className={`h-10 w-full pl-10 pr-4 rounded-xl text-sm outline-none transition-all ${isDark
                     ? "border border-slate-800 bg-slate-900/40 text-slate-100 placeholder:text-slate-500 focus:border-[#22D3A6]/50 focus:ring-1 focus:ring-[#22D3A6]/20"
                     : "border border-slate-300 bg-slate-100 text-slate-900 placeholder:text-slate-400 focus:border-[#22D3A6] focus:bg-white focus:ring-1 focus:ring-[#22D3A6]/20 portal-input-base"
-                }`}
+                  }`}
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer bg-transparent border-none p-0 ${
-                    isDark ? "text-slate-500 hover:text-white" : "text-slate-400 hover:text-slate-900"
-                  }`}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer bg-transparent border-none p-0 ${isDark ? "text-slate-500 hover:text-white" : "text-slate-400 hover:text-slate-900"
+                    }`}
                 >
                   <X size={14} />
                 </button>
@@ -838,11 +817,10 @@ export default function PortalPage() {
 
             {/* Live Search Popup */}
             {isSearchFocused && searchQuery && (
-              <div className={`absolute left-0 top-12 z-[70] max-h-[360px] w-full isolate overflow-y-auto rounded-xl border p-4 shadow-2xl animate-fade-in ${
-                isDark
+              <div className={`absolute left-0 top-12 z-[70] max-h-[360px] w-full isolate overflow-y-auto rounded-xl border p-4 shadow-2xl animate-fade-in ${isDark
                   ? "border border-slate-800 bg-[#081018] shadow-black ring-1 ring-black/60 text-slate-100"
                   : "border border-slate-200 bg-white shadow-slate-300/50 ring-1 ring-black/5 text-slate-900 portal-card-base"
-              }`}>
+                }`}>
                 {searchResults.length === 0 ? (
                   <p className="text-xs text-slate-500 text-center py-4">{tCommon("no_results")} "{searchQuery}"</p>
                 ) : (
@@ -858,9 +836,8 @@ export default function PortalPage() {
                                 item.onClick();
                                 setIsSearchFocused(false);
                               }}
-                              className={`text-xs text-left px-2 py-2 rounded-lg transition-all border-none bg-transparent cursor-pointer block w-full text-ellipsis overflow-hidden whitespace-nowrap ${
-                                isDark ? "text-slate-300 hover:bg-slate-900/60 hover:text-white" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-                              }`}
+                              className={`text-xs text-left px-2 py-2 rounded-lg transition-all border-none bg-transparent cursor-pointer block w-full text-ellipsis overflow-hidden whitespace-nowrap ${isDark ? "text-slate-300 hover:bg-slate-900/60 hover:text-white" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                                }`}
                             >
                               {item.nombre}
                             </button>
@@ -880,11 +857,10 @@ export default function PortalPage() {
             <button
               type="button"
               onClick={toggleLanguage}
-              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[11px] font-bold uppercase tracking-wide transition-all cursor-pointer ${
-                isDark
+              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[11px] font-bold uppercase tracking-wide transition-all cursor-pointer ${isDark
                   ? "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700 hover:text-white"
                   : "border-slate-200 bg-slate-100 text-slate-600 hover:border-slate-300 hover:text-slate-900"
-              }`}
+                }`}
               aria-label={t("toggle_lang")}
               title={language === "es" ? "Switch to English" : "Cambiar a Español"}
             >
@@ -896,11 +872,10 @@ export default function PortalPage() {
             <div ref={dropdownRef} className="relative">
               <button
                 onClick={() => setIsStoreDropdownOpen(!isStoreDropdownOpen)}
-                className={`h-10 px-4 rounded-xl border text-xs font-semibold flex items-center gap-2.5 cursor-pointer transition-all ${
-                  isDark
+                className={`h-10 px-4 rounded-xl border text-xs font-semibold flex items-center gap-2.5 cursor-pointer transition-all ${isDark
                     ? "border-slate-800 bg-slate-900/40 text-slate-200 hover:border-slate-700 hover:text-white"
                     : "border-slate-200 bg-slate-100 text-slate-800 hover:border-slate-300 hover:bg-slate-200"
-                }`}
+                  }`}
               >
                 <Store size={14} className="text-[#38BDF8]" />
                 <span className="max-w-[150px] truncate">{activeStore?.nombre ?? t("select_store")}</span>
@@ -908,30 +883,26 @@ export default function PortalPage() {
               </button>
 
               {isStoreDropdownOpen && (
-                <div className={`absolute right-0 top-12 w-64 rounded-xl border p-2 shadow-2xl z-50 ${
-                  isDark
+                <div className={`absolute right-0 top-12 w-64 rounded-xl border p-2 shadow-2xl z-50 ${isDark
                     ? "border-slate-800 bg-slate-955 shadow-black text-slate-100"
                     : "border-slate-200 bg-white shadow-slate-300/50 text-slate-900 portal-card-base"
-                }`}>
-                  <div className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 border-b ${
-                    isDark ? "text-slate-500 border-slate-900" : "text-slate-400 border-slate-100"
                   }`}>
+                  <div className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 border-b ${isDark ? "text-slate-500 border-slate-900" : "text-slate-400 border-slate-100"
+                    }`}>
                     {t("switch_instance")}
                   </div>
                   <div className="max-h-48 overflow-y-auto py-1 flex flex-col gap-0.5">
                     {tiendas.map((t) => (
-                      <div key={t.id} className={`flex items-center justify-between px-1 rounded-lg group transition-all ${
-                        isDark ? "hover:bg-slate-900/40" : "hover:bg-slate-100"
-                      }`}>
+                      <div key={t.id} className={`flex items-center justify-between px-1 rounded-lg group transition-all ${isDark ? "hover:bg-slate-900/40" : "hover:bg-slate-100"
+                        }`}>
                         <button
                           onClick={() => handleSelectStore(t)}
-                          className={`flex-1 flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-all text-left border-none cursor-pointer bg-transparent ${
-                            activeStore?.id === t.id
+                          className={`flex-1 flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-all text-left border-none cursor-pointer bg-transparent ${activeStore?.id === t.id
                               ? "text-[#22D3A6]"
                               : isDark
-                              ? "text-slate-400 hover:text-white"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
+                                ? "text-slate-400 hover:text-white"
+                                : "text-slate-600 hover:text-slate-900"
+                            }`}
                         >
                           <span className="truncate">{t.nombre}</span>
                           {activeStore?.id === t.id && <span className="h-1.5 w-1.5 rounded-full bg-[#22D3A6] shrink-0 ml-2" />}
@@ -940,9 +911,8 @@ export default function PortalPage() {
                           href={t.slug ? `https://${t.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || "dmhub.fun"}` : `/preview/${t.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`p-1.5 rounded-lg transition-all cursor-pointer mr-1 flex items-center justify-center ${
-                            isDark ? "text-slate-500 hover:text-[#38BDF8] hover:bg-slate-900" : "text-slate-400 hover:text-[#38BDF8] hover:bg-slate-100"
-                          }`}
+                          className={`p-1.5 rounded-lg transition-all cursor-pointer mr-1 flex items-center justify-center ${isDark ? "text-slate-500 hover:text-[#38BDF8] hover:bg-slate-900" : "text-slate-400 hover:text-[#38BDF8] hover:bg-slate-100"
+                            }`}
                           title={`Ver Tienda Live de ${t.nombre}`}
                         >
                           <Eye size={12} />
@@ -956,9 +926,8 @@ export default function PortalPage() {
                         setIsStoreDropdownOpen(false);
                         setIsCreateModalOpen(true);
                       }}
-                      className={`flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#38BDF8] hover:text-[#22D3A6] rounded-lg transition-all text-left border-none cursor-pointer bg-transparent w-full ${
-                        isDark ? "hover:bg-slate-900/40" : "hover:bg-slate-100"
-                      }`}
+                      className={`flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#38BDF8] hover:text-[#22D3A6] rounded-lg transition-all text-left border-none cursor-pointer bg-transparent w-full ${isDark ? "hover:bg-slate-900/40" : "hover:bg-slate-100"
+                        }`}
                     >
                       <Plus size={14} />
                       <span>{tCommon("create")} {language === "es" ? "nueva tienda" : "new store"}</span>
@@ -972,13 +941,12 @@ export default function PortalPage() {
             {esAdmin && (
               <button
                 onClick={() => handleTabChange("settings")}
-                className={`h-10 w-10 rounded-xl border flex items-center justify-center cursor-pointer transition-all ${
-                  activeTab === "settings"
+                className={`h-10 w-10 rounded-xl border flex items-center justify-center cursor-pointer transition-all ${activeTab === "settings"
                     ? "border-[#22D3A6] bg-[#22D3A6]/10 text-[#22D3A6]"
                     : isDark
-                    ? "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700 hover:text-white"
-                    : "border-slate-200 bg-slate-100 text-slate-600 hover:border-slate-300 hover:text-slate-900"
-                }`}
+                      ? "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700 hover:text-white"
+                      : "border-slate-200 bg-slate-100 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                  }`}
                 title={t("configuracion")}
               >
                 <Settings size={16} />
@@ -995,9 +963,8 @@ export default function PortalPage() {
                   {formatRole(usuario.rol)}
                 </p>
               </div>
-              <div className={`h-9 w-9 rounded-xl border flex items-center justify-center overflow-hidden shrink-0 ${
-                isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-slate-100"
-              }`}>
+              <div className={`h-9 w-9 rounded-xl border flex items-center justify-center overflow-hidden shrink-0 ${isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-slate-100"
+                }`}>
                 <span className="text-xs font-black text-[#38BDF8]">
                   {usuario.nombre.substring(0, 2).toUpperCase()}
                 </span>
