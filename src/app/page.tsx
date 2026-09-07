@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { getPostLoginPath } from "@/lib/auth-routes";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Button } from "@/components/ui/button";
+import { BlogImage } from "@/components/BlogImage";
+import { blogPosts } from "@/lib/blog";
 import { cn } from "@/lib/utils";
 import {
   FaArrowRight,
@@ -89,6 +92,7 @@ export default function LandingPage() {
   const visualRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
   const demoRef = useRef<HTMLDivElement>(null);
+  const blogRef = useRef<HTMLElement>(null);
 
   const [activeSection, setActiveSection] = useState(0);
   const [demoStep, setDemoStep] = useState(0);
@@ -140,6 +144,7 @@ export default function LandingPage() {
 
       revealOnScroll(featuresRef.current);
       revealOnScroll(demoRef.current);
+      revealOnScroll(blogRef.current);
     });
 
     return () => ctx.revert();
@@ -514,6 +519,65 @@ export default function LandingPage() {
                 className="w-full! h-full! object-cover! rounded-lg!"
               />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Blog Section ─── */}
+      <section
+        id="blog"
+        ref={blogRef}
+        className="border-t! border-slate-800/40! px-4! py-24!"
+      >
+        <div className="mx-auto! max-w-7xl!">
+          <div className="mb-12! flex! flex-col! gap-5! sm:flex-row! sm:items-end! sm:justify-between!">
+            <div className="max-w-2xl!">
+              <div className="mb-4! inline-flex! items-center! gap-2! rounded-full! border! border-[#22D3A6]/20! bg-[#22D3A6]/5! px-3! py-1! text-xs! font-bold! text-[#22D3A6]!">
+                Historias que avanzan
+              </div>
+              <h2 className="text-3xl! font-black! text-white! sm:text-5xl!">
+                Casos reales, ideas aplicables
+              </h2>
+              <p className="mt-4! text-base! leading-relaxed! text-slate-400! sm:text-lg!">
+                Descubre cómo otros negocios ordenaron su operación, mejoraron su experiencia y encontraron nuevas formas de crecer.
+              </p>
+            </div>
+            <Link
+              href="/blog"
+              className="inline-flex! shrink-0! items-center! gap-2! text-sm! font-bold! text-[#66e8c1]! transition-colors! hover:text-white!"
+            >
+              Ver todos los casos <FaArrowRight />
+            </Link>
+          </div>
+
+          <div className="grid! gap-6! md:grid-cols-3!">
+            {blogPosts.slice(0, 3).map((post) => (
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                className="group! overflow-hidden! rounded-2xl! border! border-slate-800! bg-[#0b1720]! transition-all! duration-300! hover:-translate-y-1! hover:border-[#22D3A6]/50!"
+              >
+                <div className="relative! aspect-[16/10]! overflow-hidden! bg-slate-900!">
+                  <BlogImage
+                    src={post.image}
+                    alt=""
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover! transition! duration-500! group-hover:scale-105!"
+                  />
+                  <div className="absolute! inset-0! bg-gradient-to-t! from-[#081018]/80! to-transparent!" />
+                  <span className="absolute! left-5! top-5! rounded-full! border! border-[#22D3A6]/30! bg-[#081018]/80! px-3! py-1! text-xs! font-semibold! text-[#66e8c1]! backdrop-blur!">
+                    {post.category}
+                  </span>
+                </div>
+                <div className="p-6!">
+                  <p className="text-xs! text-slate-500!">{post.date} · {post.readTime} de lectura</p>
+                  <h3 className="mt-4! text-xl! font-bold! leading-tight! text-white!">{post.title}</h3>
+                  <p className="mt-3! text-sm! leading-6! text-slate-400!">{post.excerpt}</p>
+                  <span className="mt-6! inline-flex! items-center! gap-2! text-sm! font-bold! text-[#66e8c1]!">Leer caso <FaArrowRight /></span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
