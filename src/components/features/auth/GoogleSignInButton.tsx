@@ -15,10 +15,9 @@ export function GoogleSignInButton({ onSuccess, onError }: GoogleSignInButtonPro
       <GoogleLogin
         onSuccess={onSuccess}
         onError={onError}
-        theme="filled_dark"
+        theme="filled_black"
         shape="pill"
         size="large"
-        locale="es"
         text="continue_with"
         logo_alignment="left"
       />
