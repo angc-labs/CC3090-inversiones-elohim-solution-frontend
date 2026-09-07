@@ -57,7 +57,7 @@ export async function obtenerProductosListado(params?: TProductosParams): Promis
 
 export async function obtenerProductoPorId(idProducto: string): Promise<TProducto> {
   return apiRequest<TProducto>(
-    `/api/productos/${idProducto}`,
+    `/api/v1/productos/${idProducto}`,
     {
       method: "GET",
       headers: buildAuthHeaders(),
@@ -93,7 +93,7 @@ export async function obtenerMarcas(): Promise<TMarca[]> {
 
 export async function obtenerCategorias(token?: string): Promise<TCategoria[]> {
   return apiRequest<TCategoria[]>(
-    "/api/categorias",
+    "/api/v1/productos/categorias",
     {
       method: "GET",
       headers: buildAuthHeaders(token),

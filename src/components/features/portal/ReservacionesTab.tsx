@@ -19,25 +19,39 @@ export function ReservacionesTab({
 }: ReservacionesTabProps) {
   const handleToggleEstadoPagoReservacion = async (res: ReservacionDto) => {
     if (!token) return;
-    const nuevoEstado = res.estadoPago === "pagado" ? "pendiente" : "pagado";
+    if (res.estadoPago === "pagado") {
+      toast.info("El estado de pago ya está verificado y no puede regresarse.");
+      return;
+    }
+    if (res.estadoPago === "cancelado") {
+      toast.info("Este pedido ha sido cancelado.");
+      return;
+    }
     try {
-      await cambiarEstadoReservacion(token, res.id, { estadoPago: nuevoEstado });
-      toast.success("Estado de pago actualizado");
+      await cambiarEstadoReservacion(token, res.id, { estadoPago: "pagado" });
+      toast.success("Estado de pago verificado.");
       onRefresh();
-    } catch (err) {
-      toast.error("Error al actualizar el estado de pago");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || err?.message || "Error al actualizar el estado de pago.");
     }
   };
 
   const handleToggleDespachoReservacion = async (res: ReservacionDto) => {
     if (!token) return;
-    const nuevoEstado = res.estadoDespacho === "despachado" ? "procesando" : "despachado";
+    if (res.estadoDespacho === "despachado" || res.estadoDespacho === "entregado") {
+      toast.info("El pedido ya se encuentra despachado y no puede regresarse.");
+      return;
+    }
+    if (res.estadoDespacho === "cancelado") {
+      toast.info("Este pedido ha sido cancelado.");
+      return;
+    }
     try {
-      await cambiarEstadoReservacion(token, res.id, { estadoDespacho: nuevoEstado });
-      toast.success("Estado de despacho actualizado");
+      await cambiarEstadoReservacion(token, res.id, { estadoDespacho: "despachado" });
+      toast.success("Estado de despacho actualizado.");
       onRefresh();
-    } catch (err) {
-      toast.error("Error al actualizar el estado de despacho");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || err?.message || "Error al actualizar el estado de despacho.");
     }
   };
 

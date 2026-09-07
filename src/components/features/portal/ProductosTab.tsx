@@ -768,7 +768,7 @@ export function ProductosTab({
           }}
           ariaLabel="Importar productos"
         >
-          <div className="w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-5 my-8 relative">
+          <div className="w-full max-w-6xl rounded-2xl border border-slate-800 bg-slate-955 p-6 md:p-8 shadow-2xl space-y-6 my-4 relative max-h-[90vh] overflow-y-auto sidebar-scrollbar">
             <button
               onClick={() => {
                 setIsImportModalOpen(false);

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
   --color-primary: #0f172a;
@@ -356,4 +357,42 @@ select[style*="background-color: rgb(255, 255, 255)"] option,
 
 .monaco-editor .suggest-widget .monaco-list .monaco-list-row {
   border-radius: 4px !important;
+}
+
+/* Custom react-spreadsheet dark theme styling */
+.Spreadsheet {
+  background-color: #0b1523 !important;
+  color: #f8fafc !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+}
+.Spreadsheet__header {
+  background-color: #111e2f !important;
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid #1e293b !important;
+  border-right: 1px solid #1e293b !important;
+  padding: 8px 12px !important;
+}
+.Spreadsheet__cell {
+  background-color: #081018 !important;
+  color: #f1f5f9 !important;
+  border-bottom: 1px solid #1e293b !important;
+  border-right: 1px solid #1e293b !important;
+  padding: 6px 10px !important;
+  font-family: var(--font-mono), monospace !important;
+  font-size: 12px !important;
+}
+.Spreadsheet__cell--selected, .Spreadsheet__cell--active {
+  background-color: #0f273d !important;
+  outline: 2px solid #22d3a6 !important;
+  outline-offset: -2px !important;
+}
+.Spreadsheet__cell input {
+  color: #ffffff !important;
+  background: transparent !important;
+  outline: none !important;
 }

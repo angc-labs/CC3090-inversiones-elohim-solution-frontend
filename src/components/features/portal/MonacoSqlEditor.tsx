@@ -177,13 +177,13 @@ export const MonacoSqlEditor = forwardRef<MonacoSqlEditorHandle, MonacoSqlEditor
 
           const suggestions: Array<Record<string, unknown>> = [];
 
-          // 1. Mandatory / Tenant ID suggestions (Top Priority)
+          // 1. Mandatory / Tenant Context suggestions (Top Priority)
           suggestions.push({
             label: "tienda_id = @tenant_id",
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: "tienda_id = @tenant_id",
-            detail: "⚡ Filtro de Inquilino Obligatorio",
-            documentation: "Filtra la consulta por el ID de la tienda actual (@tenant_id).",
+            detail: "⚡ Filtro Explícito de Tenant",
+            documentation: "Filtra la consulta por la variable fuertemente tipada @tenant_id (respaldado además a nivel motor por PostgreSQL RLS).",
             range: defaultRange,
             sortText: "0000",
           });
@@ -193,7 +193,7 @@ export const MonacoSqlEditor = forwardRef<MonacoSqlEditorHandle, MonacoSqlEditor
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: "WHERE tienda_id = @tenant_id",
             detail: "⚡ Cláusula WHERE con @tenant_id",
-            documentation: "Inserta la cláusula 'WHERE tienda_id = @tenant_id' requerida para aislamiento.",
+            documentation: "Inserta 'WHERE tienda_id = @tenant_id' para filtrado explícito de tienda en tus reportes.",
             range: defaultRange,
             sortText: "0001",
           });
@@ -202,8 +202,8 @@ export const MonacoSqlEditor = forwardRef<MonacoSqlEditorHandle, MonacoSqlEditor
             label: "@tenant_id",
             kind: monaco.languages.CompletionItemKind.Variable,
             insertText: "@tenant_id",
-            detail: "🔑 Variable del Tenant Actual",
-            documentation: "Variable reemplazada dinámicamente con el UUID del Inquilino en el backend.",
+            detail: "🔑 Parámetro del Tenant Activo",
+            documentation: "Parámetro inyectado de forma segura en PostgreSQL sin manipular cadenas SQL.",
             range: defaultRange,
             sortText: "0002",
           });

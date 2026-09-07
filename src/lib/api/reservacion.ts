@@ -15,7 +15,7 @@ export async function crearReservacion(token: string, metodoPagoId: string): Pro
 
 export async function obtenerReservaciones(token: string): Promise<TReservacionListado[]> {
   return apiRequest<TReservacionListado[]>(
-    "/api/reservacion",
+    "/api/v1/reservaciones/mis-compras",
     {
       method: "GET",
       headers: buildAuthHeaders(token),
@@ -23,6 +23,7 @@ export async function obtenerReservaciones(token: string): Promise<TReservacionL
     "Error al obtener reservaciones"
   );
 }
+
 
 export async function obtenerReservacionPorId(
   token: string,

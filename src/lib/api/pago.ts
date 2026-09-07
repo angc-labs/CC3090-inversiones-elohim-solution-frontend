@@ -23,7 +23,7 @@ export type TPagoEstado = {
 
 export async function obtenerConfigStripe(token: string): Promise<TConfigStripeCliente> {
   return apiRequest<TConfigStripeCliente>(
-    "/api/metodoPago/config-stripe",
+    "/api/v1/metodos-pago/config-stripe",
     {
       method: "GET",
       headers: buildAuthHeaders(token),
@@ -34,7 +34,7 @@ export async function obtenerConfigStripe(token: string): Promise<TConfigStripeC
 
 export async function listarMetodosPagoGuardados(token: string): Promise<TMetodoPagoGuardado[]> {
   return apiRequest<TMetodoPagoGuardado[]>(
-    "/api/metodoPago",
+    "/api/v1/metodos-pago",
     {
       method: "GET",
       headers: buildAuthHeaders(token),
@@ -48,7 +48,7 @@ export async function guardarMetodoStripe(
   payload: { stripePaymentMethodId: string; alias?: string }
 ): Promise<TMetodoPagoGuardado> {
   return apiRequest<TMetodoPagoGuardado>(
-    "/api/metodoPago",
+    "/api/v1/metodos-pago",
     {
       method: "POST",
       headers: buildAuthHeaders(token),
@@ -63,7 +63,7 @@ export async function guardarMetodoStripe(
 
 export async function asegurarMetodoContraEntrega(token: string): Promise<TMetodoPagoGuardado> {
   return apiRequest<TMetodoPagoGuardado>(
-    "/api/metodoPago/contra-entrega",
+    "/api/v1/metodos-pago/contra-entrega",
     {
       method: "POST",
       headers: buildAuthHeaders(token),
@@ -78,7 +78,7 @@ export async function crearPaymentIntent(
   metodoPagoId?: string
 ): Promise<TPaymentIntentCreado> {
   return apiRequest<TPaymentIntentCreado>(
-    "/api/pagos/create-intent",
+    "/api/v1/pagos/create-intent",
     {
       method: "POST",
       headers: buildAuthHeaders(token),
@@ -90,7 +90,7 @@ export async function crearPaymentIntent(
 
 export async function obtenerEstadoPago(token: string, paymentIntentId: string): Promise<TPagoEstado> {
   return apiRequest<TPagoEstado>(
-    `/api/pagos/${encodeURIComponent(paymentIntentId)}/status`,
+    `/api/v1/pagos/${encodeURIComponent(paymentIntentId)}/status`,
     {
       method: "GET",
       headers: buildAuthHeaders(token),
@@ -101,7 +101,7 @@ export async function obtenerEstadoPago(token: string, paymentIntentId: string):
 
 export async function eliminarMetodoStripe(token: string, id: string): Promise<void> {
   return apiRequest<void>(
-    `/api/metodoPago/${encodeURIComponent(id)}`,
+    `/api/v1/metodos-pago/${encodeURIComponent(id)}`,
     {
       method: "DELETE",
       headers: buildAuthHeaders(token),

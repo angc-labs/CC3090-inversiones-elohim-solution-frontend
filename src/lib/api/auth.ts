@@ -174,7 +174,7 @@ export async function adminResetPassword(
   token: string
 ): Promise<TRecoveryCodesResponse> {
   return apiRequest<TRecoveryCodesResponse>(
-    `/api/admin/usuarios/${usuarioId}/reset-password`,
+    `/api/v1/usuarios/${usuarioId}/reset-password`,
     {
       method: "POST",
       headers: buildAuthHeaders(token),
@@ -182,6 +182,7 @@ export async function adminResetPassword(
     "Error al generar códigos de recuperación"
   );
 }
+
 
 /**
  * Recover password using a recovery code (no email required).

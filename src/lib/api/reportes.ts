@@ -122,7 +122,7 @@ export async function obtenerReporteProductos(
   filtro?: TReportesFiltro
 ): Promise<TReporteProductos> {
   return apiRequest<TReporteProductos>(
-    `/api/admin/reportes/productos${buildQuery(filtro)}`,
+    `/api/v1/reportes/productos${buildQuery(filtro)}`,
     { headers: buildAuthHeaders(token) },
     "No se pudo cargar el reporte de productos"
   );
@@ -133,7 +133,7 @@ export async function obtenerReporteEmpleados(
   filtro?: TReportesFiltro
 ): Promise<TReporteEmpleados> {
   return apiRequest<TReporteEmpleados>(
-    `/api/admin/reportes/empleados${buildQuery(filtro)}`,
+    `/api/v1/reportes/empleados${buildQuery(filtro)}`,
     { headers: buildAuthHeaders(token) },
     "No se pudo cargar el reporte de empleados"
   );
@@ -165,7 +165,7 @@ export async function obtenerReporteMetodosPago(
   filtro?: TReportesFiltro
 ): Promise<TReporteMetodosPago> {
   return apiRequest<TReporteMetodosPago>(
-    `/api/admin/reportes/metodos-pago${buildQuery(filtro)}`,
+    `/api/v1/reportes/metodos-pago${buildQuery(filtro)}`,
     { headers: buildAuthHeaders(token) },
     "No se pudo cargar el reporte de métodos de pago"
   );

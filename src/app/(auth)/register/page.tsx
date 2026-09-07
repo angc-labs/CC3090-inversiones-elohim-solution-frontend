@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import type { CredentialResponse } from "@react-oauth/google";
 import { GoogleSignInButton } from "@/components/features/auth/GoogleSignInButton";
 import { loginWithGoogle, register } from "@/lib/api/auth";
@@ -13,6 +13,14 @@ import { useAuthStore } from "@/stores/useAuthStore";
 export default function RegisterPage() {
   const router = useRouter();
   const loginStore = useAuthStore((state) => state.login);
+
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/");
+    }
+  };
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -160,8 +168,19 @@ export default function RegisterPage() {
 
       {/* Registration Card */}
       <div className="w-full! max-w-lg! rounded-2xl! border! border-slate-800/80! bg-slate-950/80! p-8! shadow-2xl! shadow-black/80! backdrop-blur-md!">
-        <div className="flex! items-center! justify-center! mb-6!">
-          <img src="/logo.png" alt="DM Hub Logo" className="h-10! w-auto! object-contain!" />
+        {/* Card Header with Back button */}
+        <div className="flex! items-center! justify-between! mb-6! w-full! relative!">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="flex! items-center! gap-1.5! text-xs! font-bold! text-slate-400! hover:text-white! transition-all! cursor-pointer! bg-slate-900/60! hover:bg-slate-900! border! border-slate-800! hover:border-slate-700! px-3! py-1.5! rounded-xl!"
+            title="Volver a la página anterior"
+          >
+            <ArrowLeft size={14} className="text-brand-primary!" />
+            <span>Volver</span>
+          </button>
+          <img src="/logo.png" alt="DM Hub Logo" className="h-9! w-auto! object-contain! absolute! left-1/2! -translate-x-1/2!" />
+          <div className="w-16!" />
         </div>
 
         <h3 className="text-center! text-2xl! font-black! tracking-tight! text-white! mb-2!">Crear cuenta</h3>

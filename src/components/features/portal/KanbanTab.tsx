@@ -20,7 +20,8 @@ import {
   Package,
   Layers,
   ChevronRight,
-  ArrowLeftRight
+  ArrowLeftRight,
+  XCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { cambiarEstadoReservacion, type ReservacionDto, type PlatformUsuarioDto, type SucursalDto } from "@/lib/api/admin";
@@ -280,10 +281,22 @@ export function KanbanTab({
     await updateReservationStatus(id, targetColumnId);
   };
 
+  const COLUMN_RANKS: Record<ColumnId, number> = {
+    pendiente_pago: 1,
+    pagado_procesando: 2,
+    despachado: 3
+  };
+
   // Update status function (centralized for drag & drop + quick action buttons)
   const updateReservationStatus = async (id: string, targetColumnId: ColumnId) => {
     const res = reservaciones.find((r) => r.id === id);
     if (!res) return;
+
+    const currentColumn = getReservationColumn(res);
+    if (COLUMN_RANKS[targetColumnId] < COLUMN_RANKS[currentColumn]) {
+      toast.error("No está permitido regresar un pedido a un estado anterior. Solo se permite avanzar en el flujo o cancelarlo.");
+      return;
+    }
 
     let targetEstadoPago = res.estadoPago;
     let targetEstadoDespacho = res.estadoDespacho;
@@ -303,10 +316,7 @@ export function KanbanTab({
       return;
     }
 
-    // Temporarily pause polling during changes to prevent sync conflicts
     setIsPollingPaused(true);
-
-    // Optimistic UI updates could be added, but standard toast + load is robust
     const loadingToast = toast.loading("Actualizando estado del pedido...");
 
     try {
@@ -320,11 +330,39 @@ export function KanbanTab({
       });
       playSynthSound("success");
       onRefresh();
-    } catch (err) {
+    } catch (err: any) {
       toast.dismiss(loadingToast);
-      toast.error("No se pudo actualizar la reservación.");
+      toast.error(err?.response?.data?.error || err?.message || "No se pudo actualizar la reservación.");
     } finally {
-      // Resume polling after a brief safety delay
+      setTimeout(() => setIsPollingPaused(false), 2500);
+    }
+  };
+
+  // Cancel order function (returns stock)
+  const cancelarPedido = async (id: string) => {
+    if (!confirm("¿Está seguro de que desea cancelar este pedido? Los productos reservados/comprados serán devueltos al stock del inventario automáticamente.")) {
+      return;
+    }
+
+    setIsPollingPaused(true);
+    const loadingToast = toast.loading("Cancelando pedido y reintegrando existencias...");
+
+    try {
+      await cambiarEstadoReservacion(token, id, {
+        estadoPago: "cancelado",
+        estadoDespacho: "cancelado"
+      });
+      toast.dismiss(loadingToast);
+      toast.success(`Pedido #${id.substring(0, 8).toUpperCase()} cancelado exitosamente. Productos devueltos al stock.`, {
+        icon: "📦"
+      });
+      playSynthSound("success");
+      setSelectedCardDetail(null);
+      onRefresh();
+    } catch (err: any) {
+      toast.dismiss(loadingToast);
+      toast.error(err?.response?.data?.error || err?.message || "No se pudo cancelar la reservación.");
+    } finally {
       setTimeout(() => setIsPollingPaused(false), 2500);
     }
   };
@@ -634,6 +672,17 @@ export function KanbanTab({
                                 Despachar
                               </button>
                             )}
+
+                            {/* Quick cancel action */}
+                            {res.estadoPago !== "cancelado" && res.estadoDespacho !== "cancelado" && (
+                              <button
+                                onClick={() => cancelarPedido(res.id)}
+                                className="p-1 px-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 border border-transparent text-rose-400 hover:text-white text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all"
+                                title="Cancelar pedido y regresar productos al stock"
+                              >
+                                Cancelar
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -666,15 +715,15 @@ export function KanbanTab({
                 </span>
                 <span className={cn(
                   "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider",
-                  selectedCardDetail.estadoPago === "pagado" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"
+                  selectedCardDetail.estadoPago === "pagado" ? "bg-emerald-500/10 text-emerald-400" : selectedCardDetail.estadoPago === "cancelado" ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"
                 )}>
-                  Pago: {selectedCardDetail.estadoPago === "pagado" ? "Verificado" : "Pendiente"}
+                  Pago: {selectedCardDetail.estadoPago === "pagado" ? "Verificado" : selectedCardDetail.estadoPago === "cancelado" ? "Cancelado" : "Pendiente"}
                 </span>
                 <span className={cn(
                   "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider",
-                  (selectedCardDetail.estadoDespacho === "despachado" || selectedCardDetail.estadoDespacho === "entregado") ? "bg-blue-500/10 text-blue-400" : "bg-rose-500/10 text-rose-400"
+                  (selectedCardDetail.estadoDespacho === "despachado" || selectedCardDetail.estadoDespacho === "entregado") ? "bg-blue-500/10 text-blue-400" : selectedCardDetail.estadoDespacho === "cancelado" ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"
                 )}>
-                  Despacho: {(selectedCardDetail.estadoDespacho === "despachado" || selectedCardDetail.estadoDespacho === "entregado") ? "Despachado" : "Pendiente"}
+                  Despacho: {(selectedCardDetail.estadoDespacho === "despachado" || selectedCardDetail.estadoDespacho === "entregado") ? "Despachado" : selectedCardDetail.estadoDespacho === "cancelado" ? "Cancelado" : "Pendiente"}
                 </span>
               </div>
               <h3 className="text-base font-black text-white mt-3">Detalle de la Reservación</h3>
@@ -712,7 +761,7 @@ export function KanbanTab({
               <div className="rounded-xl border border-slate-900 bg-slate-900/20 overflow-hidden max-h-[160px] overflow-y-auto">
                 <table className="w-full text-left border-collapse text-[11px]">
                   <thead>
-                    <tr className="border-b border-slate-900 bg-slate-950/60 text-slate-500 font-bold uppercase text-[9px] tracking-wider">
+                    <tr className="border-b border-slate-900 bg-slate-955/60 text-slate-500 font-bold uppercase text-[9px] tracking-wider">
                       <th className="p-2.5 pl-4">Producto</th>
                       <th className="p-2.5 text-center">Cant.</th>
                       <th className="p-2.5 text-right pr-4">Precio</th>
@@ -736,39 +785,48 @@ export function KanbanTab({
             </div>
             {/* Interactive Actions Selector */}
             <div className="space-y-3 pt-3 border-t border-slate-900">
-              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Actualizar Estado (Transición Directa)</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <button
-                  onClick={() => {
-                    updateReservationStatus(selectedCardDetail.id, "pendiente_pago");
-                    setSelectedCardDetail(null);
-                  }}
-                  className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold border border-slate-800 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <AlertCircle size={12} />
-                  <span>Pendiente Pago</span>
-                </button>
-                <button
-                  onClick={() => {
-                    updateReservationStatus(selectedCardDetail.id, "pagado_procesando");
-                    setSelectedCardDetail(null);
-                  }}
-                  className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-[#22D3A6] font-bold border border-slate-800 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <CheckCircle2 size={12} />
-                  <span>Pago Verificado</span>
-                </button>
-                <button
-                  onClick={() => {
-                    updateReservationStatus(selectedCardDetail.id, "despachado");
-                    setSelectedCardDetail(null);
-                  }}
-                  className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-[#38BDF8] font-bold border border-slate-800 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <Truck size={12} />
-                  <span>Despachado</span>
-                </button>
-              </div>
+              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Acciones del Pedido</h4>
+              {selectedCardDetail.estadoPago === "cancelado" || selectedCardDetail.estadoDespacho === "cancelado" ? (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold text-center text-xs">
+                  ⚠️ Este pedido se encuentra CANCELADO y sus existencias han sido reintegradas al inventario.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {getReservationColumn(selectedCardDetail) === "pendiente_pago" && (
+                    <button
+                      onClick={() => {
+                        updateReservationStatus(selectedCardDetail.id, "pagado_procesando");
+                        setSelectedCardDetail(null);
+                      }}
+                      className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-[#22D3A6] font-bold border border-slate-800 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <CheckCircle2 size={14} />
+                      <span>Verificar Pago</span>
+                    </button>
+                  )}
+
+                  {(getReservationColumn(selectedCardDetail) === "pendiente_pago" || getReservationColumn(selectedCardDetail) === "pagado_procesando") && (
+                    <button
+                      onClick={() => {
+                        updateReservationStatus(selectedCardDetail.id, "despachado");
+                        setSelectedCardDetail(null);
+                      }}
+                      className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-[#38BDF8] font-bold border border-slate-800 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <Truck size={14} />
+                      <span>Marcar Despachado</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => cancelarPedido(selectedCardDetail.id)}
+                    className="h-10 rounded-xl bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white font-bold border border-rose-500/20 transition-all cursor-pointer flex items-center justify-center gap-1.5 col-span-full"
+                  >
+                    <XCircle size={14} />
+                    <span>Cancelar Pedido (Devolver al Stock)</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </PortalModal>

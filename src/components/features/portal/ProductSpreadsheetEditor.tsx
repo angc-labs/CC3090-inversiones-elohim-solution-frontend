@@ -204,17 +204,19 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
   return (
     <div className="space-y-4">
       {/* Header Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
-          <Sparkles size={16} className="text-[#22D3A6]" />
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 shadow-sm">
+        <div className="flex items-center gap-2.5 text-xs font-bold text-slate-100">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#22D3A6]/10 text-[#22D3A6] border border-[#22D3A6]/20">
+            <Sparkles size={16} />
+          </div>
           <span>Editor Interactivo react-spreadsheet</span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={handleAddRow}
-            className="h-8 px-3 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer border border-slate-700"
+            className="h-9 px-3.5 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border border-slate-700 shadow-xs"
           >
             <Plus size={14} />
             <span>Fila</span>
@@ -223,7 +225,7 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
           <button
             type="button"
             onClick={handleClear}
-            className="h-8 px-3 text-xs font-bold bg-rose-950/40 hover:bg-rose-900/50 text-rose-400 border border-rose-900/40 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
+            className="h-9 px-3.5 text-xs font-bold bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 border border-rose-900/40 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <Trash2 size={14} />
             <span>Limpiar</span>
@@ -232,7 +234,7 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
           <button
             type="button"
             onClick={handleDownloadExcel}
-            className="h-8 px-3 text-xs font-bold bg-sky-950/40 hover:bg-sky-900/50 text-sky-400 border border-sky-900/40 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
+            className="h-9 px-3.5 text-xs font-bold bg-sky-950/40 hover:bg-sky-900/60 text-sky-400 border border-sky-900/40 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <Download size={14} />
             <span>Descargar .xlsx</span>
@@ -241,17 +243,17 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
           <button
             type="button"
             onClick={handleParseAndConvert}
-            className="h-8 px-4 text-xs font-bold bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-955 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-950/20"
+            className="h-9 px-4 text-xs font-bold bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-955 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-950/30"
           >
-            <CheckCircle2 size={14} />
+            <CheckCircle2 size={15} />
             <span>Cargar a Vista Previa</span>
           </button>
         </div>
       </div>
 
       {/* Spreadsheet Container */}
-      <div className="rounded-xl border border-slate-800 bg-[#081018] p-2 overflow-x-auto sidebar-scrollbar max-h-[340px] overflow-y-auto">
-        <div className="min-w-[750px] text-xs font-mono">
+      <div className="rounded-2xl border border-slate-800/90 bg-[#081018] p-3 overflow-x-auto sidebar-scrollbar min-h-[380px] max-h-[500px] overflow-y-auto shadow-inner">
+        <div className="w-full min-w-[950px] text-xs font-mono">
           <Spreadsheet
             data={data}
             onChange={(newData) => {
@@ -262,7 +264,7 @@ export const ProductSpreadsheetEditor: React.FC<ProductSpreadsheetEditorProps> =
         </div>
       </div>
 
-      <p className="text-[11px] text-slate-400 leading-normal">
+      <p className="text-[11px] text-slate-400 leading-normal flex items-center gap-1.5">
         💡 Tip: Puedes escribir directamente en las celdas o copiar y pegar bloques de datos desde Excel/CSV. Haz clic en <span className="text-[#22D3A6] font-bold">Cargar a Vista Previa</span> para procesar tus filas.
       </p>
     </div>

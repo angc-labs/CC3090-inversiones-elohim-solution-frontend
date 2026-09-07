@@ -37,7 +37,7 @@ export function GuestAuthGate({ children }: GuestAuthGateProps) {
 
   if (!isHydrated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center">
         <p className="text-gray-500">Cargando...</p>
       </div>
     );
@@ -45,7 +45,7 @@ export function GuestAuthGate({ children }: GuestAuthGateProps) {
 
   if (isAuthenticated && usuario && !isSessionExpired) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center">
         <p className="text-gray-500">Redirigiendo...</p>
       </div>
     );

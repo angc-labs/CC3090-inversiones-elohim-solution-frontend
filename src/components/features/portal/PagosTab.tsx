@@ -13,13 +13,20 @@ interface PagosTabProps {
 export function PagosTab({ token, reservaciones, onRefresh }: PagosTabProps) {
   const handleToggleDespachoReservacion = async (res: ReservacionDto) => {
     if (!token) return;
-    const nuevoEstado = res.estadoDespacho === "despachado" ? "procesando" : "despachado";
+    if (res.estadoDespacho === "despachado" || res.estadoDespacho === "entregado") {
+      toast.info("El pedido ya se encuentra despachado y no puede regresarse.");
+      return;
+    }
+    if (res.estadoDespacho === "cancelado") {
+      toast.info("Este pedido ha sido cancelado.");
+      return;
+    }
     try {
-      await cambiarEstadoReservacion(token, res.id, { estadoDespacho: nuevoEstado });
+      await cambiarEstadoReservacion(token, res.id, { estadoDespacho: "despachado" });
       toast.success("Estado de despacho actualizado");
       onRefresh();
-    } catch (err) {
-      toast.error("Error al actualizar el estado de despacho");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || err?.message || "Error al actualizar el estado de despacho");
     }
   };
 
