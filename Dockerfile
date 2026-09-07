@@ -18,6 +18,7 @@ ENV BACKEND_API_URL=${BACKEND_API_URL}
 ENV NEXT_PUBLIC_MAIN_DOMAIN=${NEXT_PUBLIC_MAIN_DOMAIN}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
 RUN pnpm run build
 
 FROM node:22-alpine AS runner

@@ -712,11 +712,11 @@ export default function PortalPage() {
             </button>
 	    <button
               onClick={() => handleLinkClick("blog")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all t>
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all text-left cursor-pointer border-none w-full ${navItemClass(
                 "blog"
               )}`}
             >
-              <GitBranch size={18} />
+              <BookOpen size={18} />
               <span>{t("portal.blog")}</span>
             </button>
             {esAdmin && (
@@ -1030,6 +1030,9 @@ export default function PortalPage() {
               esStaff={esStaff}
             />
           )}
+
+          {/* TAB: BLOG */}
+          {activeTab === "blog" && <BlogTab />}
 
           {/* TAB: SUCURSALES */}
           {activeTab === "sucursales" && (

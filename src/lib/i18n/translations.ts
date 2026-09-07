@@ -17,6 +17,7 @@ export const esTranslations = {
   "portal.configuracion": "Configuración",
   "portal.integraciones": "Integraciones",
   "portal.superadmin": "Super Admin",
+  "portal.blog": "Blog",
 
   // Header & Controls
   "portal.search_placeholder": "Buscar en panel (módulos, productos, órdenes)...",
@@ -77,6 +78,7 @@ export const enTranslations: Record<TranslationKey, string> = {
   "portal.configuracion": "Settings",
   "portal.integraciones": "Integrations",
   "portal.superadmin": "Super Admin",
+  "portal.blog": "Blog",
 
   // Header & Controls
   "portal.search_placeholder": "Search portal (modules, products, orders)...",
