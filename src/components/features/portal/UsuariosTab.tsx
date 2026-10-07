@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2, Mail, Users, X, AlertTriangle, Check, Download } from "lucide-react";
+import { Loader2, Mail, Users, X, AlertTriangle, Check, Download, Search } from "lucide-react";
 import { toast } from "sonner";
 import { PortalModal } from "@/components/ui/PortalModal";
 import {
@@ -43,6 +43,11 @@ export function UsuariosTab({
   // Selected user for edits
   const [selectedUsuario, setSelectedUsuario] = useState<PlatformUsuarioDto | null>(null);
   const [resetPasswordUsuario, setResetPasswordUsuario] = useState<PlatformUsuarioDto | null>(null);
+
+  // Filters
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroRol, setFiltroRol] = useState("todos");
+  const [filtroEstado, setFiltroEstado] = useState("todos");
 
   // Reset codes state
   const [resetCodes, setResetCodes] = useState<string[]>([]);
@@ -85,6 +90,29 @@ export function UsuariosTab({
       sucursalNombre: null,
     });
   }
+
+  const terminoBusqueda = busqueda.trim().toLowerCase();
+  const usuariosFiltrados = staffUsuarios.filter((u) => {
+    if (
+      terminoBusqueda &&
+      !u.name.toLowerCase().includes(terminoBusqueda) &&
+      !u.email.toLowerCase().includes(terminoBusqueda)
+    ) {
+      return false;
+    }
+    // Users without rolStaff are shown as cajero in the table, so filter them the same way
+    if (filtroRol !== "todos" && (u.rolStaff || "cajero") !== filtroRol) return false;
+    if (filtroEstado === "activo" && !u.estado) return false;
+    if (filtroEstado === "suspendido" && u.estado) return false;
+    return true;
+  });
+  const hayFiltros = terminoBusqueda !== "" || filtroRol !== "todos" || filtroEstado !== "todos";
+
+  const handleLimpiarFiltros = () => {
+    setBusqueda("");
+    setFiltroRol("todos");
+    setFiltroEstado("todos");
+  };
 
   const handleOpenInviteModal = () => {
     setInviteForm({
@@ -258,6 +286,52 @@ export function UsuariosTab({
         )}
       </div>
 
+      {!loadingUsuarios && staffUsuarios.length > 0 && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input
+              type="search"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder={t("filter_search_placeholder")}
+              aria-label={t("filter_search_placeholder")}
+              className="h-10 w-full rounded-xl border border-slate-800 bg-slate-900/60 pl-9 pr-4 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
+            />
+          </div>
+          <select
+            value={filtroRol}
+            onChange={(e) => setFiltroRol(e.target.value)}
+            aria-label={t("filter_role_label")}
+            className="h-10 rounded-xl border border-slate-800 bg-slate-900 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
+          >
+            <option value="todos">{t("filter_all_roles")}</option>
+            <option value="cajero">{t("option_cajero")}</option>
+            <option value="administrador">{t("option_administrador")}</option>
+            <option value="superadmin">{t("option_superadmin")}</option>
+          </select>
+          <select
+            value={filtroEstado}
+            onChange={(e) => setFiltroEstado(e.target.value)}
+            aria-label={t("filter_status_label")}
+            className="h-10 rounded-xl border border-slate-800 bg-slate-900 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
+          >
+            <option value="todos">{t("filter_all_statuses")}</option>
+            <option value="activo">{t("status_active")}</option>
+            <option value="suspendido">{t("status_suspended")}</option>
+          </select>
+          {hayFiltros && (
+            <button
+              type="button"
+              onClick={handleLimpiarFiltros}
+              className="h-10 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold cursor-pointer border-none"
+            >
+              {t("filter_clear")}
+            </button>
+          )}
+        </div>
+      )}
+
       {loadingUsuarios ? (
         <div className="h-48 flex items-center justify-center">
           <Loader2 className="animate-spin text-[#22D3A6]" size={32} />
@@ -266,6 +340,11 @@ export function UsuariosTab({
         <div className="rounded-xl border border-dashed border-slate-800 p-12 text-center space-y-3">
           <Users className="mx-auto text-slate-600" size={40} />
           <p className="text-sm text-slate-400">{t("empty_state")}</p>
+        </div>
+      ) : usuariosFiltrados.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-slate-800 p-12 text-center space-y-3">
+          <Search className="mx-auto text-slate-600" size={40} />
+          <p className="text-sm text-slate-400">{t("filter_no_results")}</p>
         </div>
       ) : (
         <div className="rounded-xl border border-slate-900 bg-slate-950/20 overflow-hidden">
@@ -281,7 +360,7 @@ export function UsuariosTab({
                 </tr>
               </thead>
               <tbody>
-                {staffUsuarios.map((u) => (
+                {usuariosFiltrados.map((u) => (
                   <tr
                     key={u.id}
                     className="border-b border-slate-900/55 hover:bg-slate-950/30 transition-all"
