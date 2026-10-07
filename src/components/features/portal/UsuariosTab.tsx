@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2, Mail, Users, X, AlertTriangle, Check, Download } from "lucide-react";
+import { Loader2, Mail, Users, X, AlertTriangle, Check, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { PortalModal } from "@/components/ui/PortalModal";
 import {
@@ -14,6 +14,8 @@ import {
   type SucursalDto,
 } from "@/lib/api/admin";
 import { adminResetPassword } from "@/lib/api/auth";
+
+const USUARIOS_POR_PAGINA = 20;
 
 interface UsuariosTabProps {
   token: string;
@@ -43,6 +45,9 @@ export function UsuariosTab({
   // Selected user for edits
   const [selectedUsuario, setSelectedUsuario] = useState<PlatformUsuarioDto | null>(null);
   const [resetPasswordUsuario, setResetPasswordUsuario] = useState<PlatformUsuarioDto | null>(null);
+
+  // Pagination
+  const [paginaActual, setPaginaActual] = useState(1);
 
   // Reset codes state
   const [resetCodes, setResetCodes] = useState<string[]>([]);
@@ -85,6 +90,12 @@ export function UsuariosTab({
       sucursalNombre: null,
     });
   }
+
+  const totalPaginas = Math.max(1, Math.ceil(staffUsuarios.length / USUARIOS_POR_PAGINA));
+  // Keep the page in range when the list shrinks (e.g. after deleting a user)
+  const pagina = Math.min(paginaActual, totalPaginas);
+  const inicio = (pagina - 1) * USUARIOS_POR_PAGINA;
+  const usuariosPagina = staffUsuarios.slice(inicio, inicio + USUARIOS_POR_PAGINA);
 
   const handleOpenInviteModal = () => {
     setInviteForm({
@@ -281,7 +292,7 @@ export function UsuariosTab({
                 </tr>
               </thead>
               <tbody>
-                {staffUsuarios.map((u) => (
+                {usuariosPagina.map((u) => (
                   <tr
                     key={u.id}
                     className="border-b border-slate-900/55 hover:bg-slate-950/30 transition-all"
@@ -341,6 +352,42 @@ export function UsuariosTab({
               </tbody>
             </table>
           </div>
+          {totalPaginas > 1 && (
+            <div className="flex items-center justify-between gap-4 border-t border-slate-900 bg-slate-950/60 px-4 py-3 text-xs text-slate-400">
+              <span>
+                {t("pagination_range", {
+                  from: inicio + 1,
+                  to: inicio + usuariosPagina.length,
+                  total: staffUsuarios.length,
+                })}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaginaActual(pagina - 1)}
+                  disabled={pagina === 1}
+                  className="h-8 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer border-none flex items-center gap-1 font-bold"
+                  aria-label={t("pagination_previous")}
+                >
+                  <ChevronLeft size={14} />
+                  <span>{t("pagination_previous")}</span>
+                </button>
+                <span className="font-bold text-slate-300">
+                  {t("pagination_page", { page: pagina, total: totalPaginas })}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPaginaActual(pagina + 1)}
+                  disabled={pagina === totalPaginas}
+                  className="h-8 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer border-none flex items-center gap-1 font-bold"
+                  aria-label={t("pagination_next")}
+                >
+                  <span>{t("pagination_next")}</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
