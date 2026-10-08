@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Search, Upload, Plus, Loader2, Package, Eye, EyeOff, Edit, Trash2, X, Download, FileText, Grid, FileSpreadsheet } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search,  Upload, Plus, Loader2, Package, Eye, EyeOff, Edit, Trash2, X, Download, FileText, Grid, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 import { PortalModal } from "@/components/ui/PortalModal";
 import * as XLSX from "xlsx";
@@ -18,6 +18,8 @@ import {
   type CrearPlatformProductoBulkInput,
 } from "@/lib/api/admin";
 import type { TCategoria } from "@/types";
+
+const PAGE_SIZE_OPTIONS = [10, 25, 30];
 
 interface ProductosTabProps {
   token: string;
@@ -43,6 +45,23 @@ export function ProductosTab({
   const t = useTranslations("Productos");
   // Search queries
   const [productSearchQuery, setProductSearchQuery] = useState("");
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
+
+  const filteredProductos = useMemo(() => {
+    const query = productSearchQuery.toLowerCase();
+    return productos.filter(
+      (p) => p.nombre.toLowerCase().includes(query) || (p.sku && p.sku.toLowerCase().includes(query))
+    );
+  }, [productos, productSearchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProductos.length / pageSize));
+  // Se limita la página al rango válido (p. ej. tras eliminar el último producto de la última página)
+  const safePage = Math.min(currentPage, totalPages);
+  const pageStart = (safePage - 1) * pageSize;
+  const paginatedProductos = filteredProductos.slice(pageStart, pageStart + pageSize);
 
   // Modals
   const [isProductoModalOpen, setIsProductoModalOpen] = useState(false);
@@ -393,7 +412,10 @@ export function ProductosTab({
               type="text"
               placeholder={t("search_placeholder")}
               value={productSearchQuery}
-              onChange={(e) => setProductSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setProductSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               className="h-9 w-full pl-9 pr-3 rounded-lg border border-slate-800 bg-slate-900/40 text-xs placeholder:text-slate-500 text-slate-100 outline-none focus:border-[#22D3A6]/40"
             />
           </div>
@@ -443,13 +465,14 @@ export function ProductosTab({
                 </tr>
               </thead>
               <tbody>
-                {productos
-                  .filter(
-                    (p) =>
-                      p.nombre.toLowerCase().includes(productSearchQuery.toLowerCase()) ||
-                      (p.sku && p.sku.toLowerCase().includes(productSearchQuery.toLowerCase()))
-                  )
-                  .map((p) => (
+                {filteredProductos.length === 0 && (
+                  <tr>
+                    <td colSpan={esAdmin ? 7 : 6} className="p-8 text-center text-slate-400">
+                      {t("no_results")}
+                    </td>
+                  </tr>
+                )}
+                {paginatedProductos.map((p) => (
                     <tr
                       key={p.id}
                       className="border-b border-slate-900/55 hover:bg-slate-950/30 transition-all"
@@ -509,6 +532,57 @@ export function ProductosTab({
               </tbody>
             </table>
           </div>
+          {filteredProductos.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-900 bg-slate-950/40 px-4 py-3 text-xs text-slate-400">
+              <div className="flex items-center gap-3">
+                <span>
+                  {t("pagination_summary", {
+                    from: pageStart + 1,
+                    to: pageStart + paginatedProductos.length,
+                    total: filteredProductos.length,
+                  })}
+                </span>
+                <label className="flex items-center gap-2">
+                  <span>{t("pagination_page_size")}</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="h-8 rounded-lg border border-slate-800 bg-slate-900/60 px-2 text-xs text-slate-100 outline-none focus:border-[#22D3A6]/40 cursor-pointer"
+                  >
+                    {PAGE_SIZE_OPTIONS.map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(safePage - 1)}
+                  disabled={safePage <= 1}
+                  className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 transition-all flex items-center gap-1 cursor-pointer border-none disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft size={14} />
+                  <span>{t("pagination_previous")}</span>
+                </button>
+                <span className="px-2">{t("pagination_page_of", { page: safePage, pages: totalPages })}</span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(safePage + 1)}
+                  disabled={safePage >= totalPages}
+                  className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 transition-all flex items-center gap-1 cursor-pointer border-none disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span>{t("pagination_next")}</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
