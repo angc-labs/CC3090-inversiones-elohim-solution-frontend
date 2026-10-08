@@ -957,6 +957,8 @@ export default function ConstructorPage() {
                   selectedSectionId={selectedSectionId}
                   setSelectedSectionId={setSelectedSectionId}
                   previewDevice={previewDevice}
+                  showLeftPanel={showLeftPanel}
+                  showRightPanel={showRightPanel}
                   activeStore={activeStore}
                   constructorSearchTerm={constructorSearchTerm}
                   setConstructorSearchTerm={setConstructorSearchTerm}

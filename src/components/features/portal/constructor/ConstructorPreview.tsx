@@ -10,6 +10,8 @@ interface ConstructorPreviewProps {
   selectedSectionId: string;
   setSelectedSectionId: (id: string) => void;
   previewDevice: "desktop" | "tablet" | "mobile";
+  showLeftPanel: boolean;
+  showRightPanel: boolean;
   activeStore: any;
   constructorSearchTerm: string;
   setConstructorSearchTerm: (term: string) => void;
@@ -95,15 +97,25 @@ export function ConstructorPreview({
   selectedSectionId,
   setSelectedSectionId,
   previewDevice,
+  showLeftPanel,
+  showRightPanel,
   activeStore,
   constructorSearchTerm,
   setConstructorSearchTerm
 }: ConstructorPreviewProps) {
   const currentPage = storeConfig.pages.find((p: any) => p.id === activePageId) || storeConfig.pages[0];
 
+  const previewSizeStyle: React.CSSProperties =
+    previewDevice === "mobile"
+      ? { maxWidth: "24rem" }
+      : previewDevice === "tablet"
+      ? { maxWidth: "42rem" }
+      : { maxWidth: showLeftPanel || showRightPanel ? "calc(100% - 2rem)" : "100%" };
+
   return (
     <div className="flex-1 rounded-xl border border-slate-900 bg-[#0c1622] p-6 flex items-center justify-center overflow-auto min-w-0 relative">
       <div
+        style={previewSizeStyle}
         className={`bg-slate-955 rounded-xl border border-slate-900 shadow-2xl flex flex-col overflow-hidden transition-all duration-300 w-full h-full min-h-[400px] ${
           previewDevice === "mobile"
             ? "max-w-sm"
