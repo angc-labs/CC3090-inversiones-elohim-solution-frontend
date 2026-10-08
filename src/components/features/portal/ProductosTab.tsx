@@ -19,7 +19,24 @@ import {
 } from "@/lib/api/admin";
 import type { TCategoria } from "@/types";
 
-const PAGE_SIZE_OPTIONS = [10, 25, 30];
+const PAGE_SIZE_OPTIONS = [10, 20, 30];
+
+type EstadoFiltro = "all" | "published" | "pending";
+
+const EMPTY_FILTERS = {
+  precioMin: "",
+  precioMax: "",
+  stockMin: "",
+  stockMax: "",
+  estado: "all" as EstadoFiltro,
+};
+
+// Un campo vacío significa "sin límite"
+const parseLimit = (value: string): number | null => {
+  if (value.trim() === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+};
 
 interface ProductosTabProps {
   token: string;
@@ -50,12 +67,37 @@ export function ProductosTab({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
+  // Filters
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+
+  const updateFilter = <K extends keyof typeof EMPTY_FILTERS>(key: K, value: (typeof EMPTY_FILTERS)[K]) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = JSON.stringify(filters) !== JSON.stringify(EMPTY_FILTERS);
+
   const filteredProductos = useMemo(() => {
     const query = productSearchQuery.toLowerCase();
-    return productos.filter(
-      (p) => p.nombre.toLowerCase().includes(query) || (p.sku && p.sku.toLowerCase().includes(query))
-    );
-  }, [productos, productSearchQuery]);
+    const precioMin = parseLimit(filters.precioMin);
+    const precioMax = parseLimit(filters.precioMax);
+    const stockMin = parseLimit(filters.stockMin);
+    const stockMax = parseLimit(filters.stockMax);
+
+    return productos.filter((p) => {
+      const matchesSearch =
+        p.nombre.toLowerCase().includes(query) || (p.sku && p.sku.toLowerCase().includes(query));
+      if (!matchesSearch) return false;
+
+      if (precioMin !== null && p.precioDetalle < precioMin) return false;
+      if (precioMax !== null && p.precioDetalle > precioMax) return false;
+      if (stockMin !== null && p.stockTotal < stockMin) return false;
+      if (stockMax !== null && p.stockTotal > stockMax) return false;
+      if (filters.estado === "published" && !p.publicado) return false;
+      if (filters.estado === "pending" && p.publicado) return false;
+      return true;
+    });
+  }, [productos, productSearchQuery, filters]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProductos.length / pageSize));
   // Se limita la página al rango válido (p. ej. tras eliminar el último producto de la última página)
@@ -439,6 +481,97 @@ export function ProductosTab({
           )}
         </div>
       </div>
+
+      {!loadingProductos && productos.length > 0 && (
+        <div className="flex flex-wrap items-end gap-4 rounded-xl border border-slate-900 bg-slate-950/20 p-4 text-xs">
+          <div className="space-y-1">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              {t("filter_price")}
+            </span>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={filters.precioMin}
+                onChange={(e) => updateFilter("precioMin", e.target.value)}
+                placeholder={t("filter_min")}
+                aria-label={t("filter_price_min_aria")}
+                className="h-8 w-24 rounded-lg border border-slate-800 bg-slate-900/40 px-2 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-[#22D3A6]/40"
+              />
+              <span className="text-slate-600">—</span>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={filters.precioMax}
+                onChange={(e) => updateFilter("precioMax", e.target.value)}
+                placeholder={t("filter_max")}
+                aria-label={t("filter_price_max_aria")}
+                className="h-8 w-24 rounded-lg border border-slate-800 bg-slate-900/40 px-2 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-[#22D3A6]/40"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              {t("filter_stock")}
+            </span>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={filters.stockMin}
+                onChange={(e) => updateFilter("stockMin", e.target.value)}
+                placeholder={t("filter_min")}
+                aria-label={t("filter_stock_min_aria")}
+                className="h-8 w-24 rounded-lg border border-slate-800 bg-slate-900/40 px-2 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-[#22D3A6]/40"
+              />
+              <span className="text-slate-600">—</span>
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={filters.stockMax}
+                onChange={(e) => updateFilter("stockMax", e.target.value)}
+                placeholder={t("filter_max")}
+                aria-label={t("filter_stock_max_aria")}
+                className="h-8 w-24 rounded-lg border border-slate-800 bg-slate-900/40 px-2 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-[#22D3A6]/40"
+              />
+            </div>
+          </div>
+
+          <label className="space-y-1">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              {t("filter_status")}
+            </span>
+            <select
+              value={filters.estado}
+              onChange={(e) => updateFilter("estado", e.target.value as EstadoFiltro)}
+              className="h-8 rounded-lg border border-slate-800 bg-slate-900/60 px-2 text-xs text-slate-100 outline-none focus:border-[#22D3A6]/40 cursor-pointer"
+            >
+              <option value="all">{t("filter_status_all")}</option>
+              <option value="published">{t("filter_status_published")}</option>
+              <option value="pending">{t("filter_status_pending")}</option>
+            </select>
+          </label>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={() => {
+                setFilters(EMPTY_FILTERS);
+                setCurrentPage(1);
+              }}
+              className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white transition-all flex items-center gap-1 cursor-pointer border-none"
+            >
+              <X size={12} />
+              <span>{t("filter_clear")}</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {loadingProductos ? (
         <div className="h-48 flex items-center justify-center">
