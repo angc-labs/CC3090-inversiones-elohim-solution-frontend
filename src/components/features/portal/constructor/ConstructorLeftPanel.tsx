@@ -160,7 +160,7 @@ export function ConstructorLeftPanel({
         rounded-xl border border-slate-900 bg-slate-955/40 p-4 flex-col gap-4 overflow-y-auto sidebar-scrollbar select-none transition-all duration-300
         xl:w-64 xl:static xl:flex xl:h-auto xl:max-h-none
         fixed inset-y-0 left-0 z-40 w-72 bg-slate-950/95 border-r shadow-2xl h-[100dvh] max-h-[100dvh]
-        ${showLeftPanel ? "flex translate-x-0" : "hidden xl:flex -translate-x-full xl:translate-x-0"}
+        ${showLeftPanel ? "flex translate-x-0" : "hidden xl:flex xl:w-0 xl:p-0 xl:border-0 xl:overflow-hidden xl:-translate-x-full"}
       `}>
         {/* Left Tab Switcher */}
         <div className="grid grid-cols-2 gap-2 bg-slate-900/60 p-1 rounded-xl border border-slate-900 shrink-0">

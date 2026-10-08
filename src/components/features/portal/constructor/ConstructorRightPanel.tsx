@@ -73,7 +73,7 @@ export function ConstructorRightPanel({
         rounded-xl border border-slate-900 bg-slate-955/40 p-5 flex-col gap-5 overflow-y-auto sidebar-scrollbar select-none transition-all duration-300 text-left
         xl:w-80 xl:static xl:flex xl:h-auto xl:max-h-none
         fixed inset-y-0 right-0 z-40 w-80 bg-slate-950/95 border-l shadow-2xl h-[100dvh] max-h-[100dvh]
-        ${showRightPanel ? "flex translate-x-0" : "hidden xl:flex translate-x-full xl:translate-x-0"}
+        ${showRightPanel ? "flex translate-x-0" : "hidden xl:flex xl:w-0 xl:p-0 xl:border-0 xl:overflow-hidden xl:translate-x-full"}
       `}>
         <div className="flex items-center justify-between border-b border-slate-900/50 pb-2">
           <span className="text-xs font-black text-[#22D3A6] tracking-wide uppercase">
