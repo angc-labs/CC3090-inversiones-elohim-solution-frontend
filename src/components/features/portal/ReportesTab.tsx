@@ -80,6 +80,8 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
   const [copiedResultJson, setCopiedResultJson] = useState(false);
   const [showSchemaHelp, setShowSchemaHelp] = useState(true);
   const monacoEditorRef = useRef<MonacoSqlEditorHandle>(null);
+  // El error y el resultado son excluyentes, así que comparten la referencia
+  const customQueryOutputRef = useRef<HTMLDivElement>(null);
 
   const [previousRequest, setPreviousRequest] = useState({ token, activeStore, reportSubTab, reportFiltro });
   if (previousRequest.token !== token || previousRequest.activeStore !== activeStore ||
@@ -127,6 +129,12 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
         .finally(() => setReportesLoading(false));
     }
   }, [token, activeStore, reportSubTab, reportFiltro]);
+
+  // Lleva a la vista el resultado (o el error) de la consulta recién ejecutada
+  useEffect(() => {
+    if (!customQueryResult && !customQueryError) return;
+    customQueryOutputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [customQueryResult, customQueryError]);
 
   // Execute SQL
   const handleExecuteSql = async () => {
@@ -1130,7 +1138,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
 
               {/* Custom Query Error */}
               {customQueryError && (
-                <div className="rounded-xl border border-rose-900 bg-rose-955 p-5 space-y-2 animate-fade-in">
+                <div ref={customQueryOutputRef} className="rounded-xl border border-rose-900 bg-rose-955 p-5 space-y-2 animate-fade-in">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-rose-400 font-bold text-xs uppercase tracking-wider">
                       <AlertTriangle size={16} />
@@ -1155,7 +1163,7 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
 
               {/* Custom Query Results */}
               {customQueryResult && (
-                <div className="rounded-xl border border-slate-900 bg-slate-955/80 overflow-hidden shadow-lg animate-fade-in space-y-0">
+                <div ref={customQueryOutputRef} className="rounded-xl border border-slate-900 bg-slate-955/80 overflow-hidden shadow-lg animate-fade-in space-y-0">
                   {/* Results Header with Live Stats & Actions */}
                   <div className="border-b border-slate-900 bg-slate-950/90 px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2.5">
