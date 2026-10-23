@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Search, Upload, Plus, Loader2, Package, Eye, EyeOff, Edit, Trash2, X, Download, FileText, Grid, FileSpreadsheet } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search,  Upload, Plus, Loader2, Package, Eye, EyeOff, Edit, Trash2, X, Download, FileText, Grid, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 import { PortalModal } from "@/components/ui/PortalModal";
 import * as XLSX from "xlsx";
@@ -18,6 +18,25 @@ import {
   type CrearPlatformProductoBulkInput,
 } from "@/lib/api/admin";
 import type { TCategoria } from "@/types";
+
+const PAGE_SIZE_OPTIONS = [10, 20, 30];
+
+type EstadoFiltro = "all" | "published" | "pending";
+
+const EMPTY_FILTERS = {
+  precioMin: "",
+  precioMax: "",
+  stockMin: "",
+  stockMax: "",
+  estado: "all" as EstadoFiltro,
+};
+
+// Un campo vacío significa "sin límite"
+const parseLimit = (value: string): number | null => {
+  if (value.trim() === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+};
 
 interface ProductosTabProps {
   token: string;
@@ -44,6 +63,48 @@ export function ProductosTab({
   // Search queries
   const [productSearchQuery, setProductSearchQuery] = useState("");
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
+
+  // Filters
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+
+  const updateFilter = <K extends keyof typeof EMPTY_FILTERS>(key: K, value: (typeof EMPTY_FILTERS)[K]) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = JSON.stringify(filters) !== JSON.stringify(EMPTY_FILTERS);
+
+  const filteredProductos = useMemo(() => {
+    const query = productSearchQuery.toLowerCase();
+    const precioMin = parseLimit(filters.precioMin);
+    const precioMax = parseLimit(filters.precioMax);
+    const stockMin = parseLimit(filters.stockMin);
+    const stockMax = parseLimit(filters.stockMax);
+
+    return productos.filter((p) => {
+      const matchesSearch =
+        p.nombre.toLowerCase().includes(query) || (p.sku && p.sku.toLowerCase().includes(query));
+      if (!matchesSearch) return false;
+
+      if (precioMin !== null && p.precioDetalle < precioMin) return false;
+      if (precioMax !== null && p.precioDetalle > precioMax) return false;
+      if (stockMin !== null && p.stockTotal < stockMin) return false;
+      if (stockMax !== null && p.stockTotal > stockMax) return false;
+      if (filters.estado === "published" && !p.publicado) return false;
+      if (filters.estado === "pending" && p.publicado) return false;
+      return true;
+    });
+  }, [productos, productSearchQuery, filters]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProductos.length / pageSize));
+  // Se limita la página al rango válido (p. ej. tras eliminar el último producto de la última página)
+  const safePage = Math.min(currentPage, totalPages);
+  const pageStart = (safePage - 1) * pageSize;
+  const paginatedProductos = filteredProductos.slice(pageStart, pageStart + pageSize);
+
   // Modals
   const [isProductoModalOpen, setIsProductoModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -53,7 +114,7 @@ export function ProductosTab({
   // Edits
   const [selectedProducto, setSelectedProducto] = useState<PlatformProductoDto | null>(null);
   const [parsedProducts, setParsedProducts] = useState<CrearPlatformProductoBulkInput[]>([]);
-  const [rawExcelRows, setRawExcelRows] = useState<any[]>([]);
+  const [rawExcelRows, setRawExcelRows] = useState<Record<string, unknown>[]>([]);
   const [isImporting, setIsImporting] = useState(false);
   
   // Column mapping
@@ -235,7 +296,7 @@ export function ProductosTab({
     toast.success(t("toast_template_downloaded", { format: format.toUpperCase() }));
   };
 
-  const parseRowsWithMapping = (rows: any[], mapping: Record<string, string>): CrearPlatformProductoBulkInput[] => {
+  const parseRowsWithMapping = (rows: Record<string, unknown>[], mapping: Record<string, string>): CrearPlatformProductoBulkInput[] => {
     return rows.map((row, index) => {
       const getValue = (fieldKey: string) => {
         const colName = mapping[fieldKey];
@@ -250,22 +311,22 @@ export function ProductosTab({
       }
 
       const rawPrecioDetalle = getValue("precioDetalle") ?? row.PrecioDetalle ?? row.precioDetalle ?? row.Precio ?? row.precio ?? row.Price ?? row.price;
-      const precioDetalle = parseFloat(rawPrecioDetalle);
+      const precioDetalle = parseFloat(String(rawPrecioDetalle));
       if (isNaN(precioDetalle) || precioDetalle < 0) {
         throw new Error(t("err_invalid_price", { row: index + 2, name: nombre }));
       }
 
       const rawPrecioMayoreo = getValue("precioMayoreo") ?? row.PrecioMayoreo ?? row.precioMayoreo ?? row.Mayoreo ?? row.mayoreo;
-      let precioMayoreo = parseFloat(rawPrecioMayoreo);
+      let precioMayoreo = parseFloat(String(rawPrecioMayoreo));
       if (isNaN(precioMayoreo) || precioMayoreo < 0) {
         precioMayoreo = precioDetalle;
       }
 
       const rawStockActual = getValue("stockActual") ?? row.StockActual ?? row.stockActual ?? row.Stock ?? row.stock;
-      const stockActual = parseInt(rawStockActual || "0", 10);
+      const stockActual = parseInt(String(rawStockActual || "0"), 10);
 
       const rawStockMinimo = getValue("stockMinimo") ?? row.StockMinimo ?? row.stockMinimo;
-      const stockMinimo = parseInt(rawStockMinimo || "0", 10);
+      const stockMinimo = parseInt(String(rawStockMinimo || "0"), 10);
 
       const rawSku = getValue("sku") ?? row.Sku ?? row.sku ?? row.SKU ?? row.Codigo ?? row.codigo;
       const sku = rawSku ? String(rawSku).trim() : null;
@@ -283,8 +344,7 @@ export function ProductosTab({
         const match = categorias.find(
           (c) =>
             c.id === strCat ||
-            (c.nombreCategoria && c.nombreCategoria.toLowerCase() === strCat.toLowerCase()) ||
-            ((c as any).nombre && (c as any).nombre.toLowerCase() === strCat.toLowerCase())
+            (c.nombreCategoria && c.nombreCategoria.toLowerCase() === strCat.toLowerCase())
         );
         categoriaId = match ? match.id : strCat;
       }
@@ -323,7 +383,7 @@ export function ProductosTab({
         const workbook = XLSX.read(data, { type: "binary" });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json<any>(worksheet);
+        const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
 
         if (json.length === 0) {
           toast.error(t("toast_empty_file"));
@@ -352,8 +412,8 @@ export function ProductosTab({
         const productsToCreate = parseRowsWithMapping(json, guessedMapping);
         setParsedProducts(productsToCreate);
         toast.success(t("toast_file_loaded", { count: productsToCreate.length }));
-      } catch (err: any) {
-        toast.error(err.message || t("toast_file_process_error"));
+      } catch (err) {
+        toast.error((err instanceof Error ? err.message : "") || t("toast_file_process_error"));
       }
     };
     reader.readAsBinaryString(file);
@@ -371,8 +431,8 @@ export function ProductosTab({
       setParsedProducts([]);
       setRawExcelRows([]);
       onRefresh();
-    } catch (err: any) {
-      toast.error(err.message || t("toast_bulk_error"));
+    } catch (err) {
+      toast.error((err instanceof Error ? err.message : "") || t("toast_bulk_error"));
     } finally {
       setIsImporting(false);
     }
@@ -394,7 +454,10 @@ export function ProductosTab({
               type="text"
               placeholder={t("search_placeholder")}
               value={productSearchQuery}
-              onChange={(e) => setProductSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setProductSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               className="h-9 w-full pl-9 pr-3 rounded-lg border border-slate-800 bg-slate-900/40 text-xs placeholder:text-slate-500 text-slate-100 outline-none focus:border-[#22D3A6]/40"
             />
           </div>
@@ -418,6 +481,97 @@ export function ProductosTab({
           )}
         </div>
       </div>
+
+      {!loadingProductos && productos.length > 0 && (
+        <div className="flex flex-wrap items-end gap-4 rounded-xl border border-slate-900 bg-slate-950/20 p-4 text-xs">
+          <div className="space-y-1">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              {t("filter_price")}
+            </span>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={filters.precioMin}
+                onChange={(e) => updateFilter("precioMin", e.target.value)}
+                placeholder={t("filter_min")}
+                aria-label={t("filter_price_min_aria")}
+                className="h-8 w-24 rounded-lg border border-slate-800 bg-slate-900/40 px-2 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-[#22D3A6]/40"
+              />
+              <span className="text-slate-600">—</span>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={filters.precioMax}
+                onChange={(e) => updateFilter("precioMax", e.target.value)}
+                placeholder={t("filter_max")}
+                aria-label={t("filter_price_max_aria")}
+                className="h-8 w-24 rounded-lg border border-slate-800 bg-slate-900/40 px-2 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-[#22D3A6]/40"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              {t("filter_stock")}
+            </span>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={filters.stockMin}
+                onChange={(e) => updateFilter("stockMin", e.target.value)}
+                placeholder={t("filter_min")}
+                aria-label={t("filter_stock_min_aria")}
+                className="h-8 w-24 rounded-lg border border-slate-800 bg-slate-900/40 px-2 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-[#22D3A6]/40"
+              />
+              <span className="text-slate-600">—</span>
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={filters.stockMax}
+                onChange={(e) => updateFilter("stockMax", e.target.value)}
+                placeholder={t("filter_max")}
+                aria-label={t("filter_stock_max_aria")}
+                className="h-8 w-24 rounded-lg border border-slate-800 bg-slate-900/40 px-2 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-[#22D3A6]/40"
+              />
+            </div>
+          </div>
+
+          <label className="space-y-1">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              {t("filter_status")}
+            </span>
+            <select
+              value={filters.estado}
+              onChange={(e) => updateFilter("estado", e.target.value as EstadoFiltro)}
+              className="h-8 rounded-lg border border-slate-800 bg-slate-900/60 px-2 text-xs text-slate-100 outline-none focus:border-[#22D3A6]/40 cursor-pointer"
+            >
+              <option value="all">{t("filter_status_all")}</option>
+              <option value="published">{t("filter_status_published")}</option>
+              <option value="pending">{t("filter_status_pending")}</option>
+            </select>
+          </label>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={() => {
+                setFilters(EMPTY_FILTERS);
+                setCurrentPage(1);
+              }}
+              className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white transition-all flex items-center gap-1 cursor-pointer border-none"
+            >
+              <X size={12} />
+              <span>{t("filter_clear")}</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {loadingProductos ? (
         <div className="h-48 flex items-center justify-center">
@@ -444,13 +598,14 @@ export function ProductosTab({
                 </tr>
               </thead>
               <tbody>
-                {productos
-                  .filter(
-                    (p) =>
-                      p.nombre.toLowerCase().includes(productSearchQuery.toLowerCase()) ||
-                      (p.sku && p.sku.toLowerCase().includes(productSearchQuery.toLowerCase()))
-                  )
-                  .map((p) => (
+                {filteredProductos.length === 0 && (
+                  <tr>
+                    <td colSpan={esAdmin ? 7 : 6} className="p-8 text-center text-slate-400">
+                      {t("no_results")}
+                    </td>
+                  </tr>
+                )}
+                {paginatedProductos.map((p) => (
                     <tr
                       key={p.id}
                       className="border-b border-slate-900/55 hover:bg-slate-950/30 transition-all"
@@ -510,6 +665,57 @@ export function ProductosTab({
               </tbody>
             </table>
           </div>
+          {filteredProductos.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-900 bg-slate-950/40 px-4 py-3 text-xs text-slate-400">
+              <div className="flex items-center gap-3">
+                <span>
+                  {t("pagination_summary", {
+                    from: pageStart + 1,
+                    to: pageStart + paginatedProductos.length,
+                    total: filteredProductos.length,
+                  })}
+                </span>
+                <label className="flex items-center gap-2">
+                  <span>{t("pagination_page_size")}</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="h-8 rounded-lg border border-slate-800 bg-slate-900/60 px-2 text-xs text-slate-100 outline-none focus:border-[#22D3A6]/40 cursor-pointer"
+                  >
+                    {PAGE_SIZE_OPTIONS.map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(safePage - 1)}
+                  disabled={safePage <= 1}
+                  className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 transition-all flex items-center gap-1 cursor-pointer border-none disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft size={14} />
+                  <span>{t("pagination_previous")}</span>
+                </button>
+                <span className="px-2">{t("pagination_page_of", { page: safePage, pages: totalPages })}</span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(safePage + 1)}
+                  disabled={safePage >= totalPages}
+                  className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 transition-all flex items-center gap-1 cursor-pointer border-none disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span>{t("pagination_next")}</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1067,8 +1273,8 @@ export function ProductosTab({
                     setParsedProducts(mappedProducts);
                     toast.success(t("toast_mapping_applied", { count: mappedProducts.length }));
                     setIsColumnMappingModalOpen(false);
-                  } catch (err: any) {
-                    toast.error(err.message || t("toast_mapping_error"));
+                  } catch (err) {
+                    toast.error((err instanceof Error ? err.message : "") || t("toast_mapping_error"));
                   }
                 }}
                 className="flex-1 h-10 rounded-lg bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-955 text-sm font-bold transition-all cursor-pointer border-none"

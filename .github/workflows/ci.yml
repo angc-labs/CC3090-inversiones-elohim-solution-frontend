@@ -1,0 +1,102 @@
+name: Frontend CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout frontend repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '9'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Clean generated artifacts
+        run: rm -rf .next coverage
+
+      - name: Check lint
+        run: pnpm run lint
+
+      - name: Run tests
+        run: pnpm test -- --ci --runInBand
+
+      - name: Prepare frontend env defaults
+        run: |
+          cp .env.example .env
+
+      - name: Build frontend Docker image
+        run: >-
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=http://localhost:5000 \
+            --build-arg BACKEND_API_URL=http://localhost:5000 \
+            --build-arg NEXT_PUBLIC_MAIN_DOMAIN=dmhub.fun \
+            --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-oauth-client-id.apps.googleusercontent.com \
+            -t elohim-frontend:ci .
+
+      - name: Start frontend container
+        run: |
+          docker run -d --rm \
+            --name elohim-frontend-ci \
+            -p 3000:3000 \
+            -e PORT=3000 \
+            elohim-frontend:ci
+
+      - name: Verify frontend HTTP availability
+        run: |
+          for i in $(seq 1 30); do
+            if curl --fail --silent --show-error http://localhost:3000/ --output /dev/null; then
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Frontend did not respond on port 3000"
+              docker logs elohim-frontend-ci
+              exit 1
+            fi
+            sleep 5
+          done
+
+      - name: Export validated frontend image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker save elohim-frontend:ci | gzip > "${RUNNER_TEMP}/frontend-image.tar.gz"
+
+      - name: Upload validated frontend image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-image
+          path: ${{ runner.temp }}/frontend-image.tar.gz
+          compression-level: 0
+          retention-days: 3
+          if-no-files-found: error
+
+      - name: Show container logs
+        if: always()
+        run: |
+          docker ps -a || true
+          docker logs elohim-frontend-ci || true
+
+      - name: Clean up frontend container
+        if: always()
+        run: docker rm -f elohim-frontend-ci || true
