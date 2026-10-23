@@ -1,5 +1,9 @@
 "use client";
 
+import { useHydrated } from "@/hooks/useHydrated";
+
+import type { StoreConfig, SectionProperties } from "@/types/store-builder";
+
 import { STORE_LAYOUT } from "@/components/features/portal/constructor/storeLayout";
 
 import { useEffect, useState, useMemo, useRef } from "react";
@@ -25,11 +29,18 @@ import {
   ArrowRight,
   CreditCard,
   Check,
-  X
+  X,
+  Download,
+  CheckCircle2,
+  FileText
 } from "lucide-react";
 import { toast } from "sonner";
 import { ClientAuthModal } from "@/components/features/auth/ClientAuthModal";
 import { StorefrontCartDrawer } from "@/components/features/carrito/StorefrontCartDrawer";
+import { StoreSurveySection } from "@/components/features/portal/constructor/StoreSurveySection";
+import { StripePaymentInfoBox } from "@/components/features/pago/StripePaymentInfoBox";
+import { generateAndDownloadReceipt, type ReceiptData } from "@/lib/utils/pdfReceipt";
+import { safeBackgroundImage } from "@/lib/utils";
 import type { TMetodoPagoGuardado } from "@/types";
 
 // Stripe and payment imports
@@ -64,11 +75,11 @@ const isDarkBg = (bgColor: string) => {
 };
 
 // Helper to translate section properties into dynamic React CSS styles
-const getSectionStyle = (properties: any, theme: any) => {
+const getSectionStyle = (properties: SectionProperties) => {
   const styles: React.CSSProperties = {};
   if (!properties) return styles;
 
-  const bgColor = properties.backgroundColor || "transparent";
+  const bgColor = properties.backgroundColor;
   const textColor = properties.textColor || undefined;
 
   if (properties.useGlassmorphism) {
@@ -80,7 +91,7 @@ const getSectionStyle = (properties: any, theme: any) => {
       const b = parseInt(hex.substring(4, 6), 16) || 255;
       const alpha = (properties.opacity ?? 30) / 100;
       rgbaBg = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    } else if (bgColor === "transparent") {
+    } else if (bgColor === "transparent" || !bgColor) {
       const alpha = (properties.opacity ?? 30) / 100;
       rgbaBg = `rgba(255, 255, 255, ${alpha})`;
     } else {
@@ -93,20 +104,16 @@ const getSectionStyle = (properties: any, theme: any) => {
     styles.WebkitBackdropFilter = `blur(${blurAmount}px)`;
     styles.border = "1px solid rgba(255, 255, 255, 0.2)";
     styles.boxShadow = "0 8px 32px 0 rgba(0, 0, 0, 0.1)";
-  } else {
-    if (bgColor !== "transparent") {
-      if (bgColor.startsWith("#") && properties.opacity !== undefined && properties.opacity !== 100) {
-        const hex = bgColor.replace("#", "");
-        const r = parseInt(hex.substring(0, 2), 16) || 0;
-        const g = parseInt(hex.substring(2, 4), 16) || 0;
-        const b = parseInt(hex.substring(4, 6), 16) || 0;
-        const alpha = properties.opacity / 100;
-        styles.backgroundColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-      } else {
-        styles.backgroundColor = bgColor;
-      }
+  } else if (bgColor && bgColor !== "transparent") {
+    if (bgColor.startsWith("#") && properties.opacity !== undefined && properties.opacity !== 100) {
+      const hex = bgColor.replace("#", "");
+      const r = parseInt(hex.substring(0, 2), 16) || 0;
+      const g = parseInt(hex.substring(2, 4), 16) || 0;
+      const b = parseInt(hex.substring(4, 6), 16) || 0;
+      const alpha = properties.opacity / 100;
+      styles.backgroundColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
     } else {
-      styles.backgroundColor = "transparent";
+      styles.backgroundColor = bgColor;
     }
   }
 
@@ -155,29 +162,31 @@ export default function LivePreviewPage() {
   } = useCarrito();
   const cartCount = cartItems.reduce((sum, item) => sum + item.cantidad, 0);
 
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = useHydrated();
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<TiendaDto | null>(null);
   const [products, setProducts] = useState<PlatformProductoDto[]>([]);
-  const [visualConfig, setVisualConfig] = useState<any>(null);
+  const [visualConfig, setVisualConfig] = useState<StoreConfig | null>(null);
   const [activePageId, setActivePageId] = useState<string>("home");
   const [searchTerm, setSearchTerm] = useState("");
   const [verTodoCatalogo, setVerTodoCatalogo] = useState(false);
   const [paginaActual, setPaginaActual] = useState(1);
 
-  useEffect(() => {
+  const [paginationSource, setPaginationSource] = useState({ searchTerm, activePageId });
+  if (paginationSource.searchTerm !== searchTerm || paginationSource.activePageId !== activePageId) {
+    setPaginationSource({ searchTerm, activePageId });
     setPaginaActual(1);
-  }, [searchTerm, activePageId]);
+  }
 
   // Dynamically update the browser tab title and favicon when navigating pages
   useEffect(() => {
     if (!visualConfig || !store) return;
-    const page = visualConfig.pages?.find((p: any) => p.id === activePageId);
+    const page = visualConfig.pages?.find((p) => p.id === activePageId);
     const storeName = store.nombre || "Tienda";
     document.title = (page?.isHome || !page?.name) ? storeName : `${page.name} – ${storeName}`;
 
     // Update favicon with the store logo if configured
-    const headerSec = page?.sections?.find((s: any) => s.type === "header");
+    const headerSec = page?.sections?.find((s) => s.type === "header");
     const logoUrl = headerSec?.properties?.logoUrl;
     let faviconLink = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
     if (!faviconLink) {
@@ -195,22 +204,18 @@ export default function LivePreviewPage() {
     }
   }, [store?.id, selectTenant]);
 
-  const [showPreviewBanner, setShowPreviewBanner] = useState(false);
+  const showPreviewBanner = isHydrated && (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.hostname === (process.env.NEXT_PUBLIC_MAIN_DOMAIN || "")
+  );
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const hostname = window.location.hostname;
-      const isMainHost = hostname === "localhost" || 
-                         hostname === "127.0.0.1" || 
-                         hostname === (process.env.NEXT_PUBLIC_MAIN_DOMAIN || "");
-      setShowPreviewBanner(isMainHost);
-    }
-  }, []);
+  const isStoreDark = visualConfig?.theme?.backgroundColor ? isDarkBg(visualConfig.theme.backgroundColor) : false;
 
   // Checkout states
-  const [sucursales, setSucursales] = useState<any[]>([]);
+  const [sucursales, setSucursales] = useState<import("@/lib/api/admin").SucursalDto[]>([]);
   const [selectedSucursalId, setSelectedSucursalId] = useState("");
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"contra_entrega" | "tarjeta" | "">("");
+  const [paymentMethodChoice, setSelectedPaymentMethod] = useState<"contra_entrega" | "tarjeta" | "">("");
   const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
   const [stripeKeyAvailable, setStripeKeyAvailable] = useState(false);
   const [stripeCardMethodId, setStripeCardMethodId] = useState<string | null>(null);
@@ -218,6 +223,8 @@ export default function LivePreviewPage() {
   const [tarjetas, setTarjetas] = useState<TMetodoPagoGuardado[]>([]);
   const [loadingTarjetas, setLoadingTarjetas] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [completedReceipt, setCompletedReceipt] = useState<ReceiptData | null>(null);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
 
   const cargarTarjetas = async () => {
     if (!clientToken) return;
@@ -280,6 +287,27 @@ export default function LivePreviewPage() {
         const res = await crearReservacionV1(clientToken, { sucursalId: selectedSucursalId });
         
         toast.success(`Reservación creada con éxito. ID: ${res.id}`);
+        const receiptItems = cartItems.map((ci) => ({
+          nombre: ci.nombreProducto,
+          cantidad: ci.cantidad,
+          precioUnitario: ci.precioUnitario,
+          subtotal: ci.subtotal ?? (ci.precioUnitario * ci.cantidad),
+        }));
+        const branchName = sucursales.find(s => s.id === selectedSucursalId)?.nombre;
+        const receiptData: ReceiptData = {
+          orderId: res.id,
+          storeName: store?.nombre || "Tienda",
+          storeSlug: store?.slug,
+          date: new Date(),
+          customerName: client?.nombre,
+          customerEmail: client?.correo,
+          paymentMethod: "contra_entrega",
+          branchName,
+          items: receiptItems,
+          totalAmount: res.montoTotal || cartTotal,
+        };
+        setCompletedReceipt(receiptData);
+        setShowReceiptModal(true);
         setSelectedSucursalId("");
         await mutateCart();
       } else if (selectedPaymentMethod === "tarjeta") {
@@ -306,6 +334,27 @@ export default function LivePreviewPage() {
         const intent = await crearPaymentIntent(clientToken, res.id, stripeCardMethodId || undefined);
         
         toast.success(`Pago con tarjeta iniciado con éxito. Reservación ID: ${res.id}`);
+        const receiptItems = cartItems.map((ci) => ({
+          nombre: ci.nombreProducto,
+          cantidad: ci.cantidad,
+          precioUnitario: ci.precioUnitario,
+          subtotal: ci.subtotal ?? (ci.precioUnitario * ci.cantidad),
+        }));
+        const branchName = sucursales.find(s => s.id === fallbackSucursalId)?.nombre;
+        const receiptData: ReceiptData = {
+          orderId: res.id,
+          storeName: store?.nombre || "Tienda",
+          storeSlug: store?.slug,
+          date: new Date(),
+          customerName: client?.nombre,
+          customerEmail: client?.correo,
+          paymentMethod: "tarjeta",
+          branchName,
+          items: receiptItems,
+          totalAmount: res.montoTotal || cartTotal,
+        };
+        setCompletedReceipt(receiptData);
+        setShowReceiptModal(true);
         setStripeCardMethodId(null);
         await mutateCart();
       }
@@ -316,18 +365,8 @@ export default function LivePreviewPage() {
     }
   };
 
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
-  // Pre-select payment method depending on Stripe availability
-  useEffect(() => {
-    if (stripeKeyAvailable) {
-      setSelectedPaymentMethod("tarjeta");
-    } else {
-      setSelectedPaymentMethod("contra_entrega");
-    }
-  }, [stripeKeyAvailable]);
+  const selectedPaymentMethod = paymentMethodChoice || (stripeKeyAvailable ? "tarjeta" : "contra_entrega");
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -442,17 +481,16 @@ export default function LivePreviewPage() {
         }
 
         // Migrate config to have theme settings
-        if (!config.theme) {
-          config = {
-            ...config,
-            theme: {
-              backgroundColor: "#F8FAFC",
-              accentColor: "#1AB38C",
-              backgroundGradient: "linear-gradient(135deg, #1e3a8a 0%, #0d9488 100%)",
-              useGradient: false
-            }
-          };
-        }
+        config = {
+          ...config,
+          theme: {
+            backgroundColor: "#F8FAFC",
+            accentColor: "#1AB38C",
+            backgroundGradient: "linear-gradient(135deg, #1e3a8a 0%, #0d9488 100%)",
+            useGradient: false,
+            ...(config.theme || {})
+          }
+        };
 
         setVisualConfig(config);
         setActivePageId(config.currentPageId || "home");
@@ -502,22 +540,20 @@ export default function LivePreviewPage() {
     loadData();
   }, [isHydrated, storeId, token, clientToken, isAuthenticated, router]);
 
-  const activePage = visualConfig?.pages?.find((p: any) => p.id === activePageId) || visualConfig?.pages?.[0];
-  const announcementSection = activePage?.sections?.find((s: any) => s.type === "announcement");
-  const productsSection = activePage?.sections?.find((s: any) => s.type === "products");
+  const activePage = visualConfig?.pages?.find((p) => p.id === activePageId) || visualConfig?.pages?.[0];
+  const announcementSection = activePage?.sections?.find((s) => s.type === "announcement");
+  const productsSection = activePage?.sections?.find((s) => s.type === "products");
 
   // Get all filtered products (without slicing yet)
   const filteredProducts = useMemo(() => {
-    let list: any[] = products;
-
-    list = list.map(p => ({
+    let list = products.map(p => ({
       ...p,
-      precio: typeof p.precio === 'number' ? p.precio : (p.precioDetalle ?? 0)
+      precio: p.precioDetalle ?? 0
     }));
 
     if (searchTerm.trim() !== "") {
       const term = searchTerm.toLowerCase();
-      list = list.filter((p: any) => 
+      list = list.filter((p) =>
         (p.nombre || "").toLowerCase().includes(term) || 
         (p.descripcion || "").toLowerCase().includes(term)
       );
@@ -641,9 +677,9 @@ export default function LivePreviewPage() {
           </div>
         </div>
       )}
-      {activePage.sections.map((section: any) => {
+      {activePage?.sections.map((section) => {
         const props = section.properties || {};
-        const customStyle = getSectionStyle(props, visualConfig.theme);
+        const customStyle = getSectionStyle(props);
         const isDark = props.useGlassmorphism || isDarkBg(props.backgroundColor || "#FFFFFF");
 
         if (section.type === "announcement") {
@@ -659,15 +695,17 @@ export default function LivePreviewPage() {
                 fontWeight: props.fontWeight === "Bold" ? "bold" : "normal",
                 ...customStyle
               }}
-              className="text-center text-xs tracking-wider transition-all select-none relative w-full"
+              className={`${STORE_LAYOUT.section} text-center text-xs tracking-wider transition-all select-none relative`}
             >
-              {props.linkAction === "Open Link" && props.linkUrl ? (
-                <a href={props.linkUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center justify-center gap-1.5 cursor-pointer">
+              <div className={STORE_LAYOUT.content}>
+                {props.linkAction === "Open Link" && props.linkUrl ? (
+                  <a href={props.linkUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center justify-center gap-1.5 cursor-pointer">
+                    <span>{props.bannerText}</span>
+                  </a>
+                ) : (
                   <span>{props.bannerText}</span>
-                </a>
-              ) : (
-                <span>{props.bannerText}</span>
-              )}
+                )}
+              </div>
             </div>
           );
         }
@@ -698,7 +736,7 @@ export default function LivePreviewPage() {
                 </span>
               </div>
               <nav className="hidden md:flex items-center gap-8">
-                {visualConfig.pages.map((p: any) => (
+                {visualConfig.pages.map((p) => (
                   <span
                     key={p.id}
                     onClick={() => setActivePageId(p.id)}
@@ -774,14 +812,18 @@ export default function LivePreviewPage() {
 
         if (section.type === "hero") {
           const theme = visualConfig.theme;
-          const hasImage = !!props.backgroundImage;
+          const hasImage = Boolean(props.backgroundImage && typeof props.backgroundImage === "string" && props.backgroundImage.trim().length > 0);
+          const bgImageUrl = hasImage
+            ? safeBackgroundImage(props.backgroundImage)
+            : undefined;
           const heroStyle: React.CSSProperties = {
             color: props.textColor || "#FFFFFF",
-            ...(hasImage
+            ...(hasImage && bgImageUrl
               ? {
-                  backgroundImage: `url(${props.backgroundImage})`,
+                  backgroundImage: bgImageUrl,
                   backgroundSize: "cover",
-                  backgroundPosition: "center"
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat"
                 }
               : {}),
             ...customStyle
@@ -793,6 +835,9 @@ export default function LivePreviewPage() {
               heroStyle.backgroundColor = theme?.backgroundColor || "#0F172A";
             }
           }
+          const safeOpacity = Number.isFinite(Number(props.overlayOpacity))
+            ? Math.min(Math.max(Number(props.overlayOpacity), 0), 100) / 100
+            : 0.55;
           return (
             <section
               key={section.id}
@@ -802,7 +847,7 @@ export default function LivePreviewPage() {
             >
               {hasImage && (
                 <div 
-                  style={{ backgroundColor: `rgba(0, 0, 0, ${(props.overlayOpacity ?? 55) / 100})` }} 
+                  style={{ backgroundColor: `rgba(0, 0, 0, ${safeOpacity})` }} 
                   className="absolute inset-0 pointer-events-none" 
                 />
               )}
@@ -907,7 +952,7 @@ export default function LivePreviewPage() {
               
               {props.layoutType === "list" ? (
                 <div className="space-y-4">
-                  {displayProducts.map((p: any, idx: number) => (
+                  {displayProducts.map((p, idx: number) => (
                     <div 
                       key={idx} 
                       style={{
@@ -915,7 +960,7 @@ export default function LivePreviewPage() {
                         borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0"
                       }}
                       className="rounded-xl border p-4 flex gap-4 hover:shadow-xl transition-all group cursor-pointer"
-                      onClick={() => router.push(`/preview/${storeId}/producto/${p.id || p.productoId}`)}
+                      onClick={() => router.push(`/preview/${storeId}/producto/${p.id}`)}
                     >
                       <div className="h-24 w-24 sm:h-32 sm:w-32 bg-slate-100 rounded-lg overflow-hidden relative flex-shrink-0 flex items-center justify-center">
                         <img 
@@ -946,7 +991,7 @@ export default function LivePreviewPage() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              void handleAddToCart(p.id || p.productoId);
+                              void handleAddToCart(p.id);
                             }}
                             style={{
                               backgroundColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(241, 245, 249, 1)",
@@ -969,7 +1014,7 @@ export default function LivePreviewPage() {
                 </div>
               ) : (
                 <div className={`grid gap-6 grid-cols-1 ${gridColsClass}`}>
-                  {displayProducts.map((p: any, idx: number) => (
+                  {displayProducts.map((p, idx: number) => (
                     <div 
                       key={idx} 
                       style={{
@@ -977,7 +1022,7 @@ export default function LivePreviewPage() {
                         borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0"
                       }}
                       className="rounded-xl border p-4 flex flex-col gap-3.5 hover:shadow-xl transition-all group cursor-pointer"
-                      onClick={() => router.push(`/preview/${storeId}/producto/${p.id || p.productoId}`)}
+                      onClick={() => router.push(`/preview/${storeId}/producto/${p.id}`)}
                     >
                       <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden relative flex items-center justify-center">
                         <img 
@@ -1001,7 +1046,7 @@ export default function LivePreviewPage() {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              void handleAddToCart(p.id || p.productoId);
+                              void handleAddToCart(p.id);
                             }}
                             style={{
                               backgroundColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(241, 245, 249, 1)",
@@ -1087,9 +1132,9 @@ export default function LivePreviewPage() {
                 paddingBottom: `${props.paddingVertical || 48}px`,
                 ...customStyle
               }}
-              className="px-8 text-center transition-all select-none relative w-full"
+              className={`${STORE_LAYOUT.section} text-center transition-all select-none relative`}
             >
-              <div className="max-w-2xl mx-auto space-y-3">
+              <div className={`${STORE_LAYOUT.content} max-w-3xl space-y-3`}>
                 <h2 className="text-xl font-bold tracking-tight">
                   {props.title || "Título de la Página"}
                 </h2>
@@ -1115,10 +1160,10 @@ export default function LivePreviewPage() {
                 color: props.textColor || "#0F172A",
                 ...customStyle
               }}
-              className="py-12 px-6 flex flex-col gap-6 w-full"
+              className={`${STORE_LAYOUT.section} py-12 transition-all select-none`}
             >
-              <div className="max-w-2xl mx-auto w-full flex flex-col gap-6">
-                {blocks.map((block: any) => {
+              <div className={`${STORE_LAYOUT.content} max-w-3xl flex flex-col gap-6`}>
+                {blocks.map((block) => {
                   if (block.type === "text") {
                     return (
                       <p 
@@ -1191,8 +1236,9 @@ export default function LivePreviewPage() {
                 color: props.textColor || "#0F172A",
                 ...customStyle
               }}
-              className="py-16 px-6 max-w-6xl w-full mx-auto space-y-8 flex-1 w-full text-left"
+              className={`${STORE_LAYOUT.section} py-16 flex-1 text-left`}
             >
+              <div className={`${STORE_LAYOUT.content} space-y-8`}>
               <div 
                 style={{ borderBottomColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(241, 245, 249, 1)" }}
                 className="flex items-center gap-3 border-b pb-4"
@@ -1414,7 +1460,7 @@ export default function LivePreviewPage() {
                             className="h-10 w-full rounded-xl border px-3.5 text-xs outline-none focus:border-[var(--accent-color)]"
                           >
                             <option value="">Selecciona una sucursal</option>
-                            {sucursales.map((suc: any) => (
+                            {sucursales.map((suc) => (
                               <option key={suc.id} value={suc.id}>{suc.nombre}</option>
                             ))}
                           </select>
@@ -1425,6 +1471,7 @@ export default function LivePreviewPage() {
                     {/* Stripe Saved Cards & Form */}
                     {selectedPaymentMethod === "tarjeta" && stripePromise && (
                       <div className="space-y-4 text-left">
+                        <StripePaymentInfoBox isDark={isDark} />
                         <span style={{ color: isDark ? "#CBD5E1" : "#94A3B8" }} className="text-[10px] font-bold uppercase tracking-wider block">Tus Tarjetas Guardadas</span>
                         
                         {loadingTarjetas ? (
@@ -1577,7 +1624,25 @@ export default function LivePreviewPage() {
                   </div>
                 </div>
               )}
+              </div>
             </section>
+          );
+        }
+
+        if (section.type === "survey") {
+          return (
+            <StoreSurveySection
+              key={section.id}
+              id={section.id}
+              properties={section.properties}
+              isDark={isDark}
+              isInteractive={true}
+              accentColor={visualConfig?.theme?.accentColor || "#22D3A6"}
+              style={{
+                backgroundColor: props.backgroundColor || "#FFFFFF",
+                ...customStyle
+              }}
+            />
           );
         }
 
@@ -1622,6 +1687,92 @@ export default function LivePreviewPage() {
         }}
         products={displayProducts}
       />
+
+      {/* Receipt Modal */}
+      {showReceiptModal && completedReceipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div
+            style={{
+              backgroundColor: isStoreDark ? "#0F172A" : "#FFFFFF",
+              borderColor: isStoreDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0",
+              color: isStoreDark ? "#F8FAFC" : "#0F172A",
+            }}
+            className="w-full max-w-md rounded-3xl border shadow-2xl p-6 md:p-8 space-y-6 text-center relative"
+          >
+            <button
+              onClick={() => setShowReceiptModal(false)}
+              className="absolute right-4 top-4 p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition-colors cursor-pointer bg-transparent border-none"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex justify-center">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shadow-inner">
+                <CheckCircle2 size={36} strokeWidth={2.5} />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">
+                ¡Orden Completada!
+              </span>
+              <h3 className="text-xl font-black">¡Gracias por tu compra!</h3>
+              <p className="text-xs text-slate-400 max-w-xs mx-auto">
+                Tu pedido en <strong>{completedReceipt.storeName}</strong> ha sido procesado exitosamente.
+              </p>
+            </div>
+
+            <div
+              style={{
+                backgroundColor: isStoreDark ? "rgba(2, 6, 23, 0.6)" : "#F8FAFC",
+                borderColor: isStoreDark ? "rgba(255, 255, 255, 0.08)" : "#E2E8F0",
+              }}
+              className="rounded-2xl border p-4 space-y-2.5 text-xs text-left"
+            >
+              <div className="flex justify-between items-center text-slate-400">
+                <span>ID de Reserva:</span>
+                <span className="font-mono font-bold text-slate-200">{completedReceipt.orderId}</span>
+              </div>
+              <div className="flex justify-between items-center text-slate-400">
+                <span>Método de pago:</span>
+                <span className="font-semibold text-slate-200">
+                  {completedReceipt.paymentMethod === "tarjeta" ? "Tarjeta (Stripe)" : "Contra entrega"}
+                </span>
+              </div>
+              {completedReceipt.branchName && (
+                <div className="flex justify-between items-center text-slate-400">
+                  <span>Sucursal:</span>
+                  <span className="font-semibold text-slate-200">{completedReceipt.branchName}</span>
+                </div>
+              )}
+              <div className="border-t border-slate-700/40 pt-2 flex justify-between items-center font-bold text-sm">
+                <span>Total:</span>
+                <span className="text-emerald-400">
+                  Q {completedReceipt.totalAmount.toLocaleString("es-GT", { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <button
+                type="button"
+                onClick={() => generateAndDownloadReceipt(completedReceipt)}
+                className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer transition-all hover:scale-[1.02] border-none"
+              >
+                <Download size={16} />
+                <span>Descargar Recibo en PDF</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowReceiptModal(false)}
+                className="w-full h-10 rounded-xl text-xs font-semibold text-slate-400 hover:text-white cursor-pointer transition-colors bg-transparent border-none"
+              >
+                Continuar comprando
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

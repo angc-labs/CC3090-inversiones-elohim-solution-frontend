@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, Mail, Users, X, AlertTriangle, Check, Download, Search } from "lucide-react";
 import { toast } from "sonner";
 import { PortalModal } from "@/components/ui/PortalModal";
+import { TablePagination } from "@/components/ui";
 import {
   invitarPlatformUsuario,
   cambiarRolPlatformUsuario,
@@ -20,7 +21,7 @@ interface UsuariosTabProps {
   usuarios: PlatformUsuarioDto[];
   loadingUsuarios: boolean;
   sucursales: SucursalDto[];
-  usuario: any;
+  usuario: import("@/stores/useAuthStore").TUsuario;
   esAdmin: boolean;
   onRefresh: () => void;
 }
@@ -35,6 +36,11 @@ export function UsuariosTab({
   onRefresh,
 }: UsuariosTabProps) {
   const t = useTranslations("Usuarios");
+  // Pagination & Search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   // Modal states
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isChangeRolModalOpen, setIsChangeRolModalOpen] = useState(false);
@@ -45,7 +51,6 @@ export function UsuariosTab({
   const [resetPasswordUsuario, setResetPasswordUsuario] = useState<PlatformUsuarioDto | null>(null);
 
   // Filters
-  const [busqueda, setBusqueda] = useState("");
   const [filtroRol, setFiltroRol] = useState("todos");
   const [filtroEstado, setFiltroEstado] = useState("todos");
 
@@ -70,49 +75,57 @@ export function UsuariosTab({
   });
 
   // Load staff list
-  const staffUsuarios = usuarios.filter(
-    (u) => u.tipoUsuario === "staff" || u.tipoUsuario === "administrador"
-  );
-
-  // Fallback active user if not in backend list yet
-  if (usuario && !staffUsuarios.some((u) => u.email === usuario.correo)) {
-    staffUsuarios.push({
-      id: usuario.usuarioId,
-      name: usuario.nombre,
-      email: usuario.correo,
-      emailVerified: true,
-      image: null,
-      tipoUsuario: "staff",
-      rolStaff: usuario.rol === "admin" ? "administrador" : usuario.rol,
-      estado: true,
-      createdAt: new Date().toISOString(),
-      sucursalId: null,
-      sucursalNombre: null,
-    });
-  }
-
-  const terminoBusqueda = busqueda.trim().toLowerCase();
-  const usuariosFiltrados = staffUsuarios.filter((u) => {
-    if (
-      terminoBusqueda &&
-      !u.name.toLowerCase().includes(terminoBusqueda) &&
-      !u.email.toLowerCase().includes(terminoBusqueda)
-    ) {
-      return false;
+  const staffUsuarios = useMemo(() => {
+    const list = usuarios.filter(
+      (u) => u.tipoUsuario === "staff" || u.tipoUsuario === "administrador"
+    );
+    if (usuario && !list.some((u) => u.email === usuario.correo)) {
+      list.push({
+        id: usuario.usuarioId,
+        name: usuario.nombre,
+        email: usuario.correo,
+        emailVerified: true,
+        image: null,
+        tipoUsuario: "staff",
+        rolStaff: usuario.rol === "admin" ? "administrador" : usuario.rol,
+        estado: true,
+        createdAt: new Date().toISOString(),
+        sucursalId: null,
+        sucursalNombre: null,
+      });
     }
-    // Users without rolStaff are shown as cajero in the table, so filter them the same way
-    if (filtroRol !== "todos" && (u.rolStaff || "cajero") !== filtroRol) return false;
-    if (filtroEstado === "activo" && !u.estado) return false;
-    if (filtroEstado === "suspendido" && u.estado) return false;
-    return true;
-  });
-  const hayFiltros = terminoBusqueda !== "" || filtroRol !== "todos" || filtroEstado !== "todos";
+    return list;
+  }, [usuarios, usuario]);
+
+  const filteredStaffUsuarios = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return staffUsuarios.filter((u) => {
+      if (q) {
+        const nameMatch = u.name.toLowerCase().includes(q);
+        const emailMatch = u.email.toLowerCase().includes(q);
+        const roleMatch = (u.rolStaff || "").toLowerCase().includes(q);
+        if (!nameMatch && !emailMatch && !roleMatch) return false;
+      }
+      // Users without rolStaff are shown as cajero in the table, so filter them the same way
+      if (filtroRol !== "todos" && (u.rolStaff || "cajero") !== filtroRol) return false;
+      if (filtroEstado === "activo" && !u.estado) return false;
+      if (filtroEstado === "suspendido" && u.estado) return false;
+      return true;
+    });
+  }, [staffUsuarios, searchQuery, filtroRol, filtroEstado]);
+  const hayFiltros = searchQuery.trim() !== "" || filtroRol !== "todos" || filtroEstado !== "todos";
 
   const handleLimpiarFiltros = () => {
-    setBusqueda("");
+    setSearchQuery("");
     setFiltroRol("todos");
     setFiltroEstado("todos");
+    setCurrentPage(1);
   };
+
+  const totalPages = Math.max(1, Math.ceil(filteredStaffUsuarios.length / pageSize));
+  const safePage = Math.min(Math.max(1, currentPage), totalPages);
+  const pageStart = (safePage - 1) * pageSize;
+  const paginatedStaffUsuarios = filteredStaffUsuarios.slice(pageStart, pageStart + pageSize);
 
   const handleOpenInviteModal = () => {
     setInviteForm({
@@ -268,40 +281,49 @@ export function UsuariosTab({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-white">{t("title")}</h2>
           <p className="text-xs text-slate-400">
             {t("subtitle")}
           </p>
         </div>
-        {esAdmin && (
-          <button
-            onClick={handleOpenInviteModal}
-            className="h-10 px-4 rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border-none"
-          >
-            <Mail size={16} />
-            <span>{t("invite_button")}</span>
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {staffUsuarios.length > 0 && (
+            <div className="relative w-full sm:w-60">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder="Buscar colaborador..."
+                className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-800 bg-slate-900/60 text-xs text-slate-200 placeholder:text-slate-500 focus:border-[#22D3A6]/50 focus:outline-none transition-all"
+              />
+            </div>
+          )}
+          {esAdmin && (
+            <button
+              onClick={handleOpenInviteModal}
+              className="h-9 px-4 rounded-xl bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border-none shrink-0"
+            >
+              <Mail size={16} />
+              <span>{t("invite_button")}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {!loadingUsuarios && staffUsuarios.length > 0 && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            <input
-              type="search"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder={t("filter_search_placeholder")}
-              aria-label={t("filter_search_placeholder")}
-              className="h-10 w-full rounded-xl border border-slate-800 bg-slate-900/60 pl-9 pr-4 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
-            />
-          </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           <select
             value={filtroRol}
-            onChange={(e) => setFiltroRol(e.target.value)}
+            onChange={(e) => {
+              setFiltroRol(e.target.value);
+              setCurrentPage(1);
+            }}
             aria-label={t("filter_role_label")}
             className="h-10 rounded-xl border border-slate-800 bg-slate-900 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
           >
@@ -312,7 +334,10 @@ export function UsuariosTab({
           </select>
           <select
             value={filtroEstado}
-            onChange={(e) => setFiltroEstado(e.target.value)}
+            onChange={(e) => {
+              setFiltroEstado(e.target.value);
+              setCurrentPage(1);
+            }}
             aria-label={t("filter_status_label")}
             className="h-10 rounded-xl border border-slate-800 bg-slate-900 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
           >
@@ -341,10 +366,9 @@ export function UsuariosTab({
           <Users className="mx-auto text-slate-600" size={40} />
           <p className="text-sm text-slate-400">{t("empty_state")}</p>
         </div>
-      ) : usuariosFiltrados.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-800 p-12 text-center space-y-3">
-          <Search className="mx-auto text-slate-600" size={40} />
-          <p className="text-sm text-slate-400">{t("filter_no_results")}</p>
+      ) : filteredStaffUsuarios.length === 0 ? (
+        <div className="rounded-xl border border-slate-900 bg-slate-950/20 p-8 text-center text-xs text-slate-500">
+          {t("filter_no_results")}
         </div>
       ) : (
         <div className="rounded-xl border border-slate-900 bg-slate-950/20 overflow-hidden">
@@ -360,7 +384,7 @@ export function UsuariosTab({
                 </tr>
               </thead>
               <tbody>
-                {usuariosFiltrados.map((u) => (
+                {paginatedStaffUsuarios.map((u) => (
                   <tr
                     key={u.id}
                     className="border-b border-slate-900/55 hover:bg-slate-950/30 transition-all"
@@ -420,6 +444,17 @@ export function UsuariosTab({
               </tbody>
             </table>
           </div>
+          <TablePagination
+            currentPage={safePage}
+            totalItems={filteredStaffUsuarios.length}
+            pageSize={pageSize}
+            pageSizeOptions={[10, 20, 30]}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setCurrentPage(1);
+            }}
+          />
         </div>
       )}
 
