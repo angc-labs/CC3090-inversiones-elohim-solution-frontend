@@ -1128,17 +1128,6 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                 </div>
               </div>
 
-              {/* Schema Helper Component */}
-              {showSchemaHelp && (
-                <SqlSchemaHelp
-                  onInsertSnippet={(snippet) => monacoEditorRef.current?.insertText(snippet)}
-                  onSetQuery={(sql) => {
-                    setCustomQuery(sql);
-                    monacoEditorRef.current?.setValue(sql);
-                  }}
-                />
-              )}
-
               {/* Custom Query Error */}
               {customQueryError && (
                 <div className="rounded-xl border border-rose-900 bg-rose-955 p-5 space-y-2 animate-fade-in">
@@ -1342,6 +1331,17 @@ export function ReportesTab({ token, activeStore }: ReportesTabProps) {
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* Schema Helper Component */}
+              {showSchemaHelp && (
+                <SqlSchemaHelp
+                  onInsertSnippet={(snippet) => monacoEditorRef.current?.insertText(snippet)}
+                  onSetQuery={(sql) => {
+                    setCustomQuery(sql);
+                    monacoEditorRef.current?.setValue(sql);
+                  }}
+                />
               )}
             </div>
           )}
