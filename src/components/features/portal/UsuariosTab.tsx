@@ -39,7 +39,7 @@ export function UsuariosTab({
   // Pagination & Search
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(20);
 
   // Modal states
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
