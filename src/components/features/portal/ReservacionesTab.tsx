@@ -22,6 +22,10 @@ export function ReservacionesTab({
 }: ReservacionesTabProps) {
   const t = useTranslations("Reservaciones");
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dispatchFilter, setDispatchFilter] = useState("all");
+  const [codeFilter, setCodeFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -69,15 +73,30 @@ export function ReservacionesTab({
 
   const filteredReservations = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    if (!q) return activeReservations;
+    const normalizedCode = codeFilter.trim().replace(/^#/, "").toUpperCase();
     return activeReservations.filter((r) => {
-      const idMatch = r.id.toLowerCase().includes(q);
-      const itemsMatch = r.detalles.some((d) =>
-        d.productoNombre?.toLowerCase().includes(q)
-      );
-      return idMatch || itemsMatch;
+      if (q) {
+        const idMatch = r.id.toLowerCase().includes(q);
+        const itemsMatch = r.detalles.some((d) =>
+          d.productoNombre?.toLowerCase().includes(q)
+        );
+        if (!idMatch && !itemsMatch) return false;
+      }
+      const shortCode = r.id.substring(0, 8).toUpperCase();
+      const matchesCode = !normalizedCode || r.id.toUpperCase().includes(normalizedCode) || shortCode.includes(normalizedCode);
+      const matchesDate = !dateFilter || r.fechaReserva.slice(0, 10) === dateFilter;
+      const matchesStatus = statusFilter === "all" || r.estadoPago === statusFilter;
+      const isDispatched = r.estadoDespacho === "despachado" || r.estadoDespacho === "entregado";
+      const matchesDispatch = dispatchFilter === "all" || (dispatchFilter === "yes" ? isDispatched : !isDispatched);
+
+      return matchesCode && matchesDate && matchesStatus && matchesDispatch;
     });
-  }, [activeReservations, searchQuery]);
+  }, [activeReservations, searchQuery, codeFilter, dateFilter, statusFilter, dispatchFilter]);
+
+  const resetPageAnd = (updateFilter: () => void) => {
+    updateFilter();
+    setCurrentPage(1);
+  };
 
   const totalPages = Math.max(1, Math.ceil(filteredReservations.length / pageSize));
   const safePage = Math.min(Math.max(1, currentPage), totalPages);
@@ -108,6 +127,55 @@ export function ReservacionesTab({
         )}
       </div>
 
+      <div className="grid gap-3 rounded-xl border border-slate-900 bg-slate-950/20 p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <label className="flex flex-col gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          {t("filter_code")}
+          <span className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={15} />
+            <input
+              type="search"
+              value={codeFilter}
+              onChange={(event) => resetPageAnd(() => setCodeFilter(event.target.value))}
+              placeholder={t("filter_code_placeholder")}
+              className="h-10 w-full rounded-md border border-slate-800 bg-slate-950 pl-9 pr-3 text-sm font-normal normal-case tracking-normal text-white outline-none transition-colors placeholder:text-slate-600 focus:border-[#22D3A6]"
+            />
+          </span>
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          {t("filter_date")}
+          <input
+            type="date"
+            value={dateFilter}
+            onChange={(event) => resetPageAnd(() => setDateFilter(event.target.value))}
+            className="h-10 rounded-md border border-slate-800 bg-slate-950 px-3 text-sm font-normal normal-case tracking-normal text-white outline-none transition-colors focus:border-[#22D3A6]"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          {t("filter_status")}
+          <select
+            value={statusFilter}
+            onChange={(event) => resetPageAnd(() => setStatusFilter(event.target.value))}
+            className="h-10 rounded-md border border-slate-800 bg-slate-950 px-3 text-sm font-normal normal-case tracking-normal text-white outline-none transition-colors focus:border-[#22D3A6]"
+          >
+            <option value="all">{t("filter_all")}</option>
+            <option value="pendiente">{t("status_pending")}</option>
+            <option value="cancelado">{t("status_cancelled")}</option>
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          {t("filter_dispatch")}
+          <select
+            value={dispatchFilter}
+            onChange={(event) => resetPageAnd(() => setDispatchFilter(event.target.value))}
+            className="h-10 rounded-md border border-slate-800 bg-slate-950 px-3 text-sm font-normal normal-case tracking-normal text-white outline-none transition-colors focus:border-[#22D3A6]"
+          >
+            <option value="all">{t("filter_all")}</option>
+            <option value="yes">{t("dispatch_yes")}</option>
+            <option value="no">{t("dispatch_no")}</option>
+          </select>
+        </label>
+      </div>
+
       {loadingReservaciones ? (
         <div className="h-48 flex items-center justify-center">
           <Loader2 className="animate-spin text-[#22D3A6]" size={32} />
@@ -119,7 +187,7 @@ export function ReservacionesTab({
         </div>
       ) : filteredReservations.length === 0 ? (
         <div className="rounded-xl border border-slate-900 bg-slate-950/20 p-8 text-center text-xs text-slate-500">
-          No se encontraron pedidos con el criterio de búsqueda.
+          {t("no_filter_results")}
         </div>
       ) : (
         <div className="rounded-xl border border-slate-900 bg-slate-950/20 overflow-hidden">
