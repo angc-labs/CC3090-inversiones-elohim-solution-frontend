@@ -50,6 +50,10 @@ export function UsuariosTab({
   const [selectedUsuario, setSelectedUsuario] = useState<PlatformUsuarioDto | null>(null);
   const [resetPasswordUsuario, setResetPasswordUsuario] = useState<PlatformUsuarioDto | null>(null);
 
+  // Filters
+  const [filtroRol, setFiltroRol] = useState("todos");
+  const [filtroEstado, setFiltroEstado] = useState("todos");
+
   // Reset codes state
   const [resetCodes, setResetCodes] = useState<string[]>([]);
   const [isGeneratingCodes, setIsGeneratingCodes] = useState(false);
@@ -95,14 +99,28 @@ export function UsuariosTab({
 
   const filteredStaffUsuarios = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    if (!q) return staffUsuarios;
     return staffUsuarios.filter((u) => {
-      const nameMatch = u.name.toLowerCase().includes(q);
-      const emailMatch = u.email.toLowerCase().includes(q);
-      const roleMatch = (u.rolStaff || "").toLowerCase().includes(q);
-      return nameMatch || emailMatch || roleMatch;
+      if (q) {
+        const nameMatch = u.name.toLowerCase().includes(q);
+        const emailMatch = u.email.toLowerCase().includes(q);
+        const roleMatch = (u.rolStaff || "").toLowerCase().includes(q);
+        if (!nameMatch && !emailMatch && !roleMatch) return false;
+      }
+      // Users without rolStaff are shown as cajero in the table, so filter them the same way
+      if (filtroRol !== "todos" && (u.rolStaff || "cajero") !== filtroRol) return false;
+      if (filtroEstado === "activo" && !u.estado) return false;
+      if (filtroEstado === "suspendido" && u.estado) return false;
+      return true;
     });
-  }, [staffUsuarios, searchQuery]);
+  }, [staffUsuarios, searchQuery, filtroRol, filtroEstado]);
+  const hayFiltros = searchQuery.trim() !== "" || filtroRol !== "todos" || filtroEstado !== "todos";
+
+  const handleLimpiarFiltros = () => {
+    setSearchQuery("");
+    setFiltroRol("todos");
+    setFiltroEstado("todos");
+    setCurrentPage(1);
+  };
 
   const totalPages = Math.max(1, Math.ceil(filteredStaffUsuarios.length / pageSize));
   const safePage = Math.min(Math.max(1, currentPage), totalPages);
@@ -298,6 +316,47 @@ export function UsuariosTab({
         </div>
       </div>
 
+      {!loadingUsuarios && staffUsuarios.length > 0 && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+          <select
+            value={filtroRol}
+            onChange={(e) => {
+              setFiltroRol(e.target.value);
+              setCurrentPage(1);
+            }}
+            aria-label={t("filter_role_label")}
+            className="h-10 rounded-xl border border-slate-800 bg-slate-900 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
+          >
+            <option value="todos">{t("filter_all_roles")}</option>
+            <option value="cajero">{t("option_cajero")}</option>
+            <option value="administrador">{t("option_administrador")}</option>
+            <option value="superadmin">{t("option_superadmin")}</option>
+          </select>
+          <select
+            value={filtroEstado}
+            onChange={(e) => {
+              setFiltroEstado(e.target.value);
+              setCurrentPage(1);
+            }}
+            aria-label={t("filter_status_label")}
+            className="h-10 rounded-xl border border-slate-800 bg-slate-900 px-3 text-xs text-slate-100 outline-none focus:border-[#38BDF8]"
+          >
+            <option value="todos">{t("filter_all_statuses")}</option>
+            <option value="activo">{t("status_active")}</option>
+            <option value="suspendido">{t("status_suspended")}</option>
+          </select>
+          {hayFiltros && (
+            <button
+              type="button"
+              onClick={handleLimpiarFiltros}
+              className="h-10 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold cursor-pointer border-none"
+            >
+              {t("filter_clear")}
+            </button>
+          )}
+        </div>
+      )}
+
       {loadingUsuarios ? (
         <div className="h-48 flex items-center justify-center">
           <Loader2 className="animate-spin text-[#22D3A6]" size={32} />
@@ -309,7 +368,7 @@ export function UsuariosTab({
         </div>
       ) : filteredStaffUsuarios.length === 0 ? (
         <div className="rounded-xl border border-slate-900 bg-slate-950/20 p-8 text-center text-xs text-slate-500">
-          No se encontraron colaboradores con el criterio de búsqueda.
+          {t("filter_no_results")}
         </div>
       ) : (
         <div className="rounded-xl border border-slate-900 bg-slate-950/20 overflow-hidden">
