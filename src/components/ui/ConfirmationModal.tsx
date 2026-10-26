@@ -8,6 +8,7 @@ interface ConfirmationModalProps {
   cancelText?: string;
   isLoading?: boolean;
   isDangerous?: boolean;
+  backdropClassName?: string;
   onConfirm: () => void | Promise<void>;
   onCancel: () => void;
 }
@@ -20,6 +21,7 @@ export function ConfirmationModal({
   cancelText = "Cancelar",
   isLoading = false,
   isDangerous = false,
+  backdropClassName,
   onConfirm,
   onCancel,
 }: ConfirmationModalProps) {
@@ -33,7 +35,7 @@ export function ConfirmationModal({
     <div className="fixed! inset-0! z-50! flex! items-center! justify-center! p-4!">
       {/* Overlay */}
       <div
-        className="absolute! inset-0! bg-black/50! backdrop-blur-sm!"
+        className={backdropClassName ?? "absolute! inset-0! bg-black! bg-slate-950!"}
         onClick={onCancel}
       />
 
