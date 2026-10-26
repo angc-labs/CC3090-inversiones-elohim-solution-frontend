@@ -64,6 +64,7 @@ export default function ConstructorPage() {
   // Stores states
   const [tiendas, setTiendas] = useState<TiendaDto[]>([]);
   const [activeStore, setActiveStore] = useState<TiendaDto | null>(null);
+  const [isLoadingTiendas, setIsLoadingTiendas] = useState(true);
 
   // Store Builder State
   const [savedDesign, setSavedDesign] = useState<string | null>(null);
@@ -287,6 +288,7 @@ export default function ConstructorPage() {
   // Load stores
   useEffect(() => {
     if (isHydrated && token) {
+      setIsLoadingTiendas(true);
       getTiendas(token)
         .then((data) => {
           setTiendas(data);
@@ -306,7 +308,12 @@ export default function ConstructorPage() {
         .catch((err) => {
           console.error("Error al cargar tiendas", err);
           toast.error("No se pudieron cargar las tiendas.");
+        })
+        .finally(() => {
+          setIsLoadingTiendas(false);
         });
+    } else if (isHydrated) {
+      setIsLoadingTiendas(false);
     }
   }, [isHydrated, token, initializeStore]);
 
@@ -917,11 +924,13 @@ export default function ConstructorPage() {
     }
   };
 
-  if (!isHydrated || !usuario) {
+  if (!isHydrated || !usuario || isLoadingTiendas) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#081018] text-white gap-3">
         <Loader2 className="animate-spin text-[#22D3A6]" size={32} />
-        <p className="text-sm font-medium text-slate-400">Cargando Centro de Control...</p>
+        <p className="text-sm font-medium text-slate-400">
+          {isLoadingTiendas ? "Consultando tiendas disponibles..." : "Cargando Centro de Control..."}
+        </p>
       </div>
     );
   }

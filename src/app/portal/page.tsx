@@ -114,6 +114,7 @@ function PortalContent() {
   // Shared platform master data
   const [tiendas, setTiendas] = useState<TiendaDto[]>([]);
   const [activeStore, setActiveStore] = useState<TiendaDto | null>(null);
+  const [isLoadingTiendas, setIsLoadingTiendas] = useState(true);
   const [isStoreDropdownOpen, setIsStoreDropdownOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newStoreName, setNewStoreName] = useState("");
@@ -266,10 +267,11 @@ function PortalContent() {
   // Load stores list
   useEffect(() => {
     if (token) {
+      setIsLoadingTiendas(true);
       getTiendas(token)
         .then((data) => {
           setTiendas(data);
-          const storedTenantId = window.localStorage.getItem("active_tenant_id");
+          const storedTenantId = typeof window !== "undefined" ? window.localStorage.getItem("active_tenant_id") : null;
           if (storedTenantId) {
             const found = data.find((t) => t.id === storedTenantId);
             if (found) {
@@ -279,13 +281,26 @@ function PortalContent() {
           }
           if (data.length > 0) {
             setActiveStore(data[0]);
-            window.localStorage.setItem("active_tenant_id", data[0].id);
+            if (typeof window !== "undefined") {
+              window.localStorage.setItem("active_tenant_id", data[0].id);
+            }
+          } else {
+            setActiveStore(null);
+            if (typeof window !== "undefined") {
+              window.localStorage.removeItem("active_tenant_id");
+            }
           }
         })
         .catch((err) => {
           console.error("Error al cargar tiendas", err);
           toast.error("No se pudieron cargar las tiendas.");
+          setActiveStore(null);
+        })
+        .finally(() => {
+          setIsLoadingTiendas(false);
         });
+    } else {
+      setIsLoadingTiendas(false);
     }
   }, [token]);
 
@@ -787,6 +802,20 @@ function PortalContent() {
     return null;
   }
 
+  if (isLoadingTiendas) {
+    return (
+      <div className={`flex min-h-screen items-center justify-center font-sans antialiased transition-colors duration-200 ${isDark ? "bg-[#081018] text-slate-100" : "bg-slate-100 text-slate-900"
+        }`}>
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-[#22D3A6]" />
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            {language === "es" ? "Consultando tiendas disponibles..." : "Loading available stores..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex min-h-screen font-sans antialiased transition-colors duration-200 ${isDark ? "bg-[#081018] text-slate-100" : "bg-slate-100 text-slate-900 portal-bg-base"
       }`}>
@@ -914,85 +943,101 @@ function PortalContent() {
               <button
                 onClick={() => setIsStoreDropdownOpen(!isStoreDropdownOpen)}
                 className={`h-10 px-4 rounded-xl border text-xs font-semibold flex items-center gap-2.5 cursor-pointer transition-all ${isDark
-                    ? "border-slate-800 bg-slate-900/40 text-slate-200 hover:border-slate-700 hover:text-white"
-                    : "border-slate-200 bg-slate-100 text-slate-800 hover:border-slate-300 hover:bg-slate-200"
+                    ? "border-slate-800 bg-[#0c141c] text-slate-200 hover:border-slate-700 hover:text-white"
+                    : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
                   }`}
               >
                 <Store size={14} className="text-[#38BDF8]" />
-                <span className="max-w-[150px] truncate">{activeStore?.nombre ?? t("select_store")}</span>
+                <span className="max-w-[150px] truncate">
+                  {activeStore?.nombre ?? (tiendas.length === 0 ? (language === "es" ? "Sin tiendas" : "No stores") : t("select_store"))}
+                </span>
                 <ChevronDown size={14} className={isDark ? "text-slate-500" : "text-slate-400"} />
               </button>
 
               {isStoreDropdownOpen && (
-                <div className={`absolute right-0 top-12 w-64 rounded-xl border p-2 shadow-2xl z-50 ${isDark
-                    ? "border-slate-800 bg-slate-955 shadow-black text-slate-100"
-                    : "border-slate-200 bg-white shadow-slate-300/50 text-slate-900 portal-card-base"
-                  }`}>
-                  <div className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 border-b ${isDark ? "text-slate-500 border-slate-900" : "text-slate-400 border-slate-100"
+                <>
+                  {/* Backdrop del selector sin transparencia */}
+                  <div
+                    className="fixed inset-0 z-40 bg-slate-950 cursor-pointer"
+                    onClick={() => setIsStoreDropdownOpen(false)}
+                    aria-hidden="true"
+                  />
+                  <div className={`absolute right-0 top-12 w-64 rounded-xl border p-2 shadow-2xl z-50 ${isDark
+                      ? "border-slate-800 bg-[#081018] shadow-black text-slate-100"
+                      : "border-slate-200 bg-white shadow-slate-300/50 text-slate-900"
                     }`}>
-                    {t("switch_instance")}
+                    <div className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 border-b ${isDark ? "text-slate-500 border-slate-900" : "text-slate-400 border-slate-100"
+                      }`}>
+                      {t("switch_instance")}
+                    </div>
+                    <div className="max-h-48 overflow-y-auto py-1 flex flex-col gap-0.5">
+                      {tiendas.length === 0 ? (
+                        <div className="px-3 py-4 text-center text-xs text-slate-500">
+                          {language === "es" ? "No tienes tiendas disponibles" : "No stores available"}
+                        </div>
+                      ) : (
+                        tiendas.map((t) => (
+                          <div key={t.id} className={`flex items-center justify-between px-1 rounded-lg group transition-all ${isDark ? "hover:bg-slate-900" : "hover:bg-slate-100"
+                            }`}>
+                            <button
+                              onClick={() => handleSelectStore(t)}
+                              className={`flex-1 flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-all text-left border-none cursor-pointer bg-transparent ${activeStore?.id === t.id
+                                  ? "text-[#22D3A6]"
+                                  : isDark
+                                    ? "text-slate-400 hover:text-white"
+                                    : "text-slate-600 hover:text-slate-900"
+                                }`}
+                            >
+                              <span className="truncate">{t.nombre}</span>
+                              {activeStore?.id === t.id && <span className="h-1.5 w-1.5 rounded-full bg-[#22D3A6] shrink-0 ml-2" />}
+                            </button>
+                            <a
+                              href={t.slug ? `https://${t.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || "dmhub.fun"}` : `/preview/${t.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`p-1.5 rounded-lg transition-all cursor-pointer mr-1 flex items-center justify-center ${isDark ? "text-slate-500 hover:text-[#38BDF8] hover:bg-slate-900" : "text-slate-400 hover:text-[#38BDF8] hover:bg-slate-100"
+                                }`}
+                              title={`Ver Tienda Live de ${t.nombre}`}
+                            >
+                              <Eye size={12} />
+                            </a>
+                            {esAdmin && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setStoreToDelete(t);
+                                  setIsDeleteStoreModalOpen(true);
+                                }}
+                                className={`p-1.5 rounded-lg transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent ${
+                                  isDark
+                                    ? "text-slate-500 hover:text-red-400 hover:bg-red-500/10"
+                                    : "text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                }`}
+                                title={`Eliminar tienda ${t.nombre}`}
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div className={`border-t mt-1 pt-1 ${isDark ? "border-slate-900" : "border-slate-100"}`}>
+                      <button
+                        onClick={() => {
+                          setIsStoreDropdownOpen(false);
+                          setIsCreateModalOpen(true);
+                        }}
+                        className={`flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#38BDF8] hover:text-[#22D3A6] rounded-lg transition-all text-left border-none cursor-pointer bg-transparent w-full ${isDark ? "hover:bg-slate-900" : "hover:bg-slate-100"
+                          }`}
+                      >
+                        <Plus size={14} />
+                        <span>{tCommon("create")} {language === "es" ? "nueva tienda" : "new store"}</span>
+                      </button>
+                    </div>
                   </div>
-                  <div className="max-h-48 overflow-y-auto py-1 flex flex-col gap-0.5">
-                    {tiendas.map((t) => (
-                      <div key={t.id} className={`flex items-center justify-between px-1 rounded-lg group transition-all ${isDark ? "hover:bg-slate-900/40" : "hover:bg-slate-100"
-                        }`}>
-                        <button
-                          onClick={() => handleSelectStore(t)}
-                          className={`flex-1 flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-all text-left border-none cursor-pointer bg-transparent ${activeStore?.id === t.id
-                              ? "text-[#22D3A6]"
-                              : isDark
-                                ? "text-slate-400 hover:text-white"
-                                : "text-slate-600 hover:text-slate-900"
-                            }`}
-                        >
-                          <span className="truncate">{t.nombre}</span>
-                          {activeStore?.id === t.id && <span className="h-1.5 w-1.5 rounded-full bg-[#22D3A6] shrink-0 ml-2" />}
-                        </button>
-                        <a
-                          href={t.slug ? `https://${t.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || "dmhub.fun"}` : `/preview/${t.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`p-1.5 rounded-lg transition-all cursor-pointer mr-1 flex items-center justify-center ${isDark ? "text-slate-500 hover:text-[#38BDF8] hover:bg-slate-900" : "text-slate-400 hover:text-[#38BDF8] hover:bg-slate-100"
-                            }`}
-                          title={`Ver Tienda Live de ${t.nombre}`}
-                        >
-                          <Eye size={12} />
-                        </a>
-                        {esAdmin && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setStoreToDelete(t);
-                              setIsDeleteStoreModalOpen(true);
-                            }}
-                            className={`p-1.5 rounded-lg transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent ${
-                              isDark
-                                ? "text-slate-500 hover:text-red-400 hover:bg-red-500/10"
-                                : "text-slate-400 hover:text-red-600 hover:bg-red-50"
-                            }`}
-                            title={`Eliminar tienda ${t.nombre}`}
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <div className={`border-t mt-1 pt-1 ${isDark ? "border-slate-900" : "border-slate-100"}`}>
-                    <button
-                      onClick={() => {
-                        setIsStoreDropdownOpen(false);
-                        setIsCreateModalOpen(true);
-                      }}
-                      className={`flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#38BDF8] hover:text-[#22D3A6] rounded-lg transition-all text-left border-none cursor-pointer bg-transparent w-full ${isDark ? "hover:bg-slate-900/40" : "hover:bg-slate-100"
-                        }`}
-                    >
-                      <Plus size={14} />
-                      <span>{tCommon("create")} {language === "es" ? "nueva tienda" : "new store"}</span>
-                    </button>
-                  </div>
-                </div>
+                </>
               )}
             </div>
 
@@ -1037,118 +1082,148 @@ function PortalContent() {
           <div className="pointer-events-none absolute top-20 left-1/3 h-[400px] w-[400px] rounded-full bg-[#22D3A6]/2 blur-[100px] -z-10" />
           <div className="pointer-events-none absolute bottom-10 right-1/4 h-[500px] w-[500px] rounded-full bg-[#38BDF8]/2 blur-[120px] -z-10" />
 
-          {/* TAB: TABLERO (DASHBOARD) */}
-          {activeTab === "tablero" && (
-            <DashboardTab
-              productos={productos}
-              usuarios={usuarios}
-              reservaciones={reservaciones}
-              usuario={usuario}
-              esAdmin={esAdmin}
-              esStaff={esStaff}
-            />
-          )}
+          {!activeStore ? (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-8 space-y-4">
+              <div className={`p-5 rounded-2xl border ${isDark ? "border-slate-800 bg-slate-900 text-[#38BDF8]" : "border-slate-200 bg-white text-[#38BDF8]"}`}>
+                <Store size={40} />
+              </div>
+              <div className="space-y-1">
+                <h3 className={`text-lg font-black ${isDark ? "text-white" : "text-slate-900"}`}>
+                  {language === "es" ? "No tienes tiendas disponibles" : "No available stores"}
+                </h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  {language === "es"
+                    ? "No encontramos tiendas asociadas a tu cuenta. Crea una nueva tienda para comenzar o solicita acceso al administrador."
+                    : "No stores found associated with your account. Create a new store to start or request access from an administrator."}
+                </p>
+              </div>
+              {esAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold bg-[#22D3A6] hover:bg-[#1ebda1] text-slate-950 rounded-xl transition-all cursor-pointer shadow-lg shadow-emerald-950/20 border-none"
+                >
+                  <Plus size={16} />
+                  <span>{language === "es" ? "Crear Nueva Tienda" : "Create New Store"}</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* TAB: TABLERO (DASHBOARD) */}
+              {activeTab === "tablero" && (
+                <DashboardTab
+                  productos={productos}
+                  usuarios={usuarios}
+                  reservaciones={reservaciones}
+                  usuario={usuario}
+                  esAdmin={esAdmin}
+                  esStaff={esStaff}
+                />
+              )}
 
-          {/* TAB: SUCURSALES */}
-          {activeTab === "sucursales" && (
-            <SucursalesTab
-              token={token ?? ""}
-              sucursales={sucursales}
-              loadingSucursales={loadingSucursales}
-              productos={productos}
-              usuarios={usuarios}
-              esAdmin={esAdmin}
-              onRefresh={refreshSucursales}
-            />
-          )}
+              {/* TAB: SUCURSALES */}
+              {activeTab === "sucursales" && (
+                <SucursalesTab
+                  token={token ?? ""}
+                  sucursales={sucursales}
+                  loadingSucursales={loadingSucursales}
+                  productos={productos}
+                  usuarios={usuarios}
+                  esAdmin={esAdmin}
+                  onRefresh={refreshSucursales}
+                />
+              )}
 
-          {/* TAB: CLIENTES */}
-          {activeTab === "clientes" && (
-            <ClientesTab
-              usuarios={usuarios}
-              loadingUsuarios={loadingUsuarios}
-              esAdmin={esAdmin}
-              onToggleEstado={handleToggleEstadoUsuario}
-              onOpenChangeRol={handleOpenChangeRolModal}
-            />
-          )}
+              {/* TAB: CLIENTES */}
+              {activeTab === "clientes" && (
+                <ClientesTab
+                  usuarios={usuarios}
+                  loadingUsuarios={loadingUsuarios}
+                  esAdmin={esAdmin}
+                  onToggleEstado={handleToggleEstadoUsuario}
+                  onOpenChangeRol={handleOpenChangeRolModal}
+                />
+              )}
 
-          {/* TAB: USUARIOS */}
-          {activeTab === "usuarios" && (
-            <UsuariosTab
-              token={token ?? ""}
-              usuarios={usuarios}
-              loadingUsuarios={loadingUsuarios}
-              sucursales={sucursales}
-              usuario={usuario}
-              esAdmin={esAdmin}
-              onRefresh={refreshUsuarios}
-            />
-          )}
+              {/* TAB: USUARIOS */}
+              {activeTab === "usuarios" && (
+                <UsuariosTab
+                  token={token ?? ""}
+                  usuarios={usuarios}
+                  loadingUsuarios={loadingUsuarios}
+                  sucursales={sucursales}
+                  usuario={usuario}
+                  esAdmin={esAdmin}
+                  onRefresh={refreshUsuarios}
+                />
+              )}
 
-          {/* TAB: PRODUCTOS */}
-          {activeTab === "productos" && (
-            <ProductosTab
-              token={token ?? ""}
-              productos={productos}
-              loadingProductos={loadingProductos}
-              categorias={categorias}
-              sucursales={sucursales}
-              esAdmin={esAdmin}
-              hasCloudinary={hasCloudinary}
-              onRefresh={refreshProductos}
-            />
-          )}
+              {/* TAB: PRODUCTOS */}
+              {activeTab === "productos" && (
+                <ProductosTab
+                  token={token ?? ""}
+                  productos={productos}
+                  loadingProductos={loadingProductos}
+                  categorias={categorias}
+                  sucursales={sucursales}
+                  esAdmin={esAdmin}
+                  hasCloudinary={hasCloudinary}
+                  onRefresh={refreshProductos}
+                />
+              )}
 
-          {/* TAB: RESERVACIONES */}
-          {activeTab === "reservaciones" && (
-            <ReservacionesTab
-              token={token ?? ""}
-              reservaciones={reservaciones}
-              loadingReservaciones={loadingReservaciones}
-              onRefresh={refreshReservaciones}
-            />
-          )}
+              {/* TAB: RESERVACIONES */}
+              {activeTab === "reservaciones" && (
+                <ReservacionesTab
+                  token={token ?? ""}
+                  reservaciones={reservaciones}
+                  loadingReservaciones={loadingReservaciones}
+                  onRefresh={refreshReservaciones}
+                />
+              )}
 
-          {/* TAB: PAGOS */}
-          {activeTab === "pagos" && (
-            <PagosTab
-              token={token ?? ""}
-              reservaciones={reservaciones}
-              onRefresh={refreshReservaciones}
-            />
-          )}
+              {/* TAB: PAGOS */}
+              {activeTab === "pagos" && (
+                <PagosTab
+                  token={token ?? ""}
+                  reservaciones={reservaciones}
+                  onRefresh={refreshReservaciones}
+                />
+              )}
 
-          {/* TAB: KANBAN */}
-          {activeTab === "kanban" && esStaff && (
-            <KanbanTab
-              token={token ?? ""}
-              reservaciones={reservaciones}
-              loadingReservaciones={loadingReservaciones}
-              usuarios={usuarios}
-              sucursales={sucursales}
-              onRefresh={refreshReservaciones}
-            />
-          )}
+              {/* TAB: KANBAN */}
+              {activeTab === "kanban" && esStaff && (
+                <KanbanTab
+                  token={token ?? ""}
+                  reservaciones={reservaciones}
+                  loadingReservaciones={loadingReservaciones}
+                  usuarios={usuarios}
+                  sucursales={sucursales}
+                  onRefresh={refreshReservaciones}
+                />
+              )}
 
-          {/* TAB: REPORTES */}
-          {activeTab === "reportes" && (
-            <ReportesTab
-              token={token ?? ""}
-              activeStore={activeStore}
-            />
-          )}
+              {/* TAB: REPORTES */}
+              {activeTab === "reportes" && (
+                <ReportesTab
+                  token={token ?? ""}
+                  activeStore={activeStore}
+                />
+              )}
 
-          {/* TAB: SETTINGS */}
-          {activeTab === "settings" && (
-            <SettingsTab
-              token={token}
-              esAdmin={esAdmin}
-              activeStore={activeStore}
-              setActiveStore={setActiveStore}
-              storeConfig={storeConfig}
-              setTiendas={setTiendas}
-            />
+              {/* TAB: SETTINGS */}
+              {activeTab === "settings" && (
+                <SettingsTab
+                  token={token}
+                  esAdmin={esAdmin}
+                  activeStore={activeStore}
+                  setActiveStore={setActiveStore}
+                  storeConfig={storeConfig}
+                  setTiendas={setTiendas}
+                />
+              )}
+            </>
           )}
         </div>
       </main>
