@@ -39,8 +39,8 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Si hay un subdominio de tienda activo (ignorando 'www' y 'admin')
-  if (subdomain && subdomain !== "www" && subdomain !== "admin") {
+  // Si hay un subdominio de tienda activo (ignorando 'www', 'admin' y 'docs')
+  if (subdomain && subdomain !== "www" && subdomain !== "admin" && subdomain !== "docs") {
     if (!url.pathname.startsWith("/preview/")) {
       url.pathname = `/preview/${subdomain.toLowerCase()}${url.pathname === "/" ? "" : url.pathname}`;
       return NextResponse.rewrite(url);
