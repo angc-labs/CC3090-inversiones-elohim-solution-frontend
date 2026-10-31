@@ -49,7 +49,7 @@ export function PortalModal({
     <div
       className={cn(
         "fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4 animate-fade-in sm:p-6 [&>*]:my-auto [&>*]:!rounded-2xl [&>*]:!border [&>*]:!border-slate-800 [&>*]:!bg-slate-950 [&>*]:!shadow-2xl",
-        backdropClassName ?? "bg-slate-950"
+        backdropClassName ?? "bg-white/60 backdrop-blur-sm"
       )}
       role="dialog"
       aria-modal="true"

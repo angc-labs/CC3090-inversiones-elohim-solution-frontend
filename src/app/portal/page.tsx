@@ -956,9 +956,9 @@ function PortalContent() {
 
               {isStoreDropdownOpen && (
                 <>
-                  {/* Backdrop del selector sin transparencia */}
+                  {/* Backdrop del selector blanco */}
                   <div
-                    className="fixed inset-0 z-40 bg-slate-950 cursor-pointer"
+                    className="fixed inset-0 z-40 bg-white/60 backdrop-blur-sm cursor-pointer"
                     onClick={() => setIsStoreDropdownOpen(false)}
                     aria-hidden="true"
                   />

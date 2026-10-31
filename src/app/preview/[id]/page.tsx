@@ -1690,7 +1690,7 @@ export default function LivePreviewPage() {
 
       {/* Receipt Modal */}
       {showReceiptModal && completedReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/60 backdrop-blur-sm animate-fade-in">
           <div
             style={{
               backgroundColor: isStoreDark ? "#0F172A" : "#FFFFFF",

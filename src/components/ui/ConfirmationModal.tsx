@@ -35,7 +35,7 @@ export function ConfirmationModal({
     <div className="fixed! inset-0! z-50! flex! items-center! justify-center! p-4!">
       {/* Overlay */}
       <div
-        className={backdropClassName ?? "absolute! inset-0! bg-black! bg-slate-950!"}
+        className={backdropClassName ?? "absolute! inset-0! bg-white/60! backdrop-blur-sm!"}
         onClick={onCancel}
       />
 

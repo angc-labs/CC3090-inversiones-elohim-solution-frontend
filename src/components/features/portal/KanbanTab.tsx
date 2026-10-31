@@ -313,22 +313,10 @@ export function KanbanTab({
     await updateReservationStatus(id, targetColumnId);
   };
 
-  const COLUMN_RANKS: Record<ColumnId, number> = {
-    pendiente_pago: 1,
-    pagado_procesando: 2,
-    despachado: 3
-  };
-
   // Update status function (centralized for drag & drop + quick action buttons)
   const updateReservationStatus = async (id: string, targetColumnId: ColumnId) => {
     const res = reservaciones.find((r) => r.id === id);
     if (!res) return;
-
-    const currentColumn = getReservationColumn(res);
-    if (COLUMN_RANKS[targetColumnId] < COLUMN_RANKS[currentColumn]) {
-      toast.error("No está permitido regresar un pedido a un estado anterior. Solo se permite avanzar en el flujo o cancelarlo.");
-      return;
-    }
 
     let targetEstadoPago = res.estadoPago;
     let targetEstadoDespacho = res.estadoDespacho;
@@ -340,6 +328,7 @@ export function KanbanTab({
       targetEstadoPago = "pagado";
       targetEstadoDespacho = "procesando";
     } else if (targetColumnId === "despachado") {
+      targetEstadoPago = "pagado";
       targetEstadoDespacho = "despachado";
     }
 
@@ -758,12 +747,31 @@ export function KanbanTab({
                             )}
 
                             {col.id === "pagado_procesando" && (
+                              <>
+                                <button
+                                  onClick={() => updateReservationStatus(res.id, "pendiente_pago")}
+                                  className="p-1 px-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500 border border-transparent text-amber-400 hover:text-slate-955 text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-0.5"
+                                  title="Regresar a Pendiente"
+                                >
+                                  ← Pendiente
+                                </button>
+                                <button
+                                  onClick={() => updateReservationStatus(res.id, "despachado")}
+                                  className="p-1 px-1.5 rounded-lg bg-[#38BDF8]/10 hover:bg-[#38BDF8] border border-transparent text-[#38BDF8] hover:text-slate-955 text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-0.5"
+                                  title={t("dispatch_tooltip")}
+                                >
+                                  {t("dispatch_button")}
+                                </button>
+                              </>
+                            )}
+
+                            {col.id === "despachado" && (
                               <button
-                                onClick={() => updateReservationStatus(res.id, "despachado")}
-                                className="p-1 px-1.5 rounded-lg bg-[#38BDF8]/10 hover:bg-[#38BDF8] border border-transparent text-[#38BDF8] hover:text-slate-955 text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-0.5"
-                                title={t("dispatch_tooltip")}
+                                onClick={() => updateReservationStatus(res.id, "pagado_procesando")}
+                                className="p-1 px-1.5 rounded-lg bg-[#22D3A6]/10 hover:bg-[#22D3A6] border border-transparent text-[#22D3A6] hover:text-slate-955 text-[9px] font-black uppercase tracking-wider cursor-pointer transition-all flex items-center gap-0.5"
+                                title="Regresar a Pagado / Procesando"
                               >
-                                {t("dispatch_button")}
+                                ← Procesando
                               </button>
                             )}
 
@@ -885,8 +893,21 @@ export function KanbanTab({
                   ⚠️ Este pedido se encuentra CANCELADO y sus existencias han sido reintegradas al inventario.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {getReservationColumn(selectedCardDetail) === "pendiente_pago" && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {getReservationColumn(selectedCardDetail) !== "pendiente_pago" && (
+                    <button
+                      onClick={() => {
+                        updateReservationStatus(selectedCardDetail.id, "pendiente_pago");
+                        setSelectedCardDetail(null);
+                      }}
+                      className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold border border-slate-800 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <AlertCircle size={14} />
+                      <span>A Pendiente</span>
+                    </button>
+                  )}
+
+                  {getReservationColumn(selectedCardDetail) !== "pagado_procesando" && (
                     <button
                       onClick={() => {
                         updateReservationStatus(selectedCardDetail.id, "pagado_procesando");
@@ -895,11 +916,11 @@ export function KanbanTab({
                       className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-[#22D3A6] font-bold border border-slate-800 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <CheckCircle2 size={14} />
-                      <span>Verificar Pago</span>
+                      <span>A Pagado</span>
                     </button>
                   )}
 
-                  {(getReservationColumn(selectedCardDetail) === "pendiente_pago" || getReservationColumn(selectedCardDetail) === "pagado_procesando") && (
+                  {getReservationColumn(selectedCardDetail) !== "despachado" && (
                     <button
                       onClick={() => {
                         updateReservationStatus(selectedCardDetail.id, "despachado");
@@ -908,7 +929,7 @@ export function KanbanTab({
                       className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-[#38BDF8] font-bold border border-slate-800 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <Truck size={14} />
-                      <span>Marcar Despachado</span>
+                      <span>A Despachado</span>
                     </button>
                   )}
 

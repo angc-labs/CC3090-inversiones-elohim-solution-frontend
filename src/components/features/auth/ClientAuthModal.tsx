@@ -117,7 +117,7 @@ export function ClientAuthModal({ isOpen, onClose, initialTab = "login" }: Clien
     <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+        className="absolute inset-0 bg-white/60 backdrop-blur-sm transition-opacity" 
         onClick={onClose}
       />
       
