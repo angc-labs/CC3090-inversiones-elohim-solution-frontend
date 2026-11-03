@@ -20,6 +20,9 @@
   --color-brand-secondary: #38BDF8;
   --color-brand-tertiary: #081018;
   --color-brand-neutral: #94A3B8;
+  --color-slate-955: #081018;
+  --color-slate-850: #131d2a;
+  --color-slate-350: #9baec4;
   --font-sans: "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 }

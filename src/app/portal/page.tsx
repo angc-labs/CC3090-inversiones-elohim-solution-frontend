@@ -828,7 +828,7 @@ function PortalContent() {
       {/* Mobile Drawer Backdrop */}
       {menuAbierto && (
         <div
-          className="fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-[70] bg-slate-950/80 backdrop-blur-sm lg:hidden"
           onClick={() => setMenuAbierto(false)}
         />
       )}
@@ -836,8 +836,8 @@ function PortalContent() {
       {/* Mobile Sidebar Drawer */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col justify-between border-r p-6 transition-transform duration-200 lg:hidden h-[100dvh] max-h-[100dvh] overflow-y-auto sidebar-scrollbar",
-          isDark ? "border-slate-900 bg-slate-955" : "border-slate-200 bg-white shadow-2xl portal-sidebar-base",
+          "fixed inset-y-0 left-0 z-[80] flex w-64 flex-col justify-between border-r p-6 transition-transform duration-200 lg:hidden h-[100dvh] max-h-[100dvh] overflow-y-auto sidebar-scrollbar",
+          isDark ? "border-slate-900 bg-[#081018]" : "border-slate-200 bg-white shadow-2xl portal-sidebar-base",
           menuAbierto ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -847,7 +847,7 @@ function PortalContent() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 lg:ml-64">
         {/* Top Navbar */}
-        <header className={`h-16 border-b px-2.5 sm:px-8 flex items-center justify-between shrink-0 gap-2 sm:gap-4 relative z-45 transition-colors duration-200 ${isDark ? "border-slate-900 bg-slate-950/20" : "border-slate-200 bg-white/95 shadow-xs portal-header-base"
+        <header className={`h-16 border-b px-2.5 sm:px-8 flex items-center justify-between shrink-0 gap-2 sm:gap-4 relative z-20 transition-colors duration-200 ${isDark ? "border-slate-900 bg-slate-950/20" : "border-slate-200 bg-white/95 shadow-xs portal-header-base"
           }`}>
           {/* Hamburger Menu Toggle on Mobile/Tablet */}
           <button
@@ -860,7 +860,7 @@ function PortalContent() {
           </button>
 
           {/* Live Search */}
-          <div ref={searchContainerRef} className="relative z-[60] hidden w-full max-w-md md:block">
+          <div ref={searchContainerRef} className="relative z-[30] hidden w-full max-w-md md:block">
             <div className="relative">
               <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? "text-slate-500" : "text-slate-400"}`} size={16} />
               <input
@@ -887,7 +887,7 @@ function PortalContent() {
 
             {/* Live Search Popup */}
             {isSearchFocused && searchQuery && (
-              <div className={`absolute left-0 top-12 z-[70] max-h-[360px] w-full isolate overflow-y-auto rounded-xl border p-4 shadow-2xl animate-fade-in ${isDark
+              <div className={`absolute left-0 top-12 z-[35] max-h-[360px] w-full isolate overflow-y-auto rounded-xl border p-4 shadow-2xl animate-fade-in ${isDark
                   ? "border border-slate-800 bg-[#081018] shadow-black ring-1 ring-black/60 text-slate-100"
                   : "border border-slate-200 bg-white shadow-slate-300/50 ring-1 ring-black/5 text-slate-900 portal-card-base"
                 }`}>
