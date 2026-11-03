@@ -32,7 +32,9 @@ import {
   X,
   Download,
   CheckCircle2,
-  FileText
+  FileText,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { toast } from "sonner";
 import { ClientAuthModal } from "@/components/features/auth/ClientAuthModal";
@@ -40,7 +42,7 @@ import { StorefrontCartDrawer } from "@/components/features/carrito/StorefrontCa
 import { StoreSurveySection } from "@/components/features/portal/constructor/StoreSurveySection";
 import { StripePaymentInfoBox } from "@/components/features/pago/StripePaymentInfoBox";
 import { generateAndDownloadReceipt, type ReceiptData } from "@/lib/utils/pdfReceipt";
-import { safeBackgroundImage } from "@/lib/utils";
+import { safeBackgroundImage, getPaginationRange } from "@/lib/utils";
 import type { TMetodoPagoGuardado } from "@/types";
 
 // Stripe and payment imports
@@ -565,14 +567,15 @@ export default function LivePreviewPage() {
   // Compute total pages
   const itemsPerPage = productsSection?.properties?.pageSize || 6;
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const safePage = Math.min(Math.max(1, paginaActual), Math.max(1, totalPages));
 
   const displayProducts = useMemo(() => {
     if (verTodoCatalogo) {
-      const start = (paginaActual - 1) * itemsPerPage;
+      const start = (safePage - 1) * itemsPerPage;
       return filteredProducts.slice(start, start + itemsPerPage);
     }
     return filteredProducts.slice(0, productsSection?.properties?.productsCount || 3);
-  }, [filteredProducts, verTodoCatalogo, paginaActual, itemsPerPage, productsSection?.properties?.productsCount]);
+  }, [filteredProducts, verTodoCatalogo, safePage, itemsPerPage, productsSection?.properties?.productsCount]);
 
   const handleButtonClick = (action?: string, value?: string) => {
     if (!action) return;
@@ -1070,49 +1073,126 @@ export default function LivePreviewPage() {
 
               {/* Pagination controls */}
               {verTodoCatalogo && totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 pt-8 select-none">
-                  <button
-                    disabled={paginaActual === 1}
-                    onClick={() => setPaginaActual(prev => Math.max(prev - 1, 1))}
-                    style={{
-                      borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0",
-                      backgroundColor: isDark ? "rgba(15, 23, 42, 0.4)" : "#FFFFFF",
-                      color: isDark ? "#CBD5E1" : "#334155",
-                    }}
-                    className="h-8 px-3 rounded-lg border text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/10 cursor-pointer flex items-center justify-center gap-1"
+                <div className="flex flex-col items-center justify-center gap-3 pt-8 select-none">
+                  <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 max-w-full">
+                    <button
+                      type="button"
+                      aria-label="Página anterior"
+                      disabled={safePage <= 1}
+                      onClick={() => {
+                        const newPage = Math.max(safePage - 1, 1);
+                        setPaginaActual(newPage);
+                        document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
+                      style={{
+                        borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0",
+                        backgroundColor: isDark ? "rgba(15, 23, 42, 0.4)" : "#FFFFFF",
+                        color: isDark ? "#CBD5E1" : "#334155",
+                      }}
+                      className="h-8 px-2.5 sm:px-3 rounded-lg border text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/10 cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <ChevronLeft size={14} />
+                      <span className="hidden sm:inline">Anterior</span>
+                    </button>
+
+                    {getPaginationRange(safePage, totalPages).map((item, idx) => {
+                      if (item === "ellipsis-left") {
+                        return (
+                          <button
+                            key={`ellipsis-l-${idx}`}
+                            type="button"
+                            title="Retroceder 5 páginas"
+                            aria-label="Retroceder 5 páginas"
+                            onClick={() => {
+                              const newPage = Math.max(safePage - 5, 1);
+                              setPaginaActual(newPage);
+                              document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                            }}
+                            style={{
+                              borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0",
+                              backgroundColor: isDark ? "rgba(15, 23, 42, 0.4)" : "#FFFFFF",
+                              color: isDark ? "#94A3B8" : "#64748B",
+                            }}
+                            className="h-8 w-8 rounded-lg border text-xs font-bold transition-all hover:bg-slate-800/10 cursor-pointer flex items-center justify-center tracking-widest"
+                          >
+                            •••
+                          </button>
+                        );
+                      }
+                      if (item === "ellipsis-right") {
+                        return (
+                          <button
+                            key={`ellipsis-r-${idx}`}
+                            type="button"
+                            title="Avanzar 5 páginas"
+                            aria-label="Avanzar 5 páginas"
+                            onClick={() => {
+                              const newPage = Math.min(safePage + 5, totalPages);
+                              setPaginaActual(newPage);
+                              document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                            }}
+                            style={{
+                              borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0",
+                              backgroundColor: isDark ? "rgba(15, 23, 42, 0.4)" : "#FFFFFF",
+                              color: isDark ? "#94A3B8" : "#64748B",
+                            }}
+                            className="h-8 w-8 rounded-lg border text-xs font-bold transition-all hover:bg-slate-800/10 cursor-pointer flex items-center justify-center tracking-widest"
+                          >
+                            •••
+                          </button>
+                        );
+                      }
+
+                      const pageNum = item as number;
+                      const isActive = safePage === pageNum;
+                      return (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          aria-label={`Página ${pageNum}`}
+                          aria-current={isActive ? "page" : undefined}
+                          onClick={() => {
+                            setPaginaActual(pageNum);
+                            document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                          }}
+                          style={{
+                            backgroundColor: isActive ? (visualConfig.theme?.accentColor || "#1AB38C") : (isDark ? "rgba(15, 23, 42, 0.4)" : "#FFFFFF"),
+                            color: isActive ? "#FFFFFF" : (isDark ? "#CBD5E1" : "#334155"),
+                            borderColor: isActive ? "transparent" : (isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0"),
+                          }}
+                          className="h-8 min-w-[2rem] px-2 rounded-lg border text-xs font-bold transition-all hover:opacity-90 cursor-pointer flex items-center justify-center"
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      type="button"
+                      aria-label="Página siguiente"
+                      disabled={safePage >= totalPages}
+                      onClick={() => {
+                        const newPage = Math.min(safePage + 1, totalPages);
+                        setPaginaActual(newPage);
+                        document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
+                      style={{
+                        borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0",
+                        backgroundColor: isDark ? "rgba(15, 23, 42, 0.4)" : "#FFFFFF",
+                        color: isDark ? "#CBD5E1" : "#334155",
+                      }}
+                      className="h-8 px-2.5 sm:px-3 rounded-lg border text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/10 cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <span className="hidden sm:inline">Siguiente</span>
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                  <span
+                    style={{ color: isDark ? "#94A3B8" : "#64748B" }}
+                    className="text-xs font-medium"
                   >
-                    Anterior
-                  </button>
-                  {Array.from({ length: totalPages }).map((_, pageIdx) => {
-                    const pageNum = pageIdx + 1;
-                    const isActive = paginaActual === pageNum;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPaginaActual(pageNum)}
-                        style={{
-                          backgroundColor: isActive ? (visualConfig.theme?.accentColor || "#1AB38C") : (isDark ? "rgba(15, 23, 42, 0.4)" : "#FFFFFF"),
-                          color: isActive ? "#FFFFFF" : (isDark ? "#CBD5E1" : "#334155"),
-                          borderColor: isActive ? "transparent" : (isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0"),
-                        }}
-                        className="h-8 w-8 rounded-lg border text-xs font-bold transition-all hover:opacity-90 cursor-pointer flex items-center justify-center"
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                  <button
-                    disabled={paginaActual === totalPages}
-                    onClick={() => setPaginaActual(prev => Math.min(prev + 1, totalPages))}
-                    style={{
-                      borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0",
-                      backgroundColor: isDark ? "rgba(15, 23, 42, 0.4)" : "#FFFFFF",
-                      color: isDark ? "#CBD5E1" : "#334155",
-                    }}
-                    className="h-8 px-3 rounded-lg border text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800/10 cursor-pointer flex items-center justify-center gap-1"
-                  >
-                    Siguiente
-                  </button>
+                    Página {safePage} de {totalPages} ({filteredProducts.length} productos)
+                  </span>
                 </div>
               )}
               </div>
