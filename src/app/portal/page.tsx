@@ -847,12 +847,12 @@ function PortalContent() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 lg:ml-64">
         {/* Top Navbar */}
-        <header className={`h-16 border-b px-4 sm:px-8 flex items-center justify-between shrink-0 gap-4 relative z-45 transition-colors duration-200 ${isDark ? "border-slate-900 bg-slate-950/20" : "border-slate-200 bg-white/95 shadow-xs portal-header-base"
+        <header className={`h-16 border-b px-2.5 sm:px-8 flex items-center justify-between shrink-0 gap-2 sm:gap-4 relative z-45 transition-colors duration-200 ${isDark ? "border-slate-900 bg-slate-950/20" : "border-slate-200 bg-white/95 shadow-xs portal-header-base"
           }`}>
           {/* Hamburger Menu Toggle on Mobile/Tablet */}
           <button
             onClick={() => setMenuAbierto(true)}
-            className={`lg:hidden p-2 rounded-xl border-none bg-transparent cursor-pointer flex items-center justify-center ${isDark ? "text-slate-400 hover:text-white hover:bg-slate-900/60" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            className={`lg:hidden p-1.5 sm:p-2 rounded-xl border-none bg-transparent cursor-pointer flex items-center justify-center shrink-0 ${isDark ? "text-slate-400 hover:text-white hover:bg-slate-900/60" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               }`}
             aria-label="Abrir menú lateral"
           >
@@ -922,36 +922,36 @@ function PortalContent() {
           </div>
 
           {/* Dropdown Stores, Profile */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
             {/* Language Selector */}
             <button
               type="button"
               onClick={toggleLanguage}
-              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[11px] font-bold uppercase tracking-wide transition-all cursor-pointer ${isDark
+              className={`h-9 sm:h-10 flex items-center gap-1 sm:gap-1.5 rounded-xl border px-2 sm:px-3 text-[10px] sm:text-[11px] font-bold uppercase tracking-wide transition-all cursor-pointer shrink-0 ${isDark
                   ? "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700 hover:text-white"
                   : "border-slate-200 bg-slate-100 text-slate-600 hover:border-slate-300 hover:text-slate-900"
                 }`}
               aria-label={t("toggle_lang")}
               title={language === "es" ? "Switch to English" : "Cambiar a Español"}
             >
-              <Globe size={14} className="text-[#38BDF8]" />
+              <Globe size={13} className="text-[#38BDF8] shrink-0" />
               <span>{language === "es" ? "ES" : "EN"}</span>
             </button>
 
             {/* Store Selector */}
-            <div ref={dropdownRef} className="relative">
+            <div ref={dropdownRef} className="relative shrink min-w-0">
               <button
                 onClick={() => setIsStoreDropdownOpen(!isStoreDropdownOpen)}
-                className={`h-10 px-4 rounded-xl border text-xs font-semibold flex items-center gap-2.5 cursor-pointer transition-all ${isDark
+                className={`h-9 sm:h-10 px-2 sm:px-4 rounded-xl border text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2.5 cursor-pointer transition-all max-w-full ${isDark
                     ? "border-slate-800 bg-[#0c141c] text-slate-200 hover:border-slate-700 hover:text-white"
                     : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
                   }`}
               >
-                <Store size={14} className="text-[#38BDF8]" />
-                <span className="max-w-[150px] truncate">
+                <Store size={13} className="text-[#38BDF8] shrink-0" />
+                <span className="max-w-[70px] min-[360px]:max-w-[95px] min-[400px]:max-w-[130px] sm:max-w-[160px] md:max-w-[200px] truncate">
                   {activeStore?.nombre ?? (tiendas.length === 0 ? (language === "es" ? "Sin tiendas" : "No stores") : t("select_store"))}
                 </span>
-                <ChevronDown size={14} className={isDark ? "text-slate-500" : "text-slate-400"} />
+                <ChevronDown size={13} className={`shrink-0 ${isDark ? "text-slate-500" : "text-slate-400"}`} />
               </button>
 
               {isStoreDropdownOpen && (
@@ -962,7 +962,7 @@ function PortalContent() {
                     onClick={() => setIsStoreDropdownOpen(false)}
                     aria-hidden="true"
                   />
-                  <div className={`absolute right-0 top-12 w-64 rounded-xl border p-2 shadow-2xl z-50 ${isDark
+                  <div className={`absolute right-0 top-11 sm:top-12 w-64 max-w-[calc(100vw-24px)] rounded-xl border p-2 shadow-2xl z-50 ${isDark
                       ? "border-slate-800 bg-[#081018] shadow-black text-slate-100"
                       : "border-slate-200 bg-white shadow-slate-300/50 text-slate-900"
                     }`}>
@@ -1045,7 +1045,7 @@ function PortalContent() {
             {esAdmin && (
               <button
                 onClick={() => handleTabChange("settings")}
-                className={`h-10 w-10 rounded-xl border flex items-center justify-center cursor-pointer transition-all ${activeTab === "settings"
+                className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl border flex items-center justify-center cursor-pointer transition-all shrink-0 ${activeTab === "settings"
                     ? "border-[#22D3A6] bg-[#22D3A6]/10 text-[#22D3A6]"
                     : isDark
                       ? "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700 hover:text-white"
@@ -1053,13 +1053,13 @@ function PortalContent() {
                   }`}
                 title={t("configuracion")}
               >
-                <Settings size={16} />
+                <Settings size={15} />
               </button>
             )}
 
             {/* Profile Avatar */}
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="text-right hidden md:block">
                 <p className={`text-xs font-bold leading-none ${isDark ? "text-white" : "text-slate-900"}`}>
                   {usuario.nombre}
                 </p>
@@ -1067,7 +1067,7 @@ function PortalContent() {
                   {formatRole(usuario.rol)}
                 </p>
               </div>
-              <div className={`h-9 w-9 rounded-xl border flex items-center justify-center overflow-hidden shrink-0 ${isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-slate-100"
+              <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-xl border flex items-center justify-center overflow-hidden shrink-0 ${isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-slate-100"
                 }`}>
                 <span className="text-xs font-black text-[#38BDF8]">
                   {usuario.nombre.substring(0, 2).toUpperCase()}
@@ -1078,7 +1078,7 @@ function PortalContent() {
         </header>
 
         {/* Tab panels rendering container */}
-        <div className="flex-1 p-8 overflow-y-auto space-y-6 relative z-10">
+        <div className="flex-1 p-4 sm:p-8 overflow-y-auto space-y-6 relative z-10">
           <div className="pointer-events-none absolute top-20 left-1/3 h-[400px] w-[400px] rounded-full bg-[#22D3A6]/2 blur-[100px] -z-10" />
           <div className="pointer-events-none absolute bottom-10 right-1/4 h-[500px] w-[500px] rounded-full bg-[#38BDF8]/2 blur-[120px] -z-10" />
 
